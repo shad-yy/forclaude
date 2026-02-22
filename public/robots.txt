@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dead-ends/
+
+# Allow important pages
+Allow: /teams/
+Allow: /players/
+Allow: /leagues/
+Allow: /events/
+Allow: /scores/
+Allow: /news/
+Allow: /ufc/
+Allow: /search/
+
+# Sitemap location
+Sitemap: https://smart-live-tv.vercel.app/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1
