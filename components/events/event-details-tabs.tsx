@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
-import { lookupEventStats, lookupEventLineup, lookupEventTimeline } from "@/lib/api/the-sports-db"
 import type { SportsDbEvent, SportsDbEventStat, SportsDbLineupPlayer, SportsDbEventTimeline } from "@/lib/types"
 
 interface EventDetailsTabsProps {
@@ -29,14 +28,19 @@ export function EventDetailsTabs({ event, additionalInfo }: EventDetailsTabsProp
     async function fetchData() {
       setLoading(true)
       try {
-        const [statsData, lineupData, timelineData] = await Promise.all([
-          lookupEventStats(event.id),
-          lookupEventLineup(event.id),
-          lookupEventTimeline(event.id),
+        const [statsRes, lineupRes, timelineRes] = await Promise.all([
+          fetch(`/api/events/${event.id}/stats`),
+          fetch(`/api/events/${event.id}/lineups`),
+          fetch(`/api/events/${event.id}/timeline`),
         ])
-        setStats(statsData)
-        setLineup(lineupData)
-        setTimeline(timelineData)
+        const [statsJson, lineupJson, timelineJson] = await Promise.all([
+          statsRes.json(),
+          lineupRes.json(),
+          timelineRes.json(),
+        ])
+        setStats(Array.isArray(statsJson.data) ? statsJson.data : null)
+        setLineup(Array.isArray(lineupJson.data) ? lineupJson.data : null)
+        setTimeline(Array.isArray(timelineJson.data) ? timelineJson.data : null)
       } catch (error) {
         console.error("Failed to fetch event details:", error)
       } finally {

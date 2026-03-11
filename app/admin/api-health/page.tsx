@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAdmin } from "@/lib/auth/admin"
-import { apiMonitor } from "@/lib/api/api-monitor"
 import { Activity, Download, Shield, AlertTriangle, CheckCircle, Clock } from "lucide-react"
 
 export default function ApiHealthPage() {
@@ -31,7 +30,9 @@ export default function ApiHealthPage() {
   const generateReport = async () => {
     setGeneratingReport(true)
     try {
-      const report = await apiMonitor.generateHealthReport()
+      const res = await fetch("/api/admin/health/report", { cache: "no-store" })
+      if (!res.ok) throw new Error("Failed to generate report")
+      const report = await res.text()
       setHealthReport(report)
     } catch (error) {
       console.error("Failed to generate health report:", error)

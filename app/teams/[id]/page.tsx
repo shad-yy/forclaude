@@ -7,7 +7,6 @@ import { TeamRoster } from "@/components/team/team-roster"
 import { TeamSchedule } from "@/components/team/team-schedule"
 import { Skeleton } from "@/components/ui/skeleton"
 import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
-import { theSportsDB } from "@/lib/api/the-sports-db"
 
 interface TeamPageProps {
   params: {
@@ -49,22 +48,13 @@ async function TeamContent({ teamId }: { teamId: string }) {
       notFound()
     }
 
-    // Try to get additional team info from TheSportsDB
-    let additionalTeamInfo = null
-    try {
-      const sportsDbTeam = await theSportsDB.lookupTeam(teamId)
-      additionalTeamInfo = sportsDbTeam
-    } catch (error) {
-      console.log("Could not fetch additional team info from TheSportsDB")
-    }
-
     return (
       <div className="space-y-8">
-        <TeamHeader team={team} additionalInfo={additionalTeamInfo} />
+        <TeamHeader team={team} additionalInfo={null} />
 
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-1">
-            <TeamInfoCard team={team} additionalInfo={additionalTeamInfo} />
+            <TeamInfoCard team={team} additionalInfo={null} />
           </div>
 
           <div className="lg:col-span-2 space-y-8">

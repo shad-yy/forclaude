@@ -3,19 +3,24 @@ import { Metadata } from "next"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { OptimizedImage } from "@/components/ui/optimized-image"
-import { getFighter } from "@/lib/api/ufc"
-import { Trophy, User, MapPin, Ruler, Target, Calendar, TrendingUp, Award } from 'lucide-react'
+import { Trophy, User, MapPin, Ruler, Target, Calendar, TrendingUp, Award } from "lucide-react"
 import Link from "next/link"
+import { getApiBaseUrl } from "@/lib/utils/url"
+
+async function fetchUfcFighter(id: string) {
+  const res = await fetch(`${getApiBaseUrl()}/api/ufc/fighters/${id}`, { cache: "no-store" })
+  const json = await res.json()
+  return json?.data ?? null
+}
 
 interface UFCFighterPageProps {
-  params: {
-    id: string
-  }
+  params: { id: string }
 }
 
 export async function generateMetadata({ params }: UFCFighterPageProps): Promise<Metadata> {
-  const fighter = await getFighter(params.id)
-  
+  const { id } = params
+  const fighter = await fetchUfcFighter(id)
+
   if (!fighter) {
     return {
       title: "Fighter Not Found | UFC",
@@ -37,7 +42,8 @@ export async function generateMetadata({ params }: UFCFighterPageProps): Promise
 }
 
 export default async function UFCFighterPage({ params }: UFCFighterPageProps) {
-  const fighter = await getFighter(params.id)
+  const { id } = params
+  const fighter = await fetchUfcFighter(id)
 
   if (!fighter) {
     notFound()
@@ -88,10 +94,10 @@ export default async function UFCFighterPage({ params }: UFCFighterPageProps) {
                     <p className="text-xl text-red-400 italic mb-4">"{fighter.nickname}"</p>
                   )}
                   <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                    <Badge 
+                    <Badge
                       className={
-                        fighter.ranking === "Champion" 
-                          ? "bg-yellow-500 text-black text-lg px-4 py-2" 
+                        fighter.ranking === "Champion"
+                          ? "bg-yellow-500 text-black text-lg px-4 py-2"
                           : "bg-red-500 text-white text-lg px-4 py-2"
                       }
                     >
@@ -197,20 +203,20 @@ export default async function UFCFighterPage({ params }: UFCFighterPageProps) {
             <CardContent>
               {Array.isArray(fighter.fightHistory) && fighter.fightHistory.length > 0 ? (
                 <div className="space-y-4">
-                  {fighter.fightHistory.slice(0, 5).map((fight, index) => (
+                  {fighter.fightHistory.slice(0, 5).map((fight: { opponent: string; event: string; date: string; result: string; method: string }, index: number) => (
                     <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-gray-700">
                       <div>
                         <div className="font-semibold text-white">{fight.opponent}</div>
                         <div className="text-sm text-gray-400">{fight.event} • {fight.date}</div>
                       </div>
                       <div className="text-right">
-                        <Badge 
+                        <Badge
                           className={
-                            fight.result?.includes('Win') || fight.result?.includes('W') 
-                              ? "bg-green-500 text-white" 
+                            fight.result?.includes('Win') || fight.result?.includes('W')
+                              ? "bg-green-500 text-white"
                               : fight.result?.includes('Loss') || fight.result?.includes('L')
-                              ? "bg-red-500 text-white"
-                              : "bg-yellow-500 text-black"
+                                ? "bg-red-500 text-white"
+                                : "bg-yellow-500 text-black"
                           }
                         >
                           {fight.result}
@@ -299,14 +305,14 @@ export default async function UFCFighterPage({ params }: UFCFighterPageProps) {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link 
-                href="/ufc" 
+              <Link
+                href="/ufc"
                 className="block w-full text-center bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors"
               >
                 Back to UFC
               </Link>
-              <Link 
-                href="/ufc#rankings" 
+              <Link
+                href="/ufc#rankings"
                 className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors"
               >
                 View Rankings

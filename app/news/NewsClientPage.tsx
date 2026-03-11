@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Search, Filter, X } from "lucide-react"
-import { newsAPI, type NewsArticle, type NewsResponse, type NewsSource } from "@/lib/api/news"
+import { newsAPI } from "@/lib/api/news"
+import { type NewsArticle, type NewsResponse, type NewsSource } from "@/lib/api/types"
 import { NewsCard } from "@/components/news/news-card"
 import { NewsFilters } from "@/components/news/news-filters"
 import { TrendingNews } from "@/components/news/trending-news"
@@ -145,7 +146,7 @@ export default function NewsClientPage({
   const hasActiveFilters = filters.category || filters.source || filters.sortBy !== "publishedAt"
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 pt-20" style={{ paddingTop: '80px' }}>
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Content */}
         <div className="flex-1">
@@ -331,7 +332,7 @@ export default function NewsClientPage({
 
         {/* Sidebar */}
         <div className="lg:w-80">
-          <TrendingNews keywords={trendingKeywords} />
+          <TrendingNews />
         </div>
       </div>
     </div>

@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { OptimizedImage } from "@/components/ui/optimized-image"
 import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
-import { theSportsDB } from "@/lib/api/the-sports-db"
 import Link from "next/link"
 
 interface LeaguePageProps {
@@ -53,15 +52,6 @@ async function LeagueContent({ leagueId }: { leagueId: string }) {
 
     if (!league) {
       notFound()
-    }
-
-    // Try to get additional league info from TheSportsDB
-    let additionalLeagueInfo = null
-    try {
-      const sportsDbLeague = await theSportsDB.lookupLeague(leagueId)
-      additionalLeagueInfo = sportsDbLeague
-    } catch (error) {
-      console.log("Could not fetch additional league info from TheSportsDB")
     }
 
     return (
@@ -289,21 +279,17 @@ async function LeagueContent({ leagueId }: { leagueId: string }) {
                   <span>{league.type}</span>
                 </div>
 
-                {additionalLeagueInfo && (
-                  <>
-                    {additionalLeagueInfo.strDescriptionEN && (
-                      <div>
-                        <h4 className="font-medium mb-2">Description</h4>
-                        <p className="text-sm text-muted-foreground">{additionalLeagueInfo.strDescriptionEN}</p>
-                      </div>
-                    )}
-                    {additionalLeagueInfo.intFormedYear && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Founded</span>
-                        <span>{additionalLeagueInfo.intFormedYear}</span>
-                      </div>
-                    )}
-                  </>
+                {league.description && (
+                  <div>
+                    <h4 className="font-medium mb-2">Description</h4>
+                    <p className="text-sm text-muted-foreground">{league.description}</p>
+                  </div>
+                )}
+                {league.formedYear && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Founded</span>
+                    <span>{league.formedYear}</span>
+                  </div>
                 )}
               </CardContent>
             </Card>

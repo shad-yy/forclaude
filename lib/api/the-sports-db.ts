@@ -3,9 +3,11 @@
 // Documentation source: Sportsdb API documentation.json
 
 import { errorLogger } from "@/lib/admin/error-logger"
+import { getCache, setCache, cache } from "@/lib/cache"
 
-const API_KEY = process.env.THESPORTSDB_API_KEY || '123'
-const BASE_URL = `https://www.thesportsdb.com/api/v1/json/123/`
+const API_KEY = process.env.THESPORTSDB_API_KEY || "123"
+const typeofWindow = typeof window !== "undefined"
+const BASE_URL = typeofWindow ? "/api/thesportsdb/" : `https://www.thesportsdb.com/api/v1/json/${API_KEY}/`
 
 // Rate limiting: 25 req/min (safer than 30 limit, with buffer)
 // 60 seconds / 25 requests = 2400ms between requests
@@ -111,43 +113,26 @@ interface SportsDBFetchResult {
   error?: string
 }
 
-// Simple in-memory cache with TTL
-interface CacheEntry<T> {
-  data: T
-  expiry: number
-}
-
-const cache = new Map<string, CacheEntry<any>>()
-
 // Caching TTLs optimized for free tier API usage
-// Static data (leagues, teams, players) cached for 30 days to minimize API calls
-// Dynamic data (events, scores) cached for shorter periods
-// Strategy: Pre-cache static data on startup, only refresh dynamic data frequently
 const TTL = {
-  leagueInfo: 2592000, // 30 days - League metadata is static
-  standings: 86400, // 24h - Standings update daily
-  teamInfo: 2592000, // 30 days - Team info is static (name, logo, stadium don't change)
-  playerInfo: 2592000, // 30 days - Player profiles are static (name, photo, position)
-  events: 300, // 5min - Events update frequently (scores change)
-  search: 3600, // 1h - Search results can change
-  list: 2592000, // 30 days - Master lists (leagues, sports, countries, teams) are static
-  misc: 3600, // 1h - Miscellaneous data
-  eventsDay: 60, // 1min - Daily events need fresh data for live scores
+  leagueInfo: 3600, // 1 hour per requirements
+  standings: 3600, // 1 hour
+  teamInfo: 3600, // 1 hour per requirements
+  playerInfo: 3600, // 1 hour per requirements
+  events: 300,
+  search: 3600,
+  list: 3600, // 1 hour per requirements
+  misc: 3600,
+  eventsDay: 60, // 1 min per requirements (scores)
 }
 
 function getCached<T>(key: string): T | null {
-  const entry = cache.get(key)
-  if (!entry) return null
-  if (Date.now() > entry.expiry) {
-    cache.delete(key)
-    return null
-  }
-  return entry.data as T
+  return getCache<T>(key)
 }
 
 function setCached<T>(key: string, data: T, ttlSeconds: number): void {
   if (ttlSeconds <= 0) return
-  cache.set(key, { data, expiry: Date.now() + ttlSeconds * 1000 })
+  setCache(key, data, ttlSeconds)
 }
 
 let requestCount = 0
@@ -187,7 +172,8 @@ async function sportsdbFetch(
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
     url = new URL(endpoint)
   } else {
-    url = new URL(endpoint, BASE_URL)
+    const base = typeof window !== "undefined" ? window.location.origin + BASE_URL : BASE_URL
+    url = new URL(endpoint, base)
   }
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v))
 
@@ -576,6 +562,18 @@ export async function lookupTeam(teamId: string): Promise<SportsDbTeam | null> {
   if (!/^\d+$/.test(teamId)) {
     throw new Error(`Invalid teamId: ${teamId}. Must be numeric.`)
   }
+
+  // WORKAROUND for "123" test key specifically returning Arsenal (133604) for all lookupteam calls
+  const primaryLeagues = ["English Premier League", "Spanish La Liga", "German Bundesliga", "Italian Serie A", "French Ligue 1"];
+  for (const league of primaryLeagues) {
+    try {
+      const teams = await makeRequest<SportsDbTeam>(`search_all_teams.php?l=${encodeURIComponent(league)}`, TTL.list, { expectedKey: 'teams' })
+      const found = teams.find(t => t.idTeam === teamId)
+      if (found) return found
+    } catch { }
+  }
+
+  // Fallback to actual lookup
   const teams = await makeRequest<SportsDbTeam>(`lookupteam.php?id=${teamId}`, TTL.teamInfo, { expectedKey: 'teams' })
   return teams[0] ?? null
 }
@@ -665,7 +663,7 @@ export async function allCountries(): Promise<SportsDbCountry[]> {
 }
 
 export async function allLeagues(): Promise<SportsDbLeague[]> {
-  return makeRequest<SportsDbLeague>('all_leagues.php', TTL.list, { expectedKey: 'leagues' })
+  return makeRequest<SportsDbLeague>('search_all_leagues.php?s=Soccer', TTL.list)
 }
 
 export async function searchAllSeasons(leagueId: string): Promise<SportsDbSeason[]> {
@@ -891,7 +889,7 @@ export function clearTheSportsDbCache() {
 export function getTheSportsDbCacheSnapshot() {
   const snapshot: Record<string, { expiry: number; data: unknown }> = {}
   for (const [key, value] of cache.entries()) {
-    snapshot[key] = { expiry: value.expiry, data: value.data }
+    snapshot[key] = { expiry: value.expires, data: value.data }
   }
   return snapshot
 }

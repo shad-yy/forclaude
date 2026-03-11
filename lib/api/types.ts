@@ -20,6 +20,7 @@ export interface NewsResponse {
   articles: NewsArticle[]
   totalResults: number
   status?: string
+  nextPage?: string
 }
 
 export interface NewsSource {

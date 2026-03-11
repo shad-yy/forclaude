@@ -1,95 +1,66 @@
 import { Suspense } from "react"
-import { AnimatedHero } from "@/components/homepage/animated-hero"
-import { StandingsWidget } from "@/components/homepage/standings-widget"
-import { EventsList } from "@/components/homepage/events-list"
+import { Metadata } from "next"
+
+import { HeroSection } from "@/components/homepage/hero-section"
+import { MatchCard } from "@/components/homepage/match-card"
+import { LeagueTables } from "@/components/homepage/league-tables"
+import { WhyIPTV } from "@/components/homepage/why-iptv"
+import { PricingPreview } from "@/components/homepage/pricing-preview"
 import { NewsSection } from "@/components/homepage/news-section"
 import { Skeleton } from "@/components/ui/skeleton"
-import { MotionWrapper } from "@/components/ui/motion-wrapper"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
-function WidgetSkeleton() {
+export const metadata: Metadata = {
+  title: 'Smart Live TV — Watch Every Match Live',
+  description: 'Stream Premier League, La Liga, Champions League, UFC & more on any device. Get your 24-hour free trial today.',
+  openGraph: {
+    title: 'Smart Live TV — Watch Every Match Live',
+    description: '15,000+ live channels. No blackouts. Cancel anytime.',
+    type: 'website',
+  },
+}
+
+function NewsSkeleton() {
   return <Skeleton className="h-96 w-full rounded-3xl" />
 }
 
 export default function HomePage() {
-  const today = new Date().toISOString().split("T")[0]
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Animated Hero Section */}
-      <div className="container mx-auto px-4 py-6 md:py-12">
-        <AnimatedHero />
-      </div>
+    <div className="min-h-screen bg-gray-950 overflow-x-hidden text-gray-100">
+      <HeroSection />
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pb-24 space-y-24 md:space-y-32">
-        {/* News Section - Prominently Featured */}
-        <MotionWrapper>
-          <Suspense fallback={<WidgetSkeleton />}>
-            <NewsSection maxArticles={6} />
-          </Suspense>
-        </MotionWrapper>
+      <ScrollReveal>
+        <MatchCard />
+      </ScrollReveal>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          {/* Left Column - Standings */}
-          <div className="lg:col-span-4">
-            <MotionWrapper delay={0.1}>
-              <Suspense fallback={<WidgetSkeleton />}>
-                <StandingsWidget leagueId="4328" leagueName="English Premier League" season={2024} maxResults={10} />
-              </Suspense>
-            </MotionWrapper>
+      {/* Decorative separator */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
+
+      <ScrollReveal>
+        <LeagueTables />
+      </ScrollReveal>
+
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
+
+      <ScrollReveal>
+        <WhyIPTV />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <PricingPreview />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <section className="py-20 md:py-32 bg-background border-t border-border relative">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
+          <div className="container mx-auto px-4 md:px-6 relative z-10">
+            <Suspense fallback={<NewsSkeleton />}>
+              <NewsSection maxArticles={3} />
+            </Suspense>
           </div>
+        </section>
+      </ScrollReveal>
 
-          {/* Right Column - Events */}
-          <div className="lg:col-span-8 space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <MotionWrapper delay={0.2}>
-                <Suspense fallback={<WidgetSkeleton />}>
-                  <EventsList
-                    title="Today's Matches"
-                    leagueId="4328"
-                    maxResults={5}
-                    showUpcoming={true}
-                    date={today}
-                    sport="Soccer"
-                  />
-                </Suspense>
-              </MotionWrapper>
-
-              <MotionWrapper delay={0.3}>
-                <Suspense fallback={<WidgetSkeleton />}>
-                  <EventsList
-                    title="Recent Results"
-                    leagueId="4328"
-                    maxResults={5}
-                    showUpcoming={false}
-                  />
-                </Suspense>
-              </MotionWrapper>
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Leagues - Premier League, La Liga, Serie A */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-          <MotionWrapper delay={0.1}>
-            <Suspense fallback={<WidgetSkeleton />}>
-              <StandingsWidget leagueId="4335" leagueName="Spanish La Liga" season={2024} maxResults={8} />
-            </Suspense>
-          </MotionWrapper>
-
-          <MotionWrapper delay={0.2}>
-            <Suspense fallback={<WidgetSkeleton />}>
-              <StandingsWidget leagueId="4332" leagueName="Italian Serie A" season={2024} maxResults={8} />
-            </Suspense>
-          </MotionWrapper>
-
-          <MotionWrapper delay={0.3}>
-            <Suspense fallback={<WidgetSkeleton />}>
-              <StandingsWidget leagueId="4331" leagueName="German Bundesliga" season={2024} maxResults={8} />
-            </Suspense>
-          </MotionWrapper>
-        </div>
-      </div>
     </div>
   )
 }

@@ -6,9 +6,6 @@ import Link from "next/link"
 import { ArrowRight, Sparkles, TrendingUp, Zap } from "lucide-react"
 import { motion, useAnimation } from "framer-motion"
 
-// Install framer-motion if not already installed
-// npm install framer-motion
-
 export function AnimatedHero() {
   const [mounted, setMounted] = useState(false)
   const controls = useAnimation()
@@ -20,18 +17,40 @@ export function AnimatedHero() {
 
   if (!mounted) {
     return (
-      <div className="relative h-[600px] rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <div
+        className="relative rounded-xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+        style={{
+          minHeight: '400px',
+          background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
         <div className="text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">Smart Live TV</h1>
+          <h1 className="text-5xl md:text-7xl font-bold text-white opacity-100 mb-6" style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}>Smart Live TV</h1>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="relative h-[600px] rounded-xl overflow-hidden flex items-center justify-center">
+    <div
+      className="relative rounded-xl overflow-hidden flex items-center justify-center"
+      style={{
+        minHeight: '400px',
+        background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        zIndex: 1
+      }}
+    >
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-purple-900/40 to-green-900/40">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-purple-900/40 to-green-900/40" style={{ zIndex: 0 }}>
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
         <motion.div
           className="absolute inset-0"
@@ -50,51 +69,13 @@ export function AnimatedHero() {
         />
       </div>
 
-      {/* Floating Elements */}
-      <motion.div
-        className="absolute top-20 left-10 w-20 h-20 bg-blue-500/20 rounded-full blur-xl"
-        animate={{
-          y: [0, -20, 0],
-          x: [0, 10, 0],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-      <motion.div
-        className="absolute bottom-20 right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-xl"
-        animate={{
-          y: [0, 20, 0],
-          x: [0, -10, 0],
-        }}
-        transition={{
-          duration: 5,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-      <motion.div
-        className="absolute top-1/2 right-20 w-16 h-16 bg-green-500/20 rounded-full blur-xl"
-        animate={{
-          y: [0, -15, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
       {/* Content */}
       <div className="relative z-20 max-w-5xl px-6 text-center">
         <motion.div
-          initial="hidden"
+          initial="visible"
           animate={controls}
           variants={{
-            hidden: { opacity: 0, y: 20 },
+            hidden: { opacity: 1, y: 0 },
             visible: {
               opacity: 1,
               y: 0,
@@ -107,52 +88,58 @@ export function AnimatedHero() {
         >
           <motion.div
             variants={{
-              hidden: { opacity: 0, scale: 0.8 },
+              hidden: { opacity: 1, scale: 1 },
               visible: { opacity: 1, scale: 1 },
             }}
             className="mb-6"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 mb-6">
               <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm text-white">Your Ultimate Sports Hub</span>
+              <span className="text-sm text-white opacity-100" style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}>Your Ultimate Sports Hub</span>
             </div>
           </motion.div>
 
           <motion.h1
-            variants={{
-              hidden: { opacity: 0, y: 30 },
-              visible: { opacity: 1, y: 0 },
-            }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-6 leading-tight"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white opacity-100 mb-6 leading-tight"
+            style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}
           >
-            Never Miss a
+            Your Ultimate
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 animate-gradient">
-              Sports Moment
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 animate-gradient" style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}>
+              Sports Hub
             </span>
           </motion.h1>
 
           <motion.p
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0 },
-            }}
-            className="text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            className="text-xl md:text-2xl text-white opacity-100 mb-10 max-w-3xl mx-auto leading-relaxed"
+            style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}
           >
-            Real-time scores, breaking news, and comprehensive coverage. All sports. All the time.
+            Live scores, match results, standings and news for all major leagues
           </motion.p>
 
           <motion.div
             variants={{
-              hidden: { opacity: 0, y: 20 },
+              hidden: { opacity: 1, y: 0 },
               visible: { opacity: 1, y: 0 },
             }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
           >
+            <a
+              href="/subscribe"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white opacity-100 font-semibold px-8 py-4 rounded-lg transition-colors text-lg"
+              style={{ backgroundColor: '#2563eb', color: '#ffffff', padding: '16px 32px', borderRadius: '8px', fontWeight: '600', fontSize: '18px', opacity: 1, visibility: 'visible' }}
+            >
+              📺 Start Watching Live Sports
+            </a>
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold px-8 py-6 text-lg shadow-lg shadow-blue-500/50"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white opacity-100 font-semibold px-8 py-6 text-lg shadow-lg shadow-blue-500/50"
+              style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}
             >
               <Link href="/scores" className="flex items-center gap-2">
                 Explore Scores
@@ -163,7 +150,8 @@ export function AnimatedHero() {
               asChild
               size="lg"
               variant="outline"
-              className="border-white/30 text-white hover:bg-white/10 px-8 py-6 text-lg bg-transparent backdrop-blur-sm"
+              className="border-white/30 text-white opacity-100 hover:bg-white/10 px-8 py-6 text-lg bg-transparent backdrop-blur-sm"
+              style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}
             >
               <Link href="/news" className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" />
@@ -174,22 +162,23 @@ export function AnimatedHero() {
 
           <motion.div
             variants={{
-              hidden: { opacity: 0 },
+              hidden: { opacity: 1 },
               visible: { opacity: 1 },
             }}
-            className="flex items-center justify-center gap-8 text-sm text-gray-300"
+            className="flex items-center justify-center gap-8 text-sm text-white opacity-100"
+            style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}
           >
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span>Today's Matches</span>
+              <span className="text-white opacity-100" style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}>Today's Matches</span>
             </div>
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-blue-400" />
-              <span>Breaking News</span>
+              <span className="text-white opacity-100" style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}>Breaking News</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-              <span>Live Updates</span>
+              <span className="text-white opacity-100" style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}>Live Updates</span>
             </div>
           </motion.div>
         </motion.div>
@@ -197,4 +186,3 @@ export function AnimatedHero() {
     </div>
   )
 }
-

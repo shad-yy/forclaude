@@ -4,7 +4,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     remotePatterns: [
@@ -78,6 +78,7 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
+    instrumentationHook: true,
     optimizePackageImports: ['lucide-react'],
   },
   compiler: {
@@ -106,6 +107,10 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           {
+            key: 'X-Robots-Tag',
+            value: 'index, follow',
+          },
+          {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
@@ -128,7 +133,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, s-maxage=60, stale-while-revalidate=300',
+            value: 'public, max-age=3600, stale-while-revalidate=86400',
           },
         ],
       },
@@ -152,36 +157,41 @@ const nextConfig = {
       },
       {
         source: '/football',
-        destination: '/leagues',
+        destination: '/watch/premier-league',
+        permanent: true,
+      },
+      {
+        source: '/scores',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/teams',
+        destination: '/watch/premier-league',
+        permanent: true,
+      },
+      {
+        source: '/players',
+        destination: '/watch/premier-league',
+        permanent: true,
+      },
+      {
+        source: '/events',
+        destination: '/',
         permanent: true,
       },
     ]
   },
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Optimize bundle size
-    config.optimization.splitChunks = {
-      chunks: 'all',
-      cacheGroups: {
-        default: {
-          minChunks: 2,
-          priority: -20,
-          reuseExistingChunk: true,
-        },
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          priority: -10,
-          chunks: 'all',
-        },
-        lucide: {
-          test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
-          name: 'lucide',
-          priority: 10,
-          chunks: 'all',
-        },
-      },
-    }
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      const baseExternals = Array.isArray(config.externals)
+        ? config.externals
+        : config.externals
+          ? [config.externals]
+          : []
 
+      config.externals = [...baseExternals, 'cheerio', 'undici']
+    }
     return config
   },
 }

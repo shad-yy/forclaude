@@ -131,8 +131,9 @@ export function useAdmin() {
     const unsubscribe = adminAuth.subscribe(() => {
       setIsAdmin(adminAuth.isAdmin())
     })
-
-    return unsubscribe
+    return () => {
+      unsubscribe()
+    }
   }, [])
 
   return {

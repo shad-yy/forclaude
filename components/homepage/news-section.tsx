@@ -1,140 +1,135 @@
-"use client"
-
-import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { newsAPI, type NewsArticle } from "@/lib/api/news"
-import { OptimizedImage } from "@/components/ui/optimized-image"
-import { Clock, ExternalLink, TrendingUp, Newspaper, ArrowRight } from "lucide-react"
+import { getLatestSportsNews } from "@/lib/api/news"
+import { Clock, TrendingUp, Newspaper, ArrowRight } from "lucide-react"
 import Link from "next/link"
-import { motion } from "framer-motion"
 
 interface NewsSectionProps {
   maxArticles?: number
 }
 
-export function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
-  const [articles, setArticles] = useState<NewsArticle[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+const CATEGORY_COLORS: Record<string, string> = {
+  'Premier League': 'bg-blue-600 text-white',
+  'Transfers': 'bg-purple-600 text-white',
+  'Champions League': 'bg-indigo-600 text-white',
+  'La Liga': 'bg-red-600 text-white',
+  'Serie A': 'bg-green-700 text-white',
+  'Bundesliga': 'bg-red-500 text-white',
+  'Ligue 1': 'bg-yellow-500 text-black',
+  'UFC': 'bg-red-700 text-white',
+  'default': 'bg-accent-primary text-black'
+}
 
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const newsData = await newsAPI.getNews({ category: "sports", page: "1" })
-        setArticles(Array.isArray(newsData.articles) ? newsData.articles.slice(0, maxArticles) : [])
-      } catch (err) {
-        console.error("Failed to fetch news:", err)
-        setError(err instanceof Error ? err.message : "Failed to load news")
-        setArticles([])
-      } finally {
-        setLoading(false)
-      }
-    }
+export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
+  const allArticles = await getLatestSportsNews(undefined, maxArticles);
 
-    fetchNews()
-  }, [maxArticles])
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-12 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-64" />
-          ))}
-        </div>
-      </div>
-    )
+  // Ensure we always have exactly maxArticles by duplicating mock data if needed
+  let articles = allArticles.slice(0, maxArticles);
+  while (articles.length > 0 && articles.length < maxArticles) {
+    articles = [...articles, ...articles].slice(0, maxArticles);
   }
 
-  if (error || articles.length === 0) {
+  if (!articles || articles.length === 0) {
     return (
-      <Card className="bg-gray-900/50 border-gray-800">
+      <Card className="bg-surface border-border">
         <CardContent className="p-8 text-center">
-          <Newspaper className="w-12 h-12 mx-auto mb-4 text-gray-600" />
-          <p className="text-gray-400">No news available at the moment</p>
+          <Newspaper className="w-12 h-12 mx-auto mb-4 text-text-muted" />
+          <p className="text-text-secondary">No news available at the moment</p>
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg">
-            <TrendingUp className="w-6 h-6 text-blue-400" />
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 rounded-xl border border-accent-primary/20">
+            <TrendingUp className="w-6 h-6 text-accent-primary" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-white">Trending Sports News</h2>
-            <p className="text-sm text-gray-400">Stay updated with the latest stories</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-text-primary tracking-tight">Trending Sports News</h2>
+            <p className="text-sm md:text-base text-text-secondary mt-1">Stay updated with the latest stories</p>
           </div>
         </div>
-        <Button asChild variant="outline" className="bg-transparent">
-          <Link href="/news" className="flex items-center gap-2">
-            View All
+        <Button asChild variant="outline" className="hidden sm:flex bg-transparent border-border hover:bg-surface-elevated hover:text-accent-primary transition-colors">
+          <Link href="/news" className="flex items-center gap-2 font-semibold">
+            View All News
             <ArrowRight className="w-4 h-4" />
           </Link>
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {articles.map((article, index) => (
-          <motion.div
-            key={article.id || `${article.url}-${index}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Link href={article.url} target="_blank" rel="noopener noreferrer">
-              <Card className="bg-gray-900/50 border-gray-800 hover:bg-gray-800/50 transition-all duration-300 hover:scale-105 group h-full flex flex-col">
-                {article.urlToImage && (
-                  <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
-                    <OptimizedImage
-                      src={article.urlToImage}
-                      alt={article.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  </div>
-                )}
-                <CardContent className="p-6 flex-1 flex flex-col">
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <Badge variant="outline" className="text-xs">
-                      {article.source.name}
-                    </Badge>
-                    {article.publishedAt && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
+        {articles.map((article, index) => {
+          const categoryName = article.category?.[0] || article.source_name || "News";
+          const badgeClass = CATEGORY_COLORS[categoryName] || CATEGORY_COLORS['default'];
+
+          return (
+            <div
+              key={article.article_id || `${article.link}-${index}`}
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+              style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
+            >
+              <a href={article.link} target="_blank" rel="noopener noreferrer" className="block h-[450px] group">
+                <Card className="bg-surface border-border hover:border-accent-primary transition-all duration-300 h-full flex flex-col overflow-hidden shadow-lg group-hover:shadow-[0_0_20px_rgba(0,230,118,0.15)]">
+                  {/* Top 50%: Image */}
+                  <div className="h-1/2 w-full overflow-hidden bg-surface-elevated relative">
+                    {article.image_url ? (
+                      <img
+                        src={article.image_url}
+                        alt={article.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-text-muted group-hover:scale-105 transition-transform duration-500 ease-out bg-gradient-to-br from-surface to-surface-elevated">
+                        <Newspaper className="w-12 h-12 mb-2 opacity-30" />
                       </div>
                     )}
+                    {/* Category Badge over image */}
+                    <div className="absolute top-4 left-4 z-10">
+                      <Badge className={`px-2.5 py-1 text-xs font-bold border-none ${badgeClass}`}>
+                        {categoryName}
+                      </Badge>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
-                    {article.title}
-                  </h3>
-                  {article.description && (
-                    <p className="text-sm text-gray-400 line-clamp-3 flex-1 mb-4">
-                      {article.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2 text-sm text-blue-400 mt-auto">
-                    <span>Read more</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          </motion.div>
-        ))}
+
+                  {/* Bottom 50%: Content */}
+                  <CardContent className="h-1/2 p-6 flex flex-col bg-surface relative z-10">
+                    <div className="flex items-center gap-1 text-xs text-text-muted mb-3 font-medium">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{article.pubDate ? new Date(article.pubDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'}</span>
+                    </div>
+
+                    <h3 className="font-bold text-text-primary text-lg leading-tight mb-2 line-clamp-2 group-hover:text-accent-primary transition-colors">
+                      {article.title}
+                    </h3>
+
+                    {article.description && (
+                      <p className="text-sm text-text-secondary line-clamp-3 mb-4 flex-1">
+                        {article.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-2 text-sm font-bold text-accent-primary mt-auto pt-2 transition-colors">
+                      <span>Stream This Match</span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </a>
+            </div>
+          )
+        })}
       </div>
+
+      <Button asChild variant="outline" className="w-full sm:hidden bg-transparent border-border hover:bg-surface-elevated hover:text-accent-primary transition-colors mt-4">
+        <Link href="/news" className="flex items-center justify-center gap-2 font-semibold">
+          View All News
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </Button>
     </div>
   )
 }
-

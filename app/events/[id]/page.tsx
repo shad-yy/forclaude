@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { OptimizedImage } from "@/components/ui/optimized-image"
 import { EventDetailsTabs } from "@/components/events/event-details-tabs"
-import { lookupEvent } from "@/lib/api/the-sports-db"
 import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
 import type { SportsDbEvent } from "@/lib/types"
 
@@ -17,21 +16,8 @@ interface EventPageProps {
 
 async function getEventData(id: string) {
   try {
-    // Try to get event from unified API first
     const unifiedEvent = await unifiedSportsAPI.getFixture(id)
-    
-    // Also try to get additional data from TheSportsDB
-    let sportsDbEvent: SportsDbEvent | null = null
-    try {
-      sportsDbEvent = await lookupEvent(id)
-    } catch (error) {
-      console.warn("Could not fetch additional event data from TheSportsDB:", error)
-    }
-
-    return {
-      unifiedEvent,
-      sportsDbEvent
-    }
+    return { unifiedEvent, sportsDbEvent: null as SportsDbEvent | null }
   } catch (error) {
     console.error("Error fetching event data:", error)
     return null

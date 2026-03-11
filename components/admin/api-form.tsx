@@ -12,7 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { AlertCircle, CheckCircle, Loader2, Send, TestTube, Database, Globe, Download, XCircle } from "lucide-react"
 import { API_CONFIG, ALLOWED_DOMAINS, BATCH_LIMITS, RESPONSE_LIMITS } from "@/lib/config"
-import { getClientCache, setClientCache, getCacheKey } from "@/lib/cache"
+import { getCache as getClientCache, setCache as setClientCache } from "@/lib/cache"
+
+const getCacheKey = (url: string) => `cache:${url}`;
 
 interface ApiTestResult {
   success: boolean
@@ -583,11 +585,10 @@ export function ApiForm() {
                   {batchResults.map((result, index) => (
                     <div
                       key={index}
-                      className={`flex items-center justify-between p-3 rounded-lg ${
-                        result.success
+                      className={`flex items-center justify-between p-3 rounded-lg ${result.success
                           ? "bg-green-900/20 border border-green-500/20"
                           : "bg-red-900/20 border border-red-500/20"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         {result.success ? (

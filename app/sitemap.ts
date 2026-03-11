@@ -1,34 +1,92 @@
-import type { MetadataRoute } from "next"
+import { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://smart-live-tv.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://smart-live-tv.vercel.app"
 
-  // Static pages
-  const staticPages = ["", "/scores", "/news", "/leagues", "/teams", "/players", "/ufc", "/events", "/search"]
-
-  // Popular leagues
-  const popularLeagues = [
-    "39", // Premier League
-    "140", // La Liga
-    "78", // Bundesliga
-    "135", // Serie A
-    "61", // Ligue 1
+  return [
+    {
+      url: `${baseUrl}/`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/watch/premier-league`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/watch/la-liga`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/watch/bundesliga`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/watch/serie-a`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/watch/ligue-1`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/watch/champions-league`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/watch/ufc`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/setup/firestick`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/setup/smart-tv`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/setup/android`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/setup/iphone`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/pricing`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/news`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
   ]
-
-  // Generate sitemap entries
-  const staticEntries = staticPages.map((page) => ({
-    url: `${baseUrl}${page}`,
-    lastModified: new Date(),
-    changeFrequency: page === "" ? ("daily" as const) : ("weekly" as const),
-    priority: page === "" ? 1 : 0.8,
-  }))
-
-  const leagueEntries = popularLeagues.map((leagueId) => ({
-    url: `${baseUrl}/leagues/${leagueId}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }))
-
-  return [...staticEntries, ...leagueEntries]
 }

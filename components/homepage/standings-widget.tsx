@@ -60,7 +60,14 @@ export const StandingsWidget = memo(function StandingsWidget({
     if (!form || index === undefined) return <Minus className="w-3 h-3 text-gray-500" />
 
     const result = form[index]
-    switch (result) {
+    const normalize = (r: string) => {
+      if (r === 'ف') return 'W'
+      if (r === 'س') return 'D'
+      if (r === 'خ') return 'L'
+      return r
+    }
+
+    switch (normalize(result)) {
       case "W":
         return <TrendingUp className="w-3 h-3 text-green-400" />
       case "L":
@@ -182,13 +189,12 @@ export const StandingsWidget = memo(function StandingsWidget({
                   <div className="col-span-1 text-center text-sm text-red-400">{team.lost}</div>
 
                   <div
-                    className={`col-span-1 text-center text-sm ${
-                      team.goalDifference > 0
+                    className={`col-span-1 text-center text-sm ${team.goalDifference > 0
                         ? "text-green-400"
                         : team.goalDifference < 0
                           ? "text-red-400"
                           : "text-gray-400"
-                    }`}
+                      }`}
                   >
                     {team.goalDifference > 0 ? "+" : ""}
                     {team.goalDifference}

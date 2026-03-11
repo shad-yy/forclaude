@@ -131,7 +131,7 @@ class UFCScraper {
         try {
           const eventDetails = await this.getEventDetails(event.id)
           if (eventDetails) {
-            event.fights = eventDetails.fights
+            event.fights = eventDetails.fights ?? []
             event.mainEvent = eventDetails.mainEvent
             event.description = eventDetails.description
             event.venue = eventDetails.venue
@@ -315,17 +315,21 @@ class UFCScraper {
       nickname: fighter.nickname,
       record: fighter.record,
       weightClass: fighter.weightClass,
-      image: fighter.image,
+      photo: fighter.image,
       country: fighter.country,
       height: fighter.height,
       weight: fighter.weight,
       reach: fighter.reach,
-      stance: fighter.stance,
-      dob: fighter.dob,
-      wins: fighter.wins,
-      losses: fighter.losses,
-      draws: fighter.draws,
-      noContests: fighter.noContests || 0,
+      stats: {
+        wins: fighter.wins ?? 0,
+        losses: fighter.losses ?? 0,
+        draws: fighter.draws ?? 0,
+        koTko: 0,
+        submissions: 0,
+        decisions: 0,
+        stance: fighter.stance,
+        dob: fighter.dob,
+      },
     }
   }
 

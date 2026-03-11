@@ -69,15 +69,16 @@ export class PerformanceMonitor {
 export function trackWebVitals() {
   if (typeof window === "undefined") return
 
-  // Track Core Web Vitals
-  import("web-vitals")
-    .then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(console.log)
-      getFID(console.log)
-      getFCP(console.log)
-      getLCP(console.log)
-      getTTFB(console.log)
-    })
+  // Track Core Web Vitals (API may vary by version)
+  import("web-vitals").then((mod: unknown) => {
+    const m = mod as Record<string, (fn: (metric: unknown) => void) => void>
+    const report = (metric: unknown) => console.log(metric)
+    if (typeof m.getCLS === "function") m.getCLS(report)
+    if (typeof m.getFID === "function") m.getFID(report)
+    if (typeof m.getFCP === "function") m.getFCP(report)
+    if (typeof m.getLCP === "function") m.getLCP(report)
+    if (typeof m.getTTFB === "function") m.getTTFB(report)
+  })
     .catch(() => {
       // Silently fail if web-vitals is not available
     })

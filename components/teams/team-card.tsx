@@ -33,21 +33,19 @@ export function TeamCard({ team, compact = false }: TeamCardProps) {
 
                 <CardHeader className="relative z-10 flex flex-col items-center text-center pb-2">
                     <div className={cn(
-                        "relative mx-auto mb-4 bg-background/50 rounded-full shadow-sm group-hover:scale-110 transition-transform duration-300 p-4",
+                        "relative mx-auto mb-4 bg-background/50 rounded-full shadow-sm group-hover:scale-110 transition-transform duration-300 p-4 flex items-center justify-center",
                         compact ? "w-20 h-20" : "w-32 h-32"
                     )}>
-                        {team.logo ? (
-                            <OptimizedImage
-                                src={team.logo}
+                        <div className="absolute inset-0 flex items-center justify-center bg-muted/20 rounded-full z-0">
+                            <span className="text-2xl font-bold text-muted-foreground">{team.name.charAt(0)}</span>
+                        </div>
+                        {team.logo && (
+                            <img
+                                src={`${team.logo}/small`}
                                 alt={`${team.name} logo`}
-                                width={128}
-                                height={128}
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-contain relative z-10"
+                                onError={(e) => { e.currentTarget.style.display = 'none' }}
                             />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-muted/20 rounded-full">
-                                <span className="text-2xl font-bold text-muted-foreground">{team.name.charAt(0)}</span>
-                            </div>
                         )}
                     </div>
                     <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-1">

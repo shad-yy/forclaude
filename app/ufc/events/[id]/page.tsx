@@ -3,19 +3,24 @@ import { Metadata } from "next"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { OptimizedImage } from "@/components/ui/optimized-image"
-import { getEvent } from "@/lib/api/ufc"
-import { Calendar, MapPin, Clock, Users, Trophy, Star, Zap } from 'lucide-react'
+import { Calendar, MapPin, Clock, Users, Trophy, Star, Zap } from "lucide-react"
 import Link from "next/link"
+import { getApiBaseUrl } from "@/lib/utils/url"
+
+async function fetchUfcEvent(id: string) {
+  const res = await fetch(`${getApiBaseUrl()}/api/ufc/events/${id}`, { cache: "no-store" })
+  const json = await res.json()
+  return json?.data ?? null
+}
 
 interface UFCEventPageProps {
-  params: {
-    id: string
-  }
+  params: { id: string }
 }
 
 export async function generateMetadata({ params }: UFCEventPageProps): Promise<Metadata> {
-  const event = await getEvent(params.id)
-  
+  const { id } = params
+  const event = await fetchUfcEvent(id)
+
   if (!event) {
     return {
       title: "Event Not Found | UFC",
@@ -37,7 +42,8 @@ export async function generateMetadata({ params }: UFCEventPageProps): Promise<M
 }
 
 export default async function UFCEventPage({ params }: UFCEventPageProps) {
-  const event = await getEvent(params.id)
+  const { id } = params
+  const event = await fetchUfcEvent(id)
 
   if (!event) {
     notFound()

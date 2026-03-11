@@ -2,179 +2,183 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { SearchBar } from "./search-bar"
-import { AdminToggle } from "@/components/admin/admin-toggle"
-import { OptimizedImage } from "@/components/ui/optimized-image"
-import { Menu, X, Home, Trophy, Users, Calendar, Newspaper, Zap, User } from "lucide-react"
-import { useState, useEffect, memo, useMemo, useCallback, useRef } from "react"
+import { Menu, X, ChevronDown } from "lucide-react"
+import { useState, useEffect, memo, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-const navigation = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Scores", href: "/scores", icon: Zap },
-  { name: "Leagues", href: "/leagues", icon: Trophy },
-  { name: "Teams", href: "/teams", icon: Users },
-  { name: "Players", href: "/players", icon: User },
-  { name: "Events", href: "/events", icon: Calendar },
-  { name: "News", href: "/news", icon: Newspaper },
-  { name: "UFC", href: "/ufc", icon: Trophy },
+const watchLiveLinks = [
+  { name: "Premier League", href: "/watch/premier-league", icon: "🏴" },
+  { name: "La Liga", href: "/watch/la-liga", icon: "🇪🇸" },
+  { name: "Bundesliga", href: "/watch/bundesliga", icon: "🇩🇪" },
+  { name: "Serie A", href: "/watch/serie-a", icon: "🇮🇹" },
+  { name: "Ligue 1", href: "/watch/ligue-1", icon: "🇫🇷" },
+  { name: "Champions League", href: "/watch/champions-league", icon: "🏆" },
 ]
 
 export const Header = memo(function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const pathname = usePathname()
-  const lastScrollY = useRef(0)
-  const headerRef = useRef<HTMLElement>(null)
+  let dropdownTimeout = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     setIsMobileMenuOpen(false)
+    setIsDropdownOpen(false)
   }, [pathname])
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
-
-      // Track if we are scrolled down for background opacity
-      setIsScrolled(currentScrollY > 20)
-
-      // Show header when scrolling up or at the top
-      if (currentScrollY < lastScrollY.current || currentScrollY < 100) {
-        setIsVisible(true)
-      } else if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
-        // Hide when scrolling down past 100px
-        setIsVisible(false)
-      }
-
-      lastScrollY.current = currentScrollY
+      setIsScrolled(window.scrollY > 20)
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const toggleMobileMenu = useCallback(() => {
-    setIsMobileMenuOpen(!isMobileMenuOpen)
-  }, [isMobileMenuOpen])
+  const handleMouseEnter = () => {
+    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current)
+    setIsDropdownOpen(true)
+  }
 
-  const navigationItems = useMemo(() => {
-    return navigation.map((item) => {
-      const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
-      return { ...item, isActive }
-    })
-  }, [pathname])
+  const handleMouseLeave = () => {
+    dropdownTimeout.current = setTimeout(() => {
+      setIsDropdownOpen(false)
+    }, 150) // slight delay to make it feel natural
+  }
 
   return (
     <>
-      {/* Hover detection zone at the top */}
-      <div
-        className="fixed top-0 left-0 w-full h-4 z-50 bg-transparent"
-        onMouseEnter={() => setIsVisible(true)}
-      />
-
       <header
-        ref={headerRef}
         className={cn(
-          "fixed top-0 z-40 w-full transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1)",
-          isVisible ? "translate-y-0" : "-translate-y-full",
-          isScrolled ? "bg-background/80 backdrop-blur-md border-b border-border/50 shadow-sm" : "bg-transparent border-transparent"
+          "fixed top-0 z-50 w-full transition-all duration-300",
+          isScrolled
+            ? "bg-background/80 backdrop-blur-md border-b border-border shadow-sm py-3"
+            : "bg-transparent border-transparent py-4"
         )}
       >
         <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative overflow-hidden rounded-lg transition-transform duration-300 group-hover:scale-105">
-                <OptimizedImage
-                  src="/images/logo.png"
-                  alt="Smart Live TV Logo"
-                  width={40}
-                  height={40}
-                  priority
-                  className="object-cover"
-                />
-              </div>
-              <div className="hidden sm:block">
-                <span className="text-xl font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">Smart Live TV</span>
-                <div className="text-xs text-muted-foreground font-medium">Sports Hub</div>
-              </div>
+          <div className="flex items-center justify-between">
+            {/* LEFT: Logo */}
+            <Link href="/" className="flex items-center space-x-2 group">
+              <span className="text-xl font-bold tracking-tight text-text-primary">
+                Smart <span className="inline-flex items-center"><span className="w-2 h-2 rounded-full bg-live-red animate-pulse mr-1"></span>Live</span> TV
+              </span>
             </Link>
 
-            <nav className="hidden lg:flex items-center space-x-1">
-              {navigationItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-full transition-all duration-300",
-                      item.isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    )}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.name}
-                  </Link>
-                )
-              })}
+            {/* CENTER: Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-8">
+              <div
+                className="relative"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <button className="flex items-center gap-1 text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors py-2">
+                  Watch Live
+                  <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isDropdownOpen && "rotate-180")} />
+                </button>
+
+                {/* Desktop Dropdown */}
+                <div
+                  className={cn(
+                    "absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl border border-border bg-surface-elevated/90 backdrop-blur-xl shadow-xl transition-all duration-200 origin-top",
+                    isDropdownOpen ? "opacity-100 scale-100 visible" : "opacity-0 scale-95 invisible"
+                  )}
+                >
+                  <div className="p-2 grid gap-1">
+                    {watchLiveLinks.map((link) => (
+                      <Link
+                        key={link.name}
+                        href={link.href}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+                      >
+                        <span className="text-base">{link.icon}</span>
+                        <span className="font-medium">{link.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <Link href="/news" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">News</Link>
+              <Link href="/ufc" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">UFC</Link>
+              <Link href="/pricing" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">Pricing</Link>
             </nav>
 
-            <div className="hidden md:block flex-1 max-w-md mx-4">
-              <SearchBar />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <AdminToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden rounded-full hover:bg-muted/50"
-                onClick={toggleMobileMenu}
-                aria-label="Toggle mobile menu"
+            {/* RIGHT: Desktop Auth / CTA */}
+            <div className="hidden lg:flex items-center gap-6">
+              <Link href="/login" className="text-sm font-semibold text-text-muted hover:text-text-primary transition-colors">
+                Sign In
+              </Link>
+              <Link
+                href="/pricing"
+                className="bg-accent-primary text-black font-bold text-sm px-6 py-2.5 rounded-lg hover:brightness-110 transition-all shadow-[0_0_15px_rgba(0,230,118,0.3)]"
               >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
+                Watch Now →
+              </Link>
             </div>
-          </div>
 
-          <div className="md:hidden pb-4">
-            <SearchBar />
+            {/* Mobile Menu Button */}
+            <button
+              className="lg:hidden p-2 text-text-primary hover:text-accent-primary transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Navigation Overlay */}
         <div
           className={cn(
-            "lg:hidden fixed inset-x-0 top-16 bg-background/95 backdrop-blur-xl border-b border-border/50 transition-all duration-300 ease-in-out overflow-hidden",
-            isMobileMenuOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"
+            "lg:hidden fixed inset-0 top-[60px] bg-background/95 backdrop-blur-xl z-40 transition-all duration-300 ease-in-out border-t border-border",
+            isMobileMenuOpen ? "opacity-100 visible h-[calc(100vh-60px)]" : "opacity-0 invisible h-0"
           )}
         >
-          <nav className="container mx-auto px-4 py-6">
-            <div className="grid grid-cols-2 gap-3">
-              {navigationItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 text-base font-medium rounded-xl transition-all duration-200",
-                      item.isActive
-                        ? "bg-primary/10 text-primary"
-                        : "bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                    )}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {item.name}
-                  </Link>
-                )
-              })}
+          <div className="flex flex-col h-full p-6 overflow-y-auto pb-24">
+            <div className="space-y-6">
+              <div>
+                <div className="text-xs font-bold text-text-muted uppercase tracking-widest mb-3">Watch Live</div>
+                <div className="grid gap-2">
+                  {watchLiveLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      href={link.href}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-surface border border-border text-text-primary hover:border-accent-primary transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <span className="text-xl">{link.icon}</span>
+                      <span className="font-semibold">{link.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border flex flex-col gap-4">
+                <Link href="/news" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>News</Link>
+                <Link href="/ufc" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>UFC</Link>
+                <Link href="/pricing" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
+              </div>
             </div>
-          </nav>
+
+            <div className="mt-auto pt-8">
+              <Link
+                href="/pricing"
+                className="w-full flex justify-center bg-accent-primary text-black font-bold text-base px-6 py-4 rounded-xl hover:brightness-110 mb-4"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Watch Now →
+              </Link>
+              <Link
+                href="/login"
+                className="w-full flex justify-center text-sm font-semibold text-text-secondary py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Already have an account? Sign In
+              </Link>
+            </div>
+          </div>
         </div>
       </header>
     </>

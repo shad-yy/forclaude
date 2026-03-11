@@ -13,6 +13,7 @@ interface Player {
     name: string
     thumb?: string
     cutout?: string
+    photo?: string
     position?: string
     team?: string
     nationality?: string
@@ -27,7 +28,7 @@ interface PlayerCardProps {
 
 export function PlayerCard({ player, compact = false }: PlayerCardProps) {
     // Use API images only - prefer cutout for clean look, fallback to thumb
-    const imageSrc = player.cutout || player.thumb
+    const imageSrc = player.photo || player.cutout || player.thumb
 
     return (
         <Link href={`/players/${player.id}`}>

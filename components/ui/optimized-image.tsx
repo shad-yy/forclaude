@@ -110,6 +110,7 @@ export function OptimizedImage({
       {shouldLoad && (
         <Image
           src={getOptimizedSrc(src) || "/placeholder.svg"}
+          unoptimized={typeof src === 'string' && src.startsWith('http')}
           alt={alt}
           {...(fill ? {} : { width, height })}
           priority={priority}

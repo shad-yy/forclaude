@@ -9,7 +9,15 @@ import { Users, Search, Globe, Trophy, Filter, User } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { POPULAR_TEAM_IDS, PLAYER_POSITIONS } from "@/lib/config"
+import { PLAYER_POSITIONS } from "@/lib/config"
+
+const FEATURED_TEAMS = [
+  { id: '133604', name: 'Arsenal' },
+  { id: '133602', name: 'Liverpool' },
+  { id: '133600', name: 'Barcelona' },
+  { id: '133613', name: 'Bayern Munich' },
+  { id: '133632', name: 'PSG' },
+]
 
 interface PlayersPageProps {
   searchParams: {
@@ -33,17 +41,13 @@ function PlayersFallback() {
 async function PlayersList({ searchParams }: { searchParams: PlayersPageProps["searchParams"] }) {
   let players: UnifiedPlayer[] = []
   let error = null
+  const selectedTeamId = searchParams.team || "133604" // Arsenal default
 
   try {
     if (searchParams.search) {
       players = await unifiedSportsAPI.searchPlayers(searchParams.search)
-    } else if (searchParams.team) {
-      players = await unifiedSportsAPI.getPlayers(searchParams.team)
     } else {
-      const allPlayers = await Promise.all(
-        POPULAR_TEAM_IDS.map((teamId) => unifiedSportsAPI.getPlayers(teamId).catch(() => [])),
-      )
-      players = allPlayers.flat().slice(0, 40) // Limit to 40 players for performance
+      players = await unifiedSportsAPI.getPlayers(selectedTeamId)
     }
 
     // Filter by position if specified
@@ -102,7 +106,7 @@ async function PlayersList({ searchParams }: { searchParams: PlayersPageProps["s
 
 export default function PlayersPage({ searchParams }: PlayersPageProps) {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 pt-20" style={{ paddingTop: '80px' }}>
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">Football Players</h1>
@@ -156,24 +160,44 @@ export default function PlayersPage({ searchParams }: PlayersPageProps) {
         </Card>
       </div>
 
-      {/* Popular Positions */}
-      {!searchParams.search && !searchParams.position && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Browse by Position</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {PLAYER_POSITIONS.filter(p => p.value !== 'all').map((pos) => (
-              <Link key={pos.value} href={`/players?position=${pos.value}`}>
-                <Card className="bg-gray-900/50 border-gray-800 hover:bg-gray-800/50 transition-colors text-center p-4">
-                  <div className="text-2xl mb-2">
-                    <User className="w-8 h-8 mx-auto text-primary" />
-                  </div>
-                  <div className="font-semibold text-white">{pos.label}</div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Browse by Team</h2>
+        <div className="flex flex-wrap gap-2 mb-8">
+          {FEATURED_TEAMS.map((team) => {
+            const currentTeam = searchParams.team || "133604";
+            const isActive = currentTeam === team.id;
+            const positionParams = searchParams.position && searchParams.position !== "all"
+              ? `&position=${searchParams.position}`
+              : "";
+            return (
+              <Button
+                key={team.id}
+                asChild
+                variant={isActive ? "default" : "outline"}
+                className={isActive ? "bg-blue-600 hover:bg-blue-700 text-white border-transparent" : "bg-transparent"}
+              >
+                <Link href={`/players?team=${team.id}${positionParams}`}>
+                  {team.name}
+                </Link>
+              </Button>
+            )
+          })}
         </div>
-      )}
+
+        <h2 className="text-2xl font-bold mb-4">Browse by Position</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {PLAYER_POSITIONS.filter(p => p.value !== 'all').map((pos) => (
+            <Link key={pos.value} href={`/players?position=${pos.value}`}>
+              <Card className="bg-gray-900/50 border-gray-800 hover:bg-gray-800/50 transition-colors text-center p-4">
+                <div className="text-2xl mb-2">
+                  <User className="w-8 h-8 mx-auto text-primary" />
+                </div>
+                <div className="font-semibold text-white">{pos.label}</div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
 
       {/* Players Grid */}
       <Suspense fallback={<PlayersFallback />}>

@@ -138,10 +138,10 @@ class ApiClient {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
 
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         "Content-Type": "application/json",
         "User-Agent": "SmartLiveTV/1.0",
-        ...options.headers,
+        ...(options.headers as Record<string, string>),
       }
 
       if (this.config.apiKey) {

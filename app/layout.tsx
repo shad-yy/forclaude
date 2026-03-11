@@ -1,10 +1,9 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { Toaster } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
 
 const inter = Inter({
@@ -13,29 +12,36 @@ const inter = Inter({
   preload: true,
 })
 
+export const viewport: Viewport = {
+  themeColor: "#020617",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+}
+
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://smart-live-tv.vercel.app"),
   title: {
-    default: "Smart Live TV - Your Ultimate Sports Hub",
-    template: "%s | Smart Live TV",
+    default: "Smart Live TV - Watch Sports Live",
+    template: "%s | SmartLiveTV - Watch Sports Live",
   },
   description:
-    "Live scores, breaking news, and in-depth analysis for every sports fan. Never miss a moment with Smart Live TV.",
-  keywords: [
-    "sports",
-    "live scores",
-    "football",
-    "soccer",
-    "UFC",
-    "news",
-    "teams",
-    "players",
-    "leagues",
-    "fixtures",
-    "results",
-  ],
-  authors: [{ name: "Smart Live TV Team" }],
-  creator: "Smart Live TV",
-  publisher: "Smart Live TV",
+    "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "SmartLiveTV",
+    title: "Smart Live TV - Watch Sports Live",
+    description: "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Smart Live TV - Watch Sports Live",
+    description: "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
+  },
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_APP_URL || "https://smart-live-tv.vercel.app",
+  },
   robots: {
     index: true,
     follow: true,
@@ -47,48 +53,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
-  manifest: "/manifest.json",
-  openGraph: {
-    title: "Smart Live TV - Your Ultimate Sports Hub",
-    description:
-      "Live scores, breaking news, and in-depth analysis for every sports fan. Never miss a moment with Smart Live TV.",
-    url: "https://smart-live-tv.vercel.app",
-    siteName: "Smart Live TV",
-    images: [
-      {
-        url: "/images/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Smart Live TV - Your Ultimate Sports Hub",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Smart Live TV - Your Ultimate Sports Hub",
-    description: "Live scores, breaking news, and in-depth analysis for every sports fan.",
-    images: ["/images/twitter-card.png"],
-    creator: "@SmartLiveTV",
-    site: "@SmartLiveTV",
-  },
-  verification: {
-    google: "your-google-verification-code",
-    yandex: "your-yandex-verification-code",
-    yahoo: "your-yahoo-verification-code",
-    other: {
-      "msvalidate.01": "your-bing-verification-code",
-    },
-  },
-  alternates: {
-    canonical: "https://smart-live-tv.vercel.app",
-  },
-  generator: 'v0.app'
 }
 
 import { SportThemeProvider } from "@/components/sport-theme-provider"
@@ -119,7 +83,6 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
-          <Toaster />
         </SportThemeProvider>
 
         <script

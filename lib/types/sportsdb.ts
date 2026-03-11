@@ -143,6 +143,8 @@ export interface SportsDbEvent {
   strTVStation?: string
   idHomeTeam: string
   idAwayTeam: string
+  strHomeTeamBadge?: string
+  strAwayTeamBadge?: string
   strResult?: string
   strVenue?: string
   strCountry?: string
@@ -205,6 +207,7 @@ export interface SportsDbTable {
   idTeam: string
   strTeam: string
   strBadge?: string
+  strTeamBadge?: string
   idLeague?: string
   strLeague?: string
   strSeason?: string

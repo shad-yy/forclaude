@@ -4,9 +4,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { OptimizedImage } from "@/components/ui/optimized-image"
-import { getUpcomingEvents, getPastEvents, getRankings } from "@/lib/api/ufc"
 import { Calendar, MapPin, Trophy, Users, Clock, Star } from "lucide-react"
 import Link from "next/link"
+import { getUpcomingEvents, getPastEvents, getRankings } from "@/lib/api/ufc"
 
 export const metadata: Metadata = {
   title: "UFC - Ultimate Fighting Championship | Smart Live TV",
@@ -232,7 +232,7 @@ async function UFCRankings() {
 
 export default function UFCPage() {
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8 bg-gray-950 min-h-screen">
+    <div className="container mx-auto px-4 py-8 pt-20 space-y-8 bg-gray-950 min-h-screen" style={{ paddingTop: '80px' }}>
       {/* Header */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight">

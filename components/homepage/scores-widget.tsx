@@ -30,11 +30,15 @@ export const ScoresWidget = memo(function ScoresWidget({ leagueId, maxResults = 
 
       switch (activeTab) {
         case "today":
-          const today = new Date().toISOString().split("T")[0]
-          data = await unifiedSportsAPI.getFixtures({
-            date: today,
-            leagueId,
-          })
+          const res = await fetch("/api/scores/today")
+          if (!res.ok) throw new Error("Failed to load today's matches")
+          const json = await res.json()
+
+          if (json.matches) {
+            data = json.matches
+          } else {
+            data = []
+          }
           break
         case "recent":
           data = await unifiedSportsAPI.getFixtures({
@@ -167,7 +171,7 @@ export const ScoresWidget = memo(function ScoresWidget({ leagueId, maxResults = 
         ) : processedFixtures.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
             <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Data temporarily unavailable, please refresh later.</p>
+            <p>{activeTab === "today" ? "No matches today" : `No ${activeTab} matches found`}</p>
           </div>
         ) : (
           <div className="space-y-3">

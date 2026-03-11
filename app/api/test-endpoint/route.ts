@@ -5,7 +5,9 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { ALLOWED_DOMAINS, RATE_LIMIT_CONFIG, RESPONSE_LIMITS, API_CONFIG } from "@/lib/config"
-import { getServerCache, setServerCache, getCacheKey } from "@/lib/cache"
+import { getCache as getServerCache, setCache as setServerCache } from "@/lib/cache"
+
+const getCacheKey = (url: string) => `cache:${url}`;
 
 // In-memory rate limiting (similar to existing pattern in app/api/auth/admin/route.ts)
 const rateLimitMap = new Map<string, { count: number; ts: number }>()

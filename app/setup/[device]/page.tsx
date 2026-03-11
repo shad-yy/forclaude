@@ -1,0 +1,197 @@
+import { Metadata } from 'next'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { SchemaMarkup } from '@/components/SchemaMarkup'
+import { generateFAQSchema } from '@/lib/schema'
+
+const DEVICES = {
+    'firestick': { name: 'Firestick' },
+    'smart-tv': { name: 'Smart TV' },
+    'android': { name: 'Android' },
+    'iphone': { name: 'iPhone' },
+}
+
+const LEAGUES = [
+    { id: '4328', slug: 'premier-league', name: 'Premier League', logo: 'https://www.thesportsdb.com/images/media/league/badge/i6o0kz1546256242.png' },
+    { id: '4335', slug: 'la-liga', name: 'La Liga', logo: 'https://www.thesportsdb.com/images/media/league/badge/7onmyv1534768460.png' },
+    { id: '4331', slug: 'bundesliga', name: 'Bundesliga', logo: 'https://www.thesportsdb.com/images/media/league/badge/0j55yv1534764799.png' },
+    { id: '4332', slug: 'serie-a', name: 'Serie A', logo: 'https://www.thesportsdb.com/images/media/league/badge/1tdvt81723547167.png' },
+    { id: '4334', slug: 'ligue-1', name: 'Ligue 1', logo: 'https://www.thesportsdb.com/images/media/league/badge/fcdjks1718032766.png' },
+]
+
+type Props = { params: { device: string } }
+
+// Force static building for the top SEO pages
+export function generateStaticParams() {
+    return Object.keys(DEVICES).map((device) => ({ device }))
+}
+
+export function generateMetadata({ params }: Props): Metadata {
+    const device = DEVICES[params.device as keyof typeof DEVICES]
+    if (!device) return { title: 'Device Not Found' }
+
+    return {
+        title: `How to Watch Live Sports on ${device.name} in 2025 | SmartLiveTV`,
+        description: `Stream Premier League, La Liga, UFC and more on your ${device.name}. Step-by-step setup guide. Works with all major IPTV apps.`,
+        openGraph: {
+            title: `How to Watch Live Sports on ${device.name} in 2025`,
+            description: `Stream Premier League, La Liga, UFC and more on your ${device.name}.`,
+            type: 'article',
+        }
+    }
+}
+
+export default async function SetupDevicePage({ params }: Props) {
+    const deviceParams = DEVICES[params.device as keyof typeof DEVICES]
+
+    if (!deviceParams) {
+        notFound()
+    }
+
+    const faqs = [
+        {
+            question: `Is the SmartLiveTV app free to download on ${deviceParams.name}?`,
+            answer: `Yes, you can use any free IPTV player available on your ${deviceParams.name} app store. You only pay for your SmartLiveTV streaming subscription.`
+        },
+        {
+            question: `Do I need a VPN to watch sports on my ${deviceParams.name}?`,
+            answer: `No VPN is required. Our streams are securely delivered to your ${deviceParams.name} without any regional blocking or throttling.`
+        },
+        {
+            question: `Can I use my subscription on multiple devices?`,
+            answer: `Yes, depending on the tier you choose during sign-up, you can stream simultaneously on up to 4 devices including your ${deviceParams.name}, smartphones, and computers.`
+        }
+    ]
+
+    const faqSchema = generateFAQSchema(faqs)
+
+    return (
+        <div className="min-h-screen bg-gray-950 text-gray-100 pb-20">
+            <SchemaMarkup schema={faqSchema} />
+
+            {/* Hero Section */}
+            <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-gradient-to-b from-gray-900 to-gray-950 text-center px-4 border-b border-gray-900">
+                <div className="container mx-auto max-w-3xl">
+                    <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
+                        How to Watch Live Sports on {deviceParams.name}
+                    </h1>
+                    <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
+                        Turn your {deviceParams.name} into the ultimate sports hub in under 5 minutes. Stream Premier League, UFC, and 15,000+ live channels instantly.
+                    </p>
+                </div>
+            </section>
+
+            <div className="container mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-6xl">
+                {/* Left Column: Instructions */}
+                <div className="lg:col-span-2 space-y-12">
+
+                    <section className="bg-gray-900 p-8 md:p-10 rounded-3xl border border-gray-800">
+                        <h2 className="text-3xl font-bold text-white mb-8">Step-by-Step Setup Guide</h2>
+                        <div className="space-y-6">
+                            <div className="flex gap-4">
+                                <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">1</div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Get your SmartLiveTV subscription — 24-hour free trial, no card required</h3>
+                                    <p className="text-gray-400">Head over to our pricing page and select your package. We will immediately email you your secure IPTV M3U link and portal login details.</p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4">
+                                <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">2</div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Install an IPTV Player on your {deviceParams.name}</h3>
+                                    <p className="text-gray-400">Open your device's app store and search for a standard player like "IPTV Smarters", "TiviMate", or "XCIPTV". Download and install it for free.</p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4">
+                                <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">3</div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Enter your SmartLiveTV details</h3>
+                                    <p className="text-gray-400">Open the app you just downloaded and select "Login with Xtream Codes" or "M3U Playlist". Paste the credentials we emailed you in step one.</p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4">
+                                <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">4</div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Start Streaming</h3>
+                                    <p className="text-gray-400">The app will download our live channel guide. You now have access to thousands of live HD sports and TV networks directly on your {deviceParams.name}.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-10 pt-8 border-t border-gray-800 text-center">
+                            <Link
+                                href="/pricing"
+                                className="inline-block px-8 py-4 bg-green-500 hover:bg-green-400 text-black font-bold rounded-lg text-lg transition-transform transform hover:-translate-y-1 shadow-lg w-full md:w-auto"
+                            >
+                                Set Up on My {deviceParams.name} — Start Free Trial
+                            </Link>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
+                        <div className="space-y-4">
+                            {faqs.map((faq, i) => (
+                                <div key={i} className="p-6 bg-gray-900 rounded-2xl border border-gray-800">
+                                    <h3 className="text-xl font-bold text-white mb-3">{faq.question}</h3>
+                                    <p className="text-gray-400">{faq.answer}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                </div>
+
+                {/* Right Column: Sidebar */}
+                <div className="lg:col-span-1 space-y-8">
+                    <div className="bg-gray-900 rounded-3xl border border-gray-800 p-8">
+                        <h3 className="text-xl font-bold text-white mb-6">Why {deviceParams.name} users love SmartLiveTV</h3>
+                        <ul className="space-y-4 text-gray-400">
+                            <li className="flex items-start gap-3">
+                                <div className="shrink-0 w-1.5 h-1.5 rounded-full bg-green-500 mt-2"></div>
+                                <span><strong>Zero Buffering:</strong> Our 60FPS servers are optimized for native {deviceParams.name} playback hardware.</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <div className="shrink-0 w-1.5 h-1.5 rounded-full bg-green-500 mt-2"></div>
+                                <span><strong>100% Legitimate Apps:</strong> Use official store apps without jailbreaking or risky sideloading.</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <div className="shrink-0 w-1.5 h-1.5 rounded-full bg-green-500 mt-2"></div>
+                                <span><strong>4K UHD Support:</strong> True ultra-HD sports streams looking beautiful on large screens.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="bg-gray-900 rounded-3xl border border-gray-800 p-8">
+                        <h3 className="text-xl font-bold text-white mb-6">Compatible Leagues</h3>
+                        <div className="flex flex-col gap-3">
+                            {LEAGUES.map(league => (
+                                <Link key={league.slug} href={`/watch/${league.slug}`} className="flex items-center gap-4 p-3 hover:bg-gray-800 rounded-xl transition-colors border border-transparent hover:border-gray-700">
+                                    <img
+                                        src={league.logo ? `${league.logo}/small` : '/placeholder-logo.png'}
+                                        alt={league.name}
+                                        className="w-10 h-10 object-contain bg-white rounded-full p-1"
+                                    />
+                                    <span className="font-bold text-gray-200">{league.name}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-900 rounded-3xl border border-gray-800 p-8">
+                        <h3 className="text-xl font-bold text-white mb-4">Other Devices</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {Object.keys(DEVICES).filter(d => d !== params.device).map(device => (
+                                <Link key={device} href={`/setup/${device}`} className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 capitalize transition">
+                                    {device.replace('-', ' ')}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}

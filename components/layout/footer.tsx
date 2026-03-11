@@ -1,31 +1,33 @@
 "use client"
 
 import Link from "next/link"
-import { OptimizedImage } from "@/components/ui/optimized-image"
-import { memo, useState, useEffect } from "react"
+import { memo } from "react"
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 
 const footerLinks = [
   {
-    title: "Discover",
+    title: "Leagues",
     links: [
-      { name: "Scores", href: "/scores" },
-      { name: "Leagues", href: "/leagues" },
-      { name: "Teams", href: "/teams" },
-      { name: "Players", href: "/players" },
+      { name: "Premier League", href: "/watch/premier-league" },
+      { name: "La Liga", href: "/watch/la-liga" },
+      { name: "Bundesliga", href: "/watch/bundesliga" },
+      { name: "Serie A", href: "/watch/serie-a" },
+      { name: "Ligue 1", href: "/watch/ligue-1" },
     ],
   },
   {
-    title: "Content",
+    title: "Setup Guides",
     links: [
-      { name: "Events", href: "/events" },
-      { name: "News", href: "/news" },
-      { name: "UFC", href: "/ufc" },
+      { name: "Firestick", href: "/setup/firestick" },
+      { name: "Smart TV", href: "/setup/smart-tv" },
+      { name: "Android", href: "/setup/android" },
+      { name: "iPhone", href: "/setup/iphone" },
     ],
   },
   {
     title: "Company",
     links: [
+      { name: "Pricing", href: "/pricing" },
       { name: "About Us", href: "/info/about-us" },
       { name: "Contact Us", href: "/info/contact-us" },
       { name: "Privacy Policy", href: "/info/privacy-policy" },
@@ -35,60 +37,46 @@ const footerLinks = [
 ]
 
 export const Footer = memo(function Footer() {
-  const [currentYear, setCurrentYear] = useState<number | null>(null)
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear())
-  }, [])
+  const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-background border-t border-border/50 pt-16 pb-8 transition-colors duration-500">
+    <footer className="bg-background border-t border-border pt-16 pb-8 transition-colors duration-500 relative z-10">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          <div className="space-y-6">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative overflow-hidden rounded-lg">
-                <OptimizedImage
-                  src="/images/logo.png"
-                  alt="Smart Live TV Logo"
-                  width={48}
-                  height={48}
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-foreground tracking-tight">Smart Live TV</span>
-                <div className="text-sm text-muted-foreground">Sports Hub</div>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 mb-12">
+          <div className="space-y-6 md:col-span-2">
+            <Link href="/" className="flex items-center space-x-2 group">
+              <span className="text-2xl font-bold tracking-tight text-text-primary">
+                Smart <span className="inline-flex items-center"><span className="w-2 h-2 rounded-full bg-live-red mr-1"></span>Live</span> TV
+              </span>
             </Link>
-            <p className="text-muted-foreground leading-relaxed">
-              Your ultimate destination for live sports scores, news, and updates. Experience the game like never before.
+            <p className="text-text-secondary leading-relaxed max-w-sm">
+              Stream all sports on any device with our premium IPTV service. No blackouts, no cable required.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Facebook className="w-5 h-5" />
+              <a href="#" className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-accent-primary hover:bg-surface border border-border transition-colors">
+                <Facebook className="w-4 h-4" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter className="w-5 h-5" />
+              <a href="#" className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-accent-primary hover:bg-surface border border-border transition-colors">
+                <Twitter className="w-4 h-4" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Instagram className="w-5 h-5" />
+              <a href="#" className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-accent-primary hover:bg-surface border border-border transition-colors">
+                <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Youtube className="w-5 h-5" />
+              <a href="#" className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-accent-primary hover:bg-surface border border-border transition-colors">
+                <Youtube className="w-4 h-4" />
               </a>
             </div>
           </div>
 
           {footerLinks.map((section) => (
             <div key={section.title}>
-              <h3 className="font-bold text-foreground mb-6 text-lg">{section.title}</h3>
+              <h3 className="font-bold text-text-primary mb-6 text-lg">{section.title}</h3>
               <ul className="space-y-3">
                 {section.links.map((link) => (
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-muted-foreground hover:text-primary transition-colors duration-200 block hover:translate-x-1 transform"
+                      className="text-sm font-medium text-text-secondary hover:text-accent-primary transition-colors duration-200 block"
                     >
                       {link.name}
                     </Link>
@@ -99,12 +87,12 @@ export const Footer = memo(function Footer() {
           ))}
         </div>
 
-        <div className="pt-8 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>&copy; {currentYear || "2024"} Smart Live TV. All rights reserved.</p>
+        <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-medium text-text-muted">
+          <p>&copy; {currentYear} SmartLiveTV. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="/info/privacy-policy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="/info/terms-of-service" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="/sitemap.xml" className="hover:text-foreground transition-colors">Sitemap</Link>
+            <Link href="/info/privacy-policy" className="hover:text-text-primary transition-colors">Privacy</Link>
+            <Link href="/info/terms-of-service" className="hover:text-text-primary transition-colors">Terms</Link>
+            <Link href="/sitemap.xml" className="hover:text-text-primary transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

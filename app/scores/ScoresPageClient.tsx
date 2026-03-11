@@ -1,84 +1,146 @@
 "use client"
 
-import { Suspense, useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
 import { ScoreFilters } from "@/components/scores/score-filters"
 import { ScoreCard } from "@/components/scores/score-card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Trophy, Clock, Calendar } from "lucide-react"
+import { Trophy, Calendar } from "lucide-react"
+import type { UnifiedFixture } from "@/lib/api/unified-sports-api"
 
-// REMOVED: LiveScoresSection - Live features are not supported
+function TodayMatchesSection() {
+  const [fixtures, setFixtures] = useState<UnifiedFixture[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-async function TodayMatchesSection() {
-  try {
-    const todayFixtures = await unifiedSportsAPI.getTodayFixtures()
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError(false)
+    fetch("/api/scores/today")
+      .then((res) => res.json())
+      .then((json) => {
+        if (!cancelled) {
+          setFixtures(Array.isArray(json.data) ? json.data : [])
+          setError(!!json.error)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFixtures([])
+          setError(true)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
+  if (loading) {
     return (
       <div className="space-y-4">
-        {todayFixtures.length === 0 ? (
-          <Card>
-            <CardContent className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No matches scheduled for today</p>
-              </div>
+        {[1, 2, 3].map((i) => (
+          <Card key={i}>
+            <CardContent className="p-4">
+              <Skeleton className="h-16 w-full" />
             </CardContent>
           </Card>
-        ) : (
-          todayFixtures.map((fixture) => <ScoreCard key={fixture.id} fixture={fixture} />)
-        )}
+        ))}
       </div>
     )
-  } catch (error) {
-    console.error("Error loading today's matches:", error)
+  }
+  if (error || fixtures.length === 0) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center">
             <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Failed to load today's matches</p>
+            <p className="text-muted-foreground">
+              {error ? "Failed to load today's matches" : "No matches scheduled for today"}
+            </p>
           </div>
         </CardContent>
       </Card>
     )
   }
+  return (
+    <div className="space-y-4">
+      {fixtures.map((fixture) => (
+        <ScoreCard key={fixture.id} fixture={fixture} />
+      ))}
+    </div>
+  )
 }
 
-async function RecentResultsSection() {
-  try {
-    const recentResults = await unifiedSportsAPI.getRecentResults()
+function RecentResultsSection() {
+  const [fixtures, setFixtures] = useState<UnifiedFixture[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError(false)
+    fetch("/api/scores/recent")
+      .then((res) => res.json())
+      .then((json) => {
+        if (!cancelled) {
+          setFixtures(Array.isArray(json.data) ? json.data : [])
+          setError(!!json.error)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFixtures([])
+          setError(true)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (loading) {
     return (
       <div className="space-y-4">
-        {recentResults.length === 0 ? (
-          <Card>
-            <CardContent className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No recent results available</p>
-              </div>
+        {[1, 2, 3].map((i) => (
+          <Card key={i}>
+            <CardContent className="p-4">
+              <Skeleton className="h-16 w-full" />
             </CardContent>
           </Card>
-        ) : (
-          recentResults.map((fixture) => <ScoreCard key={fixture.id} fixture={fixture} />)
-        )}
+        ))}
       </div>
     )
-  } catch (error) {
-    console.error("Error loading recent results:", error)
+  }
+  if (error || fixtures.length === 0) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center">
             <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Failed to load recent results</p>
+            <p className="text-muted-foreground">
+              {error ? "Failed to load recent results" : "No recent results available"}
+            </p>
           </div>
         </CardContent>
       </Card>
     )
   }
+  return (
+    <div className="space-y-4">
+      {fixtures.map((fixture) => (
+        <ScoreCard key={fixture.id} fixture={fixture} />
+      ))}
+    </div>
+  )
 }
 
 function LoadingSkeleton() {
@@ -128,7 +190,7 @@ export default function ScoresPageClient() {
   }, [])
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 pt-20" style={{ paddingTop: '80px' }}>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">Scores & Results</h1>
@@ -154,15 +216,11 @@ export default function ScoresPageClient() {
         </TabsList>
 
         <TabsContent value="today">
-          <Suspense fallback={<LoadingSkeleton />}>
-            <TodayMatchesSection />
-          </Suspense>
+          <TodayMatchesSection />
         </TabsContent>
 
         <TabsContent value="results">
-          <Suspense fallback={<LoadingSkeleton />}>
-            <RecentResultsSection />
-          </Suspense>
+          <RecentResultsSection />
         </TabsContent>
       </Tabs>
     </div>

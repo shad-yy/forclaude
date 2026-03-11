@@ -1,7 +1,8 @@
 // Comprehensive API monitoring and health dashboard
 import { testConnection as testTheSportsDbConnection, getMetrics as getTheSportsDbMetrics } from "./the-sports-db"
-import { testNewsApiConnection, getNewsApiMetrics, getNewsApiHealth } from "./news"
-import { testUfcApiConnection, getUfcApiMetrics, getUfcApiHealth } from "./ufc"
+// Removed testNewsApiConnection, getNewsApiMetrics, getNewsApiHealth from "./news"
+import { getApiBaseUrl } from "@/lib/utils/url"
+// UFC is checked via HTTP fetch to /api/ufc/events to avoid pulling cheerio/ufc-scraper into the bundle
 // REMOVED: Claude API - All AI features removed per requirements
 
 function getTheSportsDbHealth(status: any): "healthy" | "degraded" | "down" {
@@ -139,46 +140,41 @@ class ApiMonitor {
   }
 
   private async checkNewsApi(): Promise<ApiStatus> {
-    const startTime = Date.now()
-
-    try {
-      const result = await testNewsApiConnection()
-      const responseTime = Date.now() - startTime
-
-      return {
-        name: "NewsData.io",
-        endpoint: "https://newsdata.io/api/1",
-        status: result.success ? "healthy" : "down",
-        responseTime,
-        lastChecked: new Date().toISOString(),
-        errorMessage: result.success ? undefined : result.message,
-      }
-    } catch (error) {
-      return {
-        name: "NewsData.io",
-        endpoint: "https://newsdata.io/api/1",
-        status: "down",
-        responseTime: Date.now() - startTime,
-        lastChecked: new Date().toISOString(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
-      }
+    return {
+      name: "NewsData.io",
+      endpoint: "https://newsdata.io/api/1",
+      status: "unknown",
+      responseTime: 0,
+      lastChecked: new Date().toISOString(),
+      errorMessage: "Health check removed in simplified API",
     }
   }
 
   private async checkUfcApi(): Promise<ApiStatus> {
     const startTime = Date.now()
+    const baseUrl = getApiBaseUrl()
 
     try {
-      const result = await testUfcApiConnection()
+      const res = await fetch(`${baseUrl}/api/ufc/events`, { cache: "no-store" })
       const responseTime = Date.now() - startTime
+      const ok = res.ok
+      let errorMessage: string | undefined
+      if (!ok) {
+        try {
+          const data = await res.json().catch(() => ({}))
+          errorMessage = data.error || res.statusText
+        } catch {
+          errorMessage = res.statusText
+        }
+      }
 
       return {
         name: "UFC",
         endpoint: "https://www.ufc.com",
-        status: result.success ? "healthy" : "down",
+        status: ok ? "healthy" : "down",
         responseTime,
         lastChecked: new Date().toISOString(),
-        errorMessage: result.success ? undefined : result.message,
+        errorMessage,
       }
     } catch (error) {
       return {
@@ -201,8 +197,8 @@ class ApiMonitor {
   getApiMetrics() {
     return {
       theSportsDb: getTheSportsDbMetrics(),
-      news: getNewsApiMetrics(),
-      ufc: getUfcApiMetrics(),
+      news: { requestCount: 0, errorCount: 0, averageResponseTime: 0, uptime: 0 },
+      ufc: { requestCount: 0, errorCount: 0, averageResponseTime: 0, uptime: 0 },
     }
   }
 

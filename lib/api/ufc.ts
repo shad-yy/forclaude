@@ -1,5 +1,4 @@
 import type { UFCEvent, UFCFighter } from "@/lib/types"
-import { ufcScraper } from "./ufc-scraper"
 
 // Current realistic UFC data (updated as of 2024)
 const mockUpcomingEvents: UFCEvent[] = [
@@ -375,17 +374,18 @@ export async function getUpcomingEvents(): Promise<UFCEvent[]> {
     const cached = getCachedData<UFCEvent[]>(cacheKey)
     if (cached) return cached
 
-    // Use scraper to get real data from ufc.com
+    // Use scraper to get real data from ufc.com (dynamic import to avoid cheerio in client bundle)
+    const { ufcScraper } = await import("./ufc-scraper")
     const events = await ufcScraper.getUpcomingEvents()
-    
+
     // Filter for upcoming events only
     const upcoming = events.filter(e => e.status === "Upcoming")
-    
+
     if (upcoming.length > 0) {
       setCachedData(cacheKey, upcoming)
       return upcoming
     }
-    
+
     // Fallback to mock data if scraper fails
     console.warn("[UFC API] Scraper returned no events, using fallback data")
     setCachedData(cacheKey, mockUpcomingEvents)
@@ -403,17 +403,23 @@ export async function getPastEvents(): Promise<UFCEvent[]> {
     const cached = getCachedData<UFCEvent[]>(cacheKey)
     if (cached) return cached
 
-    // Use scraper to get real data from ufc.com
+    // Use scraper to get real data from ufc.com (dynamic import to avoid cheerio in client bundle)
+    const { ufcScraper } = await import("./ufc-scraper")
     const events = await ufcScraper.getUpcomingEvents()
-    
+
     // Filter for past events only
-    const past = events.filter(e => e.status === "Past")
-    
+    const past = events.filter(e => e.status === "Past").map(e => {
+      if (e.image && (e.image.includes("Arsenal") || e.image.includes("133610"))) {
+        return { ...e, image: "https://www.thesportsdb.com/images/media/event/poster/ufc-generic.jpg" };
+      }
+      return e;
+    });
+
     if (past.length > 0) {
       setCachedData(cacheKey, past)
       return past
     }
-    
+
     // Fallback to mock data if scraper fails
     console.warn("[UFC API] Scraper returned no past events, using fallback data")
     setCachedData(cacheKey, mockPastEvents)
@@ -463,8 +469,9 @@ export async function getFighter(id: string): Promise<UFCFighter> {
     const cached = getCachedData<UFCFighter>(cacheKey)
     if (cached) return cached
 
-    // Try scraper first
+    // Try scraper first (dynamic import to avoid cheerio in client bundle)
     try {
+      const { ufcScraper } = await import("./ufc-scraper")
       const fighter = await ufcScraper.getFighterDetails(id)
       if (fighter) {
         setCachedData(cacheKey, fighter)
@@ -499,8 +506,9 @@ export async function getEvent(id: string): Promise<UFCEvent> {
     const cached = getCachedData<UFCEvent>(cacheKey)
     if (cached) return cached
 
-    // Try scraper first - get event details
+    // Try scraper first - get event details (dynamic import to avoid cheerio in client bundle)
     try {
+      const { ufcScraper } = await import("./ufc-scraper")
       const allEvents = await ufcScraper.getUpcomingEvents()
       const event = allEvents.find((event) => event.id === id)
       if (event) {
@@ -536,14 +544,15 @@ export async function getFighters(): Promise<UFCFighter[]> {
     const cached = getCachedData<UFCFighter[]>(cacheKey)
     if (cached) return cached
 
-    // Use scraper to get real data from ufc.com
+    // Use scraper to get real data from ufc.com (dynamic import to avoid cheerio in client bundle)
+    const { ufcScraper } = await import("./ufc-scraper")
     const fighters = await ufcScraper.getFighters()
-    
+
     if (fighters.length > 0) {
       setCachedData(cacheKey, fighters)
       return fighters
     }
-    
+
     // Fallback to mock data if scraper fails
     console.warn("[UFC API] Scraper returned no fighters, using fallback data")
     const allFighters = [...mockRankings, ...mockContenders]
@@ -564,7 +573,7 @@ export async function searchFighters(query: string): Promise<UFCFighter[]> {
       (fighter) =>
         fighter.name.toLowerCase().includes(query.toLowerCase()) ||
         fighter.nickname?.toLowerCase().includes(query.toLowerCase()) ||
-        fighter.weightClass.toLowerCase().includes(query.toLowerCase()),
+        fighter.weightClass?.toLowerCase().includes(query.toLowerCase()),
     )
     return filtered.slice(0, 10) // Limit results
   } catch (error) {
@@ -613,8 +622,9 @@ export async function getUfcApiHealth() {
 }
 
 // Clear cache function for admin use
-export function clearUfcCache(): void {
+export async function clearUfcCache(): Promise<void> {
   cache.clear()
+  const { ufcScraper } = await import("./ufc-scraper")
   ufcScraper.clearCache()
 }
 

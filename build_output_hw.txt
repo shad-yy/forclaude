@@ -1,0 +1,110 @@
+
+> my-v0-project@0.1.0 build
+> node -r ./polyfill-self.cjs node_modules/next/dist/bin/next build
+
+   ▲ Next.js 14.1.0
+   - Environments: .env.local
+   - Experiments (use at your own risk):
+     · instrumentationHook
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/55) ...
+   Generating static pages (13/55) 
+   Generating static pages (27/55) 
+   Generating static pages (41/55) 
+ ✓ Generating static pages (55/55) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    3.2 kB          101 kB
+├ ○ /_not-found                          0 B                0 B
+├ ○ /admin/api-health                    5.73 kB         100 kB
+├ ○ /admin/api-management                4.96 kB         108 kB
+├ λ /api/admin/health                    0 B                0 B
+├ λ /api/admin/health/report             0 B                0 B
+├ λ /api/admin/metrics                   0 B                0 B
+├ λ /api/auth/admin                      0 B                0 B
+├ λ /api/auth/admin/extend               0 B                0 B
+├ λ /api/auth/admin/status               0 B                0 B
+├ λ /api/dev/login                       0 B                0 B
+├ λ /api/dev/logs                        0 B                0 B
+├ λ /api/dev/news                        0 B                0 B
+├ λ /api/events/[id]                     0 B                0 B
+├ λ /api/events/[id]/lineups             0 B                0 B
+├ λ /api/events/[id]/stats               0 B                0 B
+├ λ /api/events/[id]/timeline            0 B                0 B
+├ λ /api/fixtures/today                  0 B                0 B
+├ ○ /api/leagues                         0 B                0 B
+├ λ /api/leagues/[id]/events             0 B                0 B
+├ λ /api/leagues/[id]/standings          0 B                0 B
+├ ○ /api/news                            0 B                0 B
+├ λ /api/players/[id]                    0 B                0 B
+├ ○ /api/scores/recent                   0 B                0 B
+├ ○ /api/scores/today                    0 B                0 B
+├ ○ /api/search                          0 B                0 B
+├ ○ /api/search/leagues                  0 B                0 B
+├ λ /api/search/news                     0 B                0 B
+├ ○ /api/search/players                  0 B                0 B
+├ ○ /api/search/teams                    0 B                0 B
+├ λ /api/standings/[leagueId]            0 B                0 B
+├ λ /api/subscribe                       0 B                0 B
+├ λ /api/teams/[id]                      0 B                0 B
+├ λ /api/teams/[id]/events               0 B                0 B
+├ λ /api/teams/[id]/players              0 B                0 B
+├ λ /api/test-endpoint                   0 B                0 B
+├ λ /api/thesportsdb/[...path]           0 B                0 B
+├ ○ /api/ufc/events                      0 B                0 B
+├ λ /api/ufc/events/[id]                 0 B                0 B
+├ ○ /api/ufc/fighters                    0 B                0 B
+├ λ /api/ufc/fighters/[id]               0 B                0 B
+├ ○ /api/ufc/past-events                 0 B                0 B
+├ ○ /api/ufc/rankings                    0 B                0 B
+├ ○ /dev/dashboard                       8.32 kB         128 kB
+├ ○ /dev/login                           4.37 kB        95.3 kB
+├ λ /events                              41.6 kB         150 kB
+├ λ /events/[id]                         4.01 kB         105 kB
+├ ● /info/[slug]                         182 B          84.3 kB
+├   ├ /info/about-us
+├   ├ /info/contact-us
+├   ├ /info/privacy-policy
+├   └ /info/terms-of-service
+├ ○ /info/contact                        181 B          84.3 kB
+├ ○ /info/faq                            181 B          84.3 kB
+├ ● /league/[slug]                       325 B          84.4 kB
+├   ├ /league/premier-league
+├   ├ /league/la-liga
+├   ├ /league/bundesliga
+├   └ [+2 more paths]
+├ λ /leagues                             7.48 kB         130 kB
+├ λ /leagues/[id]                        1.48 kB         110 kB
+├ ○ /news                                181 B          84.3 kB
+├ λ /players                             2.58 kB         105 kB
+├ λ /players/[id]                        3.29 kB        99.3 kB
+├ ○ /robots.txt                          0 B                0 B
+├ ○ /scores                              6.21 kB         114 kB
+├ λ /search                              1.48 kB         110 kB
+├ ○ /sitemap.xml                         0 B                0 B
+├ ○ /subscribe                           5.46 kB         103 kB
+├ λ /teams                               3.32 kB         106 kB
+├ λ /teams/[id]                          4.75 kB         107 kB
+├ ○ /ufc                                 1.48 kB         110 kB
+├ λ /ufc/events/[id]                     1.12 kB         104 kB
+└ λ /ufc/fighters/[id]                   1.12 kB         104 kB
++ First Load JS shared by all            84.1 kB
+  ├ chunks/8069-e4ecaa58dbfe1220.js      28.8 kB
+  ├ chunks/fd9d1056-97523ef288927d5d.js  53.3 kB
+  └ other shared chunks (total)          1.97 kB
+
+
+ƒ Middleware                             51.1 kB
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses getStaticProps)
+λ  (Dynamic)  server-rendered on demand using Node.js
+

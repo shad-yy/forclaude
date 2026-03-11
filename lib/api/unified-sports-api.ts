@@ -57,6 +57,7 @@ export interface UnifiedFixture {
   league: string
   homeLogo?: string
   awayLogo?: string
+  isLive: boolean
 }
 
 export interface UnifiedStanding {
@@ -159,23 +160,25 @@ class UnifiedSportsAPI {
     const eventDate = event.dateEvent || event.strDate || ""
     const eventTime = event.strTime || event.strTimeLocal || ""
 
-    // Get team logos from team data if available
-    const homeLogo = homeTeamData?.strTeamBadge || homeTeamData?.strTeamLogo || undefined
-    const awayLogo = awayTeamData?.strTeamBadge || awayTeamData?.strTeamLogo || undefined
+    // Get team logos from team data if available via API, or natively from event
+    const homeLogo = event.strHomeTeamBadge ? `${event.strHomeTeamBadge}/tiny` : homeTeamData?.strTeamBadge ? `${homeTeamData?.strTeamBadge}/tiny` : homeTeamData?.strTeamLogo ? `${homeTeamData?.strTeamLogo}/tiny` : undefined
+    const awayLogo = event.strAwayTeamBadge ? `${event.strAwayTeamBadge}/tiny` : awayTeamData?.strTeamBadge ? `${awayTeamData?.strTeamBadge}/tiny` : awayTeamData?.strTeamLogo ? `${awayTeamData?.strTeamLogo}/tiny` : undefined
 
+    const status = event.strStatus || event.strResult || "Scheduled"
     return {
       id: event.idEvent,
       homeTeam: event.strHomeTeam,
       awayTeam: event.strAwayTeam,
       homeScore,
       awayScore,
-      status: event.strStatus || event.strResult || "Scheduled",
+      status,
       date: eventDate,
       time: eventTime,
       venue: event.strVenue,
       league: event.strLeague,
       homeLogo,
       awayLogo,
+      isLive: status === "Live" || status === "HT" || status === "1H" || status === "2H",
     }
   }
 
@@ -187,19 +190,21 @@ class UnifiedSportsAPI {
     const eventDate = event.dateEvent || event.strDate || ""
     const eventTime = event.strTime || event.strTimeLocal || ""
 
+    const status = event.strStatus || event.strResult || "Scheduled"
     return {
       id: event.idEvent,
       homeTeam: event.strHomeTeam,
       awayTeam: event.strAwayTeam,
       homeScore,
       awayScore,
-      status: event.strStatus || event.strResult || "Scheduled",
+      status,
       date: eventDate,
       time: eventTime,
       venue: event.strVenue,
       league: event.strLeague,
-      homeLogo: undefined, // Will be populated when team data is available
-      awayLogo: undefined,
+      homeLogo: event.strHomeTeamBadge ? `${event.strHomeTeamBadge}/tiny` : undefined, // Native image directly on event
+      awayLogo: event.strAwayTeamBadge ? `${event.strAwayTeamBadge}/tiny` : undefined,
+      isLive: status === "Live" || status === "HT" || status === "1H" || status === "2H",
     }
   }
 
@@ -258,7 +263,7 @@ class UnifiedSportsAPI {
         position: rank,
         team: teamName,
         teamId: entry.idTeam,
-        teamLogo: entry.strBadge || '',
+        teamLogo: entry.strTeamBadge ? `${entry.strTeamBadge}/tiny` : entry.strBadge ? `${entry.strBadge}/tiny` : '',
         played,
         won,
         drawn,
@@ -369,13 +374,19 @@ class UnifiedSportsAPI {
 
   async getLeagues(country?: string, sport?: string): Promise<UnifiedLeague[]> {
     try {
-      let leagues
-      if (country || sport) {
-        leagues = await theSportsDB.searchAllLeagues({ country, sport })
-      } else {
-        leagues = await theSportsDB.getAllLeagues()
-      }
-      return leagues.map((league) => this.transformLeague(league))
+      const FEATURED_LEAGUES = [
+        { id: '4328', name: 'English Premier League', country: 'England', sport: 'Soccer' },
+        { id: '4335', name: 'Spanish La Liga', country: 'Spain', sport: 'Soccer' },
+        { id: '4331', name: 'German Bundesliga', country: 'Germany', sport: 'Soccer' },
+        { id: '4332', name: 'Italian Serie A', country: 'Italy', sport: 'Soccer' },
+        { id: '4334', name: 'French Ligue 1', country: 'France', sport: 'Soccer' },
+      ];
+
+      const leaguePromises = FEATURED_LEAGUES.map(l => theSportsDB.lookupLeague(l.id));
+      const fetchedLeagues = await Promise.all(leaguePromises);
+
+      const validLeagues = fetchedLeagues.filter((l): l is NonNullable<typeof l> => l !== null);
+      return validLeagues.map((league) => this.transformLeague(league));
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching leagues:", error)
       if (error instanceof RateLimitError) {

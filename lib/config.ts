@@ -7,14 +7,12 @@
 // API Base URLs - using NEXT_PUBLIC_* for client-side access
 export const API_CONFIG = {
   thesportsdb: {
-    baseUrl:
-      process.env.NEXT_PUBLIC_THESPORTSDB_API_BASE_URL ||
-      `https://www.thesportsdb.com/api/v1/json/${process.env.THESPORTSDB_API_KEY || "123"}/`,
-    apiKey: process.env.THESPORTSDB_API_KEY || "123", // Server-side only, fallback for client
+    baseUrl: process.env.NEXT_PUBLIC_THESPORTSDB_API_BASE_URL || "/api",
+    apiKey: process.env.THESPORTSDB_API_KEY || "123", // Server-side only
   },
   newsdata: {
     baseUrl: process.env.NEXT_PUBLIC_NEWSDATA_API_BASE_URL || "https://newsdata.io/api/1",
-    apiKey: process.env.NEWS_API_KEY || process.env.NEXT_PUBLIC_NEWS_API_KEY || "",
+    apiKey: process.env.NEWS_API_KEY || "", // Server-side only
   },
   ufc: {
     baseUrl: process.env.NEXT_PUBLIC_UFC_API_BASE_URL || "https://www.ufc.com",
@@ -22,7 +20,14 @@ export const API_CONFIG = {
 } as const
 
 // Allowed domains for API endpoint testing (SSRF protection)
-export const ALLOWED_DOMAINS = ["thesportsdb.com", "newsdata.io", "ufc.com"] as const
+export const ALLOWED_DOMAINS = [
+  "thesportsdb.com",
+  "www.thesportsdb.com",
+  "r2.thesportsdb.com",
+  "newsdata.io",
+  "ufc.com",
+  "www.ufc.com",
+] as const
 
 // Rate limiting configuration
 export const RATE_LIMIT_CONFIG = {
