@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { jwtVerify } from "jose"
-import { getJwtSecret, hasJwtSecret } from "@/lib/env"
+import { ENV } from "@/lib/config/env"
 
 export async function GET(request: NextRequest) {
   try {
     // Check if JWT_SECRET is available
-    if (!hasJwtSecret()) {
+    if (!(!!ENV.JWT_SECRET)) {
       return NextResponse.json(
         { 
           isAuthenticated: false, 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ isAuthenticated: false })
     }
 
-    const jwtSecret = getJwtSecret()
+    const jwtSecret = ENV.JWT_SECRET
     const { payload } = await jwtVerify(adminToken, new TextEncoder().encode(jwtSecret))
     const isAdmin = Boolean((payload as any).isAdmin)
     const loginTime = (payload as any).loginTime as number | undefined

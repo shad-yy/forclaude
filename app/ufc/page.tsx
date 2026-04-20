@@ -38,7 +38,7 @@ async function UFCEvents() {
                 <Card className="bg-gray-900/50 border-gray-800 hover:border-red-500/50 transition-all duration-300 cursor-pointer group">
                   <div className="relative overflow-hidden">
                     <OptimizedImage
-                      src={event.image || "/ufc-event-generic.png"}
+                      src={event.image || "/placeholder-logo.png"}
                       alt={event.name}
                       width={400}
                       height={200}
@@ -97,7 +97,7 @@ async function UFCEvents() {
                 <Card className="bg-gray-900/50 border-gray-800 hover:border-yellow-500/50 transition-all duration-300 cursor-pointer group">
                   <div className="relative overflow-hidden">
                     <OptimizedImage
-                      src={event.image || "/ufc-event-generic.png"}
+                      src={event.image || "/placeholder-logo.png"}
                       alt={event.name}
                       width={400}
                       height={200}
@@ -167,7 +167,7 @@ async function UFCRankings() {
                   <div className="flex items-start gap-4">
                     <div className="relative">
                       <OptimizedImage
-                        src={fighter.photo || "/generic-fighter.png"}
+                        src={fighter.photo || "/placeholder-logo.png"}
                         alt={fighter.name}
                         width={80}
                         height={80}
@@ -232,7 +232,7 @@ async function UFCRankings() {
 
 export default function UFCPage() {
   return (
-    <div className="container mx-auto px-4 py-8 pt-20 space-y-8 bg-gray-950 min-h-screen" style={{ paddingTop: '80px' }}>
+    <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-24 md:pt-32 pb-16 md:pb-20 space-y-8 bg-gray-950 min-h-screen">
       {/* Header */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight">

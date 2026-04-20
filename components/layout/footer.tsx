@@ -28,10 +28,10 @@ const footerLinks = [
     title: "Company",
     links: [
       { name: "Pricing", href: "/pricing" },
-      { name: "About Us", href: "/info/about-us" },
-      { name: "Contact Us", href: "/info/contact-us" },
-      { name: "Privacy Policy", href: "/info/privacy-policy" },
-      { name: "Terms of Service", href: "/info/terms-of-service" },
+      { name: 'About Us', href: '/about' },
+      { name: 'Contact Us', href: '/contact' },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Terms of Service", href: "/terms" },
     ],
   },
 ]
@@ -90,8 +90,8 @@ export const Footer = memo(function Footer() {
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-medium text-text-muted">
           <p>&copy; {currentYear} SmartLiveTV. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="/info/privacy-policy" className="hover:text-text-primary transition-colors">Privacy</Link>
-            <Link href="/info/terms-of-service" className="hover:text-text-primary transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-text-primary transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-text-primary transition-colors">Terms</Link>
             <Link href="/sitemap.xml" className="hover:text-text-primary transition-colors">Sitemap</Link>
           </div>
         </div>

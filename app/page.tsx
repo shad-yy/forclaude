@@ -11,12 +11,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 export const metadata: Metadata = {
-  title: 'Smart Live TV — Watch Every Match Live',
-  description: 'Stream Premier League, La Liga, Champions League, UFC & more on any device. Get your 24-hour free trial today.',
-  openGraph: {
-    title: 'Smart Live TV — Watch Every Match Live',
-    description: '15,000+ live channels. No blackouts. Cancel anytime.',
-    type: 'website',
+  title: 'Smart Live TV — Watch 15,000+ Channels | Free 24H Trial',
+  description: 'Stream Premier League, La Liga, Champions League, UFC & more on any device. Get your free 24-hour trial today.',
+  alternates: {
+    canonical: '/',
   },
 }
 
@@ -27,6 +25,21 @@ function NewsSkeleton() {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-950 overflow-x-hidden text-gray-100">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            url: "https://smartlivetv.com/",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://smartlivetv.com/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          })
+        }}
+      />
       <HeroSection />
 
       <ScrollReveal>
@@ -51,9 +64,9 @@ export default function HomePage() {
       </ScrollReveal>
 
       <ScrollReveal>
-        <section className="py-20 md:py-32 bg-background border-t border-border relative">
+        <section className="py-20 bg-background border-t border-border relative">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
-          <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
             <Suspense fallback={<NewsSkeleton />}>
               <NewsSection maxArticles={3} />
             </Suspense>

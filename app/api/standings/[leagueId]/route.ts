@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server"
 import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
+import { withCache } from "@/lib/cache/persistentCache"
 
 const VALID_LEAGUE_IDS = ["4328", "4335", "4331", "4332", "4334"]
+
+// Cache standings for 30 minutes — results don't change that often
+const STANDINGS_TTL = 30 * 60
 
 export async function GET(request: Request, { params }: { params: { leagueId: string } }) {
     try {
@@ -11,7 +15,12 @@ export async function GET(request: Request, { params }: { params: { leagueId: st
             return NextResponse.json({ error: "Invalid league ID" }, { status: 400 })
         }
 
-        const allStandings = await unifiedSportsAPI.getStandings(leagueId)
+        const cacheKey = `standings_${leagueId}`
+        const allStandings = await withCache(
+            cacheKey,
+            STANDINGS_TTL,
+            () => unifiedSportsAPI.getStandings(leagueId)
+        )
 
         // Sort and limit based on our UI requirements
         const sortedStandings = allStandings

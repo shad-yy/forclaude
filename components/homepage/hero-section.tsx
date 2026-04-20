@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Check } from "lucide-react"
+import { LEAGUES } from "@/lib/constants/leagues"
+import { LeagueBadge } from "@/components/league/league-badge"
 
 export function HeroSection() {
   return (
@@ -16,7 +18,7 @@ export function HeroSection() {
         <div className="absolute top-[40%] right-[30%] w-24 h-24 bg-accent-primary/10 rounded-full blur-[50px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
       </div>
 
-      <div className="container relative z-10 px-4 md:px-6 mx-auto">
+      <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
         <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-8">
 
           {/* LEFT COLUMN (60%) */}
@@ -71,28 +73,38 @@ export function HeroSection() {
           {/* RIGHT COLUMN (40%) */}
           <div className="w-full lg:w-[40%] flex flex-col items-center lg:items-end">
             <div className="w-full max-w-sm bg-surface-elevated border border-border rounded-xl p-6 shadow-2xl -rotate-2 transform hover:rotate-0 transition-transform duration-500">
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-sm font-semibold text-text-secondary uppercase tracking-widest">Live Right Now</span>
+              <div className="flex items-center justify-between mb-5">
+                <span className="text-sm font-semibold text-text-secondary uppercase tracking-widest">Platform Highlights</span>
                 <span className="flex h-3 w-3 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-live-red opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-live-red"></span>
                 </span>
               </div>
 
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-6xl font-black text-text-primary tracking-tighter">847</span>
-                <span className="text-text-muted font-medium">channels live</span>
-              </div>
-
-              <div className="h-2 w-full bg-surface rounded-full overflow-hidden mb-6">
-                <div className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary w-[85%] rounded-full animate-pulse-slow"></div>
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <div className="bg-surface rounded-lg p-3 border border-border/50">
+                  <div className="text-2xl font-black text-accent-primary leading-none">15K+</div>
+                  <div className="text-[11px] text-text-muted font-medium mt-0.5">Live Channels</div>
+                </div>
+                <div className="bg-surface rounded-lg p-3 border border-border/50">
+                  <div className="text-2xl font-black text-accent-primary leading-none">4K</div>
+                  <div className="text-[11px] text-text-muted font-medium mt-0.5">Stream Quality</div>
+                </div>
+                <div className="bg-surface rounded-lg p-3 border border-border/50">
+                  <div className="text-2xl font-black text-accent-primary leading-none">50K+</div>
+                  <div className="text-[11px] text-text-muted font-medium mt-0.5">Happy Fans</div>
+                </div>
+                <div className="bg-surface rounded-lg p-3 border border-border/50">
+                  <div className="text-2xl font-black text-text-primary leading-none">Free</div>
+                  <div className="text-[11px] text-text-muted font-medium mt-0.5">24hr Trial</div>
+                </div>
               </div>
 
               <div className="flex items-center gap-4 border-t border-border pt-4">
                 <div className="flex -space-x-2">
                   <div className="w-10 h-10 rounded-full bg-surface border-2 border-surface-elevated flex items-center justify-center p-1 relative">
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-live-red rounded-full"></span>
-                    <img src="https://www.thesportsdb.com/images/media/league/badge/i6o0q01683355320.png/tiny" alt="PL" className="w-full h-full object-contain" />
+                    <LeagueBadge src={LEAGUES["premier-league"].badgeUrl} alt="Premier League" size={40} className="w-full h-full object-contain rounded-sm" />
                   </div>
                   <div className="w-10 h-10 rounded-full bg-surface border-2 border-surface-elevated flex items-center justify-center p-1 relative">
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-live-red rounded-full"></span>
@@ -100,7 +112,7 @@ export function HeroSection() {
                   </div>
                   <div className="w-10 h-10 rounded-full bg-surface border-2 border-surface-elevated flex items-center justify-center p-1 relative z-10">
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-live-red rounded-full"></span>
-                    <img src="https://www.thesportsdb.com/images/media/league/badge/0j55yv1534764799.png/tiny" alt="Champions League" className="w-full h-full object-contain" />
+                    <LeagueBadge src={LEAGUES["champions-league"].badgeUrl} alt="Champions League" size={40} className="w-full h-full object-contain rounded-sm" />
                   </div>
                 </div>
                 <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Top Events Ongoing</span>

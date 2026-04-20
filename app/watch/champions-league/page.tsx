@@ -1,0 +1,399 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { SchemaMarkup } from '@/components/SchemaMarkup'
+import { generateFAQSchema } from '@/lib/schema'
+import { LeagueBadge } from '@/components/league/league-badge'
+
+export const metadata: Metadata = {
+  title: 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
+  description:
+    'Stream every UEFA Champions League match in 4K. No BT Sport needed. Watch from anywhere with a free 24-hour trial.',
+  alternates: {
+    canonical: 'https://smartlivetv.com/watch/champions-league',
+  },
+  openGraph: {
+    title: 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
+    description: 'Stream every UEFA Champions League match in 4K. No BT Sport needed. Watch from anywhere with a free 24-hour trial.',
+    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
+    images: ['/og-default.png'],
+  },
+}
+
+const fetchWithTimeout = async (url: string, ms = 5000) => {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), ms)
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      next: { revalidate: 3600 },
+    })
+    clearTimeout(timeout)
+    return res.ok ? res.json() : null
+  } catch {
+    clearTimeout(timeout)
+    return null
+  }
+}
+
+function safeBadge(url: string | null | undefined, size: 'tiny' | 'small' | 'medium' = 'small'): string {
+  if (!url) return '/placeholder-logo.png'
+  if (/\/(tiny|small|medium|large|preview)$/.test(url)) return url
+  return `${url}/${size}`
+}
+
+function safeParseSportsDBDate(date: string, time?: string): Date | null {
+  if (!date) return null
+  const parts = date.split('-').map(Number)
+  if (parts.length !== 3 || parts.some(isNaN)) return null
+  const [year, month, day] = parts
+  if (time) {
+    const t = time.split('+')[0].split('-')[0]
+    const [h, m] = t.split(':').map(Number)
+    return new Date(Date.UTC(year, month - 1, day, h || 0, m || 0))
+  }
+  return new Date(Date.UTC(year, month - 1, day))
+}
+
+
+const FormPill = ({ result }: { result: string }) => {
+  const colors: Record<string, string> = {
+    W: 'bg-green-500 text-black',
+    D: 'bg-gray-500 text-white',
+    L: 'bg-red-500 text-white',
+  }
+  return (
+    <span
+      className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${colors[result] || 'bg-gray-700 text-white'
+        }`}
+    >
+      {result}
+    </span>
+  )
+}
+
+const renderForm = (formStr?: string) => {
+  if (!formStr) return null
+  const results = formStr.replace(/[^WDL]/g, '').split('').slice(-5)
+  if (results.length === 0) return null
+  return (
+    <div className="flex items-center gap-1 justify-center">
+      {results.map((r, idx) => (
+        <FormPill key={`${r}-${idx}`} result={r} />
+      ))}
+    </div>
+  )
+}
+
+export default async function ChampionsLeaguePage() {
+  const [nextEvent, standings, pastEvents] = await Promise.allSettled([
+    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventsnextleague.php?id=4480'),
+    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/lookuptable.php?l=4480&s=2025-2026'),
+    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventspastleague.php?id=4480'),
+  ])
+
+  const nextJson = nextEvent.status === 'fulfilled' ? nextEvent.value : null
+  const tableJson = standings.status === 'fulfilled' ? standings.value : null
+  const pastJson = pastEvents.status === 'fulfilled' ? pastEvents.value : null
+
+  const nextFixture = nextJson?.events?.[0] ?? null
+  const tableRows: any[] = Array.isArray(tableJson?.table) ? tableJson.table : []
+  const recent: any[] = Array.isArray(pastJson?.events) ? pastJson.events.slice(0, 3) : []
+
+  const faqs = [
+    {
+      question: 'Where can I watch Champions League live?',
+      answer:
+        'Smart Live TV carries all UCL matches live in 4K, including qualifying rounds and the final.',
+    },
+    {
+      question: 'Is Champions League on free TV in the UK?',
+      answer:
+        'Some UCL matches air on free TV. Smart Live TV covers every match with no blackouts.',
+    },
+    {
+      question: 'How to watch UCL without BT Sport?',
+      answer: "Smart Live TV is the alternative. Get a free 24-hour trial and watch tonight's match in 4K.",
+    },
+  ]
+
+  const faqSchema = generateFAQSchema(faqs)
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://smartlivetv.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Watch Live', item: 'https://smartlivetv.com/watch' },
+      { '@type': 'ListItem', position: 3, name: 'UEFA Champions League', item: 'https://smartlivetv.com/watch/champions-league' },
+    ],
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] text-gray-100">
+      <SchemaMarkup schema={faqSchema} />
+      <SchemaMarkup schema={breadcrumbSchema} />
+
+      {/* HERO */}
+      <section
+        className="pt-32 pb-16 md:pt-40 md:pb-20 text-center px-4 border-b"
+        style={{
+          background: 'linear-gradient(135deg, #001a4e 0%, #0a0a0f 100%)',
+          borderColor: '#c8a951',
+        }}
+      >
+        <div className="container mx-auto max-w-4xl">
+          <div className="flex items-center justify-center mb-6">
+            <LeagueBadge
+              src="https://r2.thesportsdb.com/images/media/league/badge/ucl.png"
+              alt="UEFA Champions League"
+              size={64}
+              className="object-contain"
+            />
+          </div>
+          <h1 className="text-4xl md:text-6xl font-extrabold mb-4">The Greatest Club Competition on Earth</h1>
+          {nextFixture ? (
+            <p className="text-gray-300 text-sm md:text-base mb-8">
+              Next fixture:{' '}
+              <span className="text-white font-bold">
+                {nextFixture.strEvent || `${nextFixture.strHomeTeam} vs ${nextFixture.strAwayTeam}`}
+              </span>{' '}
+              —{' '}
+              <span className="text-gray-300">
+                {nextFixture.dateEvent ? safeParseSportsDBDate(nextFixture.dateEvent)?.toLocaleDateString() : 'TBA'}
+              </span>
+            </p>
+          ) : (
+            <p className="text-gray-300 text-sm md:text-base mb-8">Next fixture: TBA</p>
+          )}
+          <Link
+            href="/pricing"
+            className="inline-flex items-center justify-center px-8 py-4 rounded-lg font-extrabold text-black border transition-transform hover:-translate-y-1"
+            style={{ backgroundColor: '#c8a951', borderColor: '#c8a951' }}
+          >
+            Watch Champions League in 4K →
+          </Link>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl">
+        <div className="lg:col-span-2 space-y-16">
+          {/* STANDINGS */}
+          {tableRows.length > 0 ? (
+            <section>
+              <h2 className="text-2xl md:text-3xl font-bold mb-6">Standings</h2>
+              <div className="bg-gray-950/60 rounded-2xl border border-gray-800 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 z-10" style={{ backgroundColor: '#0f1118' }}>
+                      <tr className="text-xs font-bold uppercase border-b" style={{ borderColor: '#c8a951' }}>
+                        <th className="py-3 px-3 text-center w-10">#</th>
+                        <th className="py-3 px-3 text-left">Team</th>
+                        <th className="py-3 px-3 text-center w-10">P</th>
+                        <th className="py-3 px-3 text-center w-10">W</th>
+                        <th className="py-3 px-3 text-center w-10">D</th>
+                        <th className="py-3 px-3 text-center w-10">L</th>
+                        <th className="py-3 px-3 text-center w-10">GD</th>
+                        <th className="py-3 px-3 text-center">Form</th>
+                        <th className="py-3 px-3 text-center w-12 text-white">Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableRows.map((t: any, idx: number) => {
+                        const rank = Number(t.intRank ?? idx + 1)
+                        const played = Number(t.intPlayed ?? 0)
+                        const win = Number(t.intWin ?? 0)
+                        const draw = Number(t.intDraw ?? 0)
+                        const loss = Number(t.intLoss ?? 0)
+                        const gd = Number(t.intGoalDifference ?? 0)
+                        const pts = Number(t.intPoints ?? 0)
+                        const top8 = rank <= 8
+                        return (
+                          <tr
+                            key={`${t.idTeam || t.strTeam || idx}`}
+                            className="border-b border-gray-800/60 hover:bg-gray-900/40 transition-colors even:bg-white/[0.02]"
+                          >
+                            <td className="py-3 px-3 text-center text-gray-400 font-bold">{rank}</td>
+                            <td className="py-3 px-3">
+                              <div
+                                className={`flex items-center gap-3 pl-3 ${top8 ? 'border-l-2' : ''}`}
+                                style={top8 ? { borderColor: '#c8a951' } : undefined}
+                              >
+                                <img
+                                  src={safeBadge(t.strTeamBadge || t.strBadge)}
+                                  alt={t.strTeam}
+                                  className="w-6 h-6 object-contain"
+                                />
+                                <span className="font-bold text-white line-clamp-1">{t.strTeam}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3 text-center text-gray-400">{played}</td>
+                            <td className="py-3 px-3 text-center text-gray-400">{win}</td>
+                            <td className="py-3 px-3 text-center text-gray-400">{draw}</td>
+                            <td className="py-3 px-3 text-center text-gray-400">{loss}</td>
+                            <td className="py-3 px-3 text-center text-gray-400">{gd}</td>
+                            <td className="py-3 px-3 text-center">{renderForm(t.strForm)}</td>
+                            <td className="py-3 px-3 text-center font-extrabold text-white">{pts}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section>
+              <div className="bg-gray-950/60 rounded-2xl border border-gray-800 p-8 text-center">
+                <p className="text-gray-400 text-sm mb-2">
+                  Live group standings are available to verified league data partners.
+                </p>
+                <p className="text-white font-bold text-lg mb-4">
+                  2024–25 UEFA Champions League
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-6">
+                  {[
+                    { round: 'Quarter-Finals', date: 'Apr 2025' },
+                    { round: 'Semi-Finals', date: 'Apr/May 2025' },
+                    { round: 'Final', date: '31 May 2025 · Munich' },
+                    { round: 'Champions', date: 'Real Madrid' },
+                  ].map(item => (
+                    <div key={item.round} className="bg-gray-900 rounded-xl p-3 border border-gray-700">
+                      <div className="text-gray-400 text-xs mb-1">{item.round}</div>
+                      <div className="text-white font-bold text-sm">{item.date}</div>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/pricing" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-black text-sm"
+                  style={{ backgroundColor: '#c8a951' }}>
+                  Watch Every Match Live →
+                </Link>
+              </div>
+            </section>
+          )}
+
+          {/* RECENT RESULTS */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">Recent Results</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {recent.length > 0 ? (
+                recent.map((e: any, i: number) => (
+                  <div
+                    key={`${e.idEvent || i}`}
+                    className="bg-gray-950/60 rounded-2xl border border-gray-800 overflow-hidden"
+                  >
+                    <div className="h-1" style={{ backgroundColor: '#c8a951' }} />
+                    <div className="p-5">
+                      <div className="text-sm font-bold text-white mb-2 line-clamp-2">
+                        {e.strHomeTeam} vs {e.strAwayTeam}
+                      </div>
+                      <div className="text-2xl font-extrabold text-white mb-2">
+                        {e.intHomeScore ?? '-'} - {e.intAwayScore ?? '-'}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {e.dateEvent ? safeParseSportsDBDate(e.dateEvent)?.toLocaleDateString() : 'TBA'}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-500">No recent results available.</div>
+              )}
+            </div>
+          </section>
+
+          {/* UCL GREATEST MOMENTS */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">UCL Greatest Moments</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                {
+                  title: 'The Istanbul Miracle',
+                  subtitle: 'Liverpool 3-3 AC Milan, 2005 Final',
+                  body:
+                    'Down 3-0 at half time. Liverpool scored 3 in 6 minutes. Won on penalties. The greatest comeback in football history.',
+                },
+                {
+                  title: "Ronaldo's Bicycle Kick",
+                  subtitle: 'Real Madrid vs Juventus, 2018 QF',
+                  body:
+                    'Cristiano Ronaldo scored one of the greatest goals ever seen. Even Juventus fans gave him a standing ovation.',
+                },
+                {
+                  title: "Messi's Wembley Masterclass",
+                  subtitle: 'Barcelona 3-1 Manchester United, 2011 Final',
+                  body:
+                    'Messi scored twice as Barcelona put on a tactical masterclass. Widely regarded as the greatest UCL final performance ever.',
+                },
+              ].map((c) => (
+                <div key={c.title} className="bg-gray-950/60 rounded-2xl border border-gray-800 p-6">
+                  <div className="border-b pb-3 mb-3" style={{ borderColor: '#c8a951' }}>
+                    <h3 className="font-extrabold text-white">{c.title}</h3>
+                    <p className="text-xs text-gray-400 mt-1">{c.subtitle}</p>
+                  </div>
+                  <p className="text-sm text-gray-300 leading-relaxed">{c.body}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* HOW TO WATCH */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">How to Watch</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { n: 1, title: 'Start your free trial', body: 'Claim a 24-hour free trial and get instant access.' },
+                { n: 2, title: 'Set up on any device', body: <>Works on <Link href="/setup/firestick" className="text-[#00e676] hover:underline">Firestick</Link>, Smart TV, Android, iPhone and more.</> },
+                { n: 3, title: 'Watch in 4K', body: 'Stream every UCL match with no blackouts.' },
+              ].map((s) => (
+                <div key={s.n} className="bg-gray-950/60 rounded-2xl border border-gray-800 p-6">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-black mb-4" style={{ backgroundColor: '#c8a951' }}>
+                    {s.n}
+                  </div>
+                  <h3 className="font-bold text-white mb-2">{s.title}</h3>
+                  <p className="text-sm text-gray-400">{s.body}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <section>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">FAQ</h2>
+            <div className="space-y-4">
+              {faqs.map((f) => (
+                <div key={f.question} className="bg-gray-950/60 rounded-2xl border border-gray-800 p-6">
+                  <h3 className="font-bold text-white mb-2">{f.question}</h3>
+                  <p className="text-sm text-gray-400">{f.answer}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Right Column CTA */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-24 bg-gray-950/60 rounded-3xl border border-gray-800 overflow-hidden">
+            <div className="p-6 border-b" style={{ borderColor: '#c8a951' }}>
+              <h3 className="text-lg font-extrabold text-white">Start Watching Tonight</h3>
+              <p className="text-sm text-gray-400 mt-2">
+                Get access to every Champions League match with a 24-hour free trial.
+              </p>
+            </div>
+            <div className="p-6">
+              <Link
+                href="/pricing"
+                className="w-full inline-flex items-center justify-center px-6 py-4 rounded-xl font-extrabold text-black border"
+                style={{ backgroundColor: '#c8a951', borderColor: '#c8a951' }}
+              >
+                Claim Free Trial →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

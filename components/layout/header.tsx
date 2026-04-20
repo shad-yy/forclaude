@@ -2,9 +2,11 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, ChevronDown } from "lucide-react"
+import { Menu, X, ChevronDown, Heart } from "lucide-react"
 import { useState, useEffect, memo, useRef } from "react"
 import { cn } from "@/lib/utils"
+
+import { CommandPalette } from "@/components/search/command-palette"
 
 const watchLiveLinks = [
   { name: "Premier League", href: "/watch/premier-league", icon: "🏴" },
@@ -101,20 +103,27 @@ export const Header = memo(function Header() {
               </div>
 
               <Link href="/news" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">News</Link>
+              <Link href="/channels" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">Channels</Link>
+              <Link href="/blog" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">Blog</Link>
               <Link href="/ufc" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">UFC</Link>
               <Link href="/pricing" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">Pricing</Link>
             </nav>
 
             {/* RIGHT: Desktop Auth / CTA */}
-            <div className="hidden lg:flex items-center gap-6">
+            <div className="hidden lg:flex items-center gap-4">
+              <CommandPalette />
+              <Link href="/favorites" className="p-2 rounded-lg text-text-muted hover:text-red-400 transition-colors" aria-label="Favorites">
+                <Heart className="w-4 h-4" />
+              </Link>
+
               <Link href="/login" className="text-sm font-semibold text-text-muted hover:text-text-primary transition-colors">
                 Sign In
               </Link>
               <Link
-                href="/pricing"
+                href="/free-trial"
                 className="bg-accent-primary text-black font-bold text-sm px-6 py-2.5 rounded-lg hover:brightness-110 transition-all shadow-[0_0_15px_rgba(0,230,118,0.3)]"
               >
-                Watch Now →
+                Free Trial →
               </Link>
             </div>
 
@@ -156,19 +165,26 @@ export const Header = memo(function Header() {
               </div>
 
               <div className="pt-4 border-t border-border flex flex-col gap-4">
+                <Link href="/favorites" className="text-lg font-bold text-text-primary flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}><Heart className="w-4 h-4 text-red-400" /> Favorites</Link>
                 <Link href="/news" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>News</Link>
+                <Link href="/channels" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Channels</Link>
+                <Link href="/blog" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
                 <Link href="/ufc" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>UFC</Link>
                 <Link href="/pricing" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
+                <Link href="/about" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+                <Link href="/contact" className="text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
+                <div className="pt-2 flex items-center gap-2">
+                </div>
               </div>
             </div>
 
             <div className="mt-auto pt-8">
               <Link
-                href="/pricing"
+                href="/free-trial"
                 className="w-full flex justify-center bg-accent-primary text-black font-bold text-base px-6 py-4 rounded-xl hover:brightness-110 mb-4"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Watch Now →
+                Free Trial →
               </Link>
               <Link
                 href="/login"

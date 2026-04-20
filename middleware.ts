@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { jwtVerify } from "jose"
-import { getJwtSecret, hasJwtSecret } from "@/lib/env"
+import { ENV } from "@/lib/config/env"
 
 export async function middleware(request: NextRequest) {
   // Protect /admin routes (legacy admin - can be removed later)
@@ -13,11 +13,10 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      if (!hasJwtSecret()) {
+      if (!ENV.JWT_SECRET) {
         return NextResponse.redirect(new URL("/", request.url))
       }
-      const jwtSecret = getJwtSecret()
-      await jwtVerify(adminToken, new TextEncoder().encode(jwtSecret))
+      await jwtVerify(adminToken, new TextEncoder().encode(ENV.JWT_SECRET))
     } catch {
       return NextResponse.redirect(new URL("/", request.url))
     }
@@ -32,11 +31,10 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      if (!hasJwtSecret()) {
+      if (!ENV.JWT_SECRET) {
         return NextResponse.redirect(new URL("/dev/login", request.url))
       }
-      const jwtSecret = getJwtSecret()
-      await jwtVerify(devToken, new TextEncoder().encode(jwtSecret))
+      await jwtVerify(devToken, new TextEncoder().encode(ENV.JWT_SECRET))
     } catch {
       return NextResponse.redirect(new URL("/dev/login", request.url))
     }

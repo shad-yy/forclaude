@@ -20,27 +20,40 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://smart-live-tv.vercel.app"),
+  metadataBase: new URL("https://smartlivetv.com"),
   title: {
-    default: "Smart Live TV - Watch Sports Live",
-    template: "%s | SmartLiveTV - Watch Sports Live",
+    default: "Smart Live TV",
+    template: "%s | Smart Live TV",
   },
   description:
     "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "en_GB",
     siteName: "SmartLiveTV",
     title: "Smart Live TV - Watch Sports Live",
     description: "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
+    images: [
+      {
+        url: "/og-default.png",
+        width: 1200,
+        height: 630,
+        alt: "Smart Live TV",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
+    site: "@smartlivetv",
     title: "Smart Live TV - Watch Sports Live",
     description: "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
+    images: ["/og-default.png"],
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_APP_URL || "https://smart-live-tv.vercel.app",
+    canonical: "https://smartlivetv.com",
+    languages: {
+      "en-GB": "https://smartlivetv.com",
+    },
   },
   robots: {
     index: true,
@@ -56,6 +69,7 @@ export const metadata: Metadata = {
 }
 
 import { SportThemeProvider } from "@/components/sport-theme-provider"
+import { ThemeProvider } from 'next-themes'
 
 // ... imports
 
@@ -65,9 +79,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       {/* ... head ... */}
-      <body className={cn(inter.className, "bg-gray-950 text-gray-100 antialiased")}>
+      <body className={cn(inter.className, "antialiased")}>
+        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
         <SportThemeProvider>
           <a
             href="#main-content"
@@ -84,6 +99,7 @@ export default function RootLayout({
             <Footer />
           </div>
         </SportThemeProvider>
+        </ThemeProvider>
 
         <script
           dangerouslySetInnerHTML={{

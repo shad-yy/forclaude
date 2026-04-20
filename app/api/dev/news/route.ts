@@ -1,7 +1,7 @@
 // Admin news CRUD endpoints
 import { type NextRequest, NextResponse } from "next/server"
 import { jwtVerify } from "jose"
-import { getJwtSecret, hasJwtSecret } from "@/lib/env"
+import { ENV } from "@/lib/config/env"
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "fs"
 import { join } from "path"
 
@@ -22,10 +22,10 @@ const NEWS_FILE = join(process.cwd(), "data", "admin-news.json")
 
 async function verifyDevSession(request: NextRequest): Promise<boolean> {
   try {
-    if (!hasJwtSecret()) return false
+    if (!(!!ENV.JWT_SECRET)) return false
     const token = request.cookies.get("dev-session")?.value
     if (!token) return false
-    const jwtSecret = getJwtSecret()
+    const jwtSecret = ENV.JWT_SECRET
     await jwtVerify(token, new TextEncoder().encode(jwtSecret))
     return true
   } catch {

@@ -4,19 +4,22 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Clock } from "lucide-react"
+import { MatchPopup } from "./match-popup"
 
 interface MatchData {
+    idLeague?: string | null
     idEvent: string
     strEvent: string
     strHomeTeam: string
     strAwayTeam: string
-    strHomeTeamBadge: string
-    strAwayTeamBadge: string
+    strHomeTeamBadge: string | null
+    strAwayTeamBadge: string | null
     intHomeScore: string | null
     intAwayScore: string | null
     strTime: string
     strDate: string
     strLeague: string
+    strLeagueBadge?: string | null
     strStatus: string
 }
 
@@ -29,10 +32,81 @@ const LEAGUE_COLORS: Record<string, string> = {
     'Champions League': 'border-l-[#1a3a6b]',
 }
 
+function safeBadge(url: string | null | undefined): string | null {
+    if (!url) return null
+    if (/\/(tiny|small|medium|large|preview)$/.test(url)) return url
+    return `${url}/tiny`
+}
+
+function safeParseSportsDBDate(date: string, time?: string): Date | null {
+    if (!date) return null
+    const parts = date.split('-').map(Number)
+    if (parts.length !== 3 || parts.some(isNaN)) return null
+    const [year, month, day] = parts
+    if (time) {
+      const t = time.split('+')[0].split('-')[0]
+      const [h, m] = t.split(':').map(Number)
+      return new Date(Date.UTC(year, month - 1, day, h || 0, m || 0))
+    }
+    return new Date(Date.UTC(year, month - 1, day))
+}
+
+function formatMatchDate(dateStr: string | null | undefined): string {
+    const d = safeParseSportsDBDate(dateStr || '')
+    if (!d) return 'TBA'
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+function formatMatchTime(timeStr: string | null | undefined): string {
+    if (!timeStr) return ''
+    // Handle "HH:MM:SS+00:00" or "HH:MM:SS" format
+    const clean = timeStr.split('+')[0].split('-')[0].trim()
+    const parts = clean.split(':')
+    if (parts.length < 2) return ''
+    const hours = parseInt(parts[0], 10)
+    const minutes = parseInt(parts[1], 10)
+    if (isNaN(hours) || isNaN(minutes)) return ''
+    const d = new Date()
+    d.setUTCHours(hours, minutes, 0, 0)
+    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })
+}
+
+function getTeamInitials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase() }
+function getBgColor(name: string) {
+    let hash = 0; for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+    return `hsl(${Math.abs(hash) % 360}, 60%, 20%)`
+}
+
+const LEAGUE_BADGES_BY_ID: Record<string, string> = {
+    "4328": "https://r2.thesportsdb.com/images/media/league/badge/gasy9d1737743125.png",
+    "4335": "https://r2.thesportsdb.com/images/media/league/badge/qjwhxc1617300664.png",
+    "4331": "https://r2.thesportsdb.com/images/media/league/badge/bpct641566986627.png",
+    "4332": "https://r2.thesportsdb.com/images/media/league/badge/wrjgpz1576432802.png",
+    "4334": "https://r2.thesportsdb.com/images/media/league/badge/ligue1badge.png",
+    "4480": "https://r2.thesportsdb.com/images/media/league/badge/ucl.png",
+}
+
+function getLeagueBadgeUrl(match: MatchData): string | null {
+    const id = match.idLeague ? String(match.idLeague) : ""
+    if (id && LEAGUE_BADGES_BY_ID[id]) return LEAGUE_BADGES_BY_ID[id]
+
+    const name = (match.strLeague || "").toLowerCase()
+    if (name.includes("premier")) return LEAGUE_BADGES_BY_ID["4328"]
+    if (name.includes("la liga")) return LEAGUE_BADGES_BY_ID["4335"]
+    if (name.includes("bundesliga")) return LEAGUE_BADGES_BY_ID["4331"]
+    if (name.includes("serie a")) return LEAGUE_BADGES_BY_ID["4332"]
+    if (name.includes("ligue 1") || name.includes("ligue1")) return LEAGUE_BADGES_BY_ID["4334"]
+    if (name.includes("champions")) return LEAGUE_BADGES_BY_ID["4480"]
+    return null
+}
+
 export function MatchCard() {
     const [matches, setMatches] = useState<MatchData[]>([])
+    const [results, setResults] = useState<MatchData[]>([])
     const [loading, setLoading] = useState(true)
     const [dayLabel, setDayLabel] = useState<string>("today")
+    const [tab, setTab] = useState<"upcoming" | "results">("upcoming")
+    const [selectedMatch, setSelectedMatch] = useState<MatchData | null>(null)
 
     useEffect(() => {
         async function fetchFixtures() {
@@ -40,7 +114,8 @@ export function MatchCard() {
                 const res = await fetch("/api/fixtures/today")
                 if (res.ok) {
                     const json = await res.json()
-                    setMatches(json.events || [])
+                    setMatches(json.upcoming || json.events || [])
+                    setResults(json.results || [])
                     setDayLabel(json.label || "today")
                 }
             } catch (error) {
@@ -52,33 +127,37 @@ export function MatchCard() {
         fetchFixtures()
     }, [])
 
-    const getHeader = () => {
-        if (dayLabel === "today") return "Tonight's Matches — Watch Live"
-        if (dayLabel === "tomorrow") return "Tomorrow's Matches — Watch Live"
-        return "Upcoming Matches — Watch Live"
-    }
+    const upcomingLabel = dayLabel === "today" ? "Tonight" : dayLabel === "tomorrow" ? "Tomorrow" : "Upcoming"
 
     const getLeagueColor = (leagueName: string) => {
-        for (const [key, val] of Object.entries(LEAGUE_COLORS)) {
-            if (leagueName.includes(key)) return val;
-        }
-        return 'border-l-accent-primary';
+        for (const [key, val] of Object.entries(LEAGUE_COLORS)) { if (leagueName.includes(key)) return val }
+        return 'border-l-accent-primary'
     }
 
-    const getTeamInitials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase()
-    const getBgColor = (name: string) => {
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
-        return `hsl(${Math.abs(hash) % 360}, 60%, 20%)`;
-    }
+    const currentList = tab === "upcoming" ? matches : results
 
     return (
         <section id="fixtures" className="py-20 bg-background relative border-t border-border">
             <div className="container mx-auto px-4 md:px-6">
-                <div className="flex items-center justify-between mb-8">
+                {/* Header + Tabs */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                     <h2 className="text-2xl md:text-3xl font-bold text-text-primary tracking-tight">
-                        {getHeader()}
+                        {tab === "upcoming" ? `${upcomingLabel}'s Matches — Watch Live` : "Today's Results"}
                     </h2>
+                    <div className="flex rounded-lg border border-border overflow-hidden self-start sm:self-auto">
+                        <button
+                            onClick={() => setTab("upcoming")}
+                            className={`px-4 py-2 text-sm font-semibold transition-colors ${tab === "upcoming" ? "bg-accent-primary text-black" : "bg-surface text-text-secondary hover:bg-surface-elevated"}`}
+                        >
+                            {upcomingLabel}
+                        </button>
+                        <button
+                            onClick={() => setTab("results")}
+                            className={`px-4 py-2 text-sm font-semibold transition-colors border-l border-border ${tab === "results" ? "bg-accent-primary text-black" : "bg-surface text-text-secondary hover:bg-surface-elevated"}`}
+                        >
+                            Results
+                        </button>
+                    </div>
                 </div>
 
                 {loading ? (
@@ -87,21 +166,39 @@ export function MatchCard() {
                             <Skeleton key={i} className="h-[120px] w-full rounded-xl bg-surface-elevated border border-border" />
                         ))}
                     </div>
-                ) : matches.length > 0 ? (
+                ) : currentList.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {matches.map((match) => {
-                            const isLive = match.strStatus === "Live" || match.strStatus === "HT" || match.strStatus === "1H" || match.strStatus === "2H" || match.strStatus === "IN PLAY" || match.strStatus === "In Progress"
-                            const isFinished = match.strStatus === "Match Finished" || match.strStatus === "FT"
-                            const formattedTime = match.strTime ? match.strTime.substring(0, 5) : ""
-                            const dateObj = match.strDate ? new Date(match.strDate) : null;
-                            const formattedDate = dateObj ? dateObj.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '';
-                            const borderClass = getLeagueColor(match.strLeague);
+                        {currentList.map((match) => {
+                            const isLive = ['Live', 'HT', '1H', '2H', 'IN PLAY', 'In Progress'].includes(match.strStatus)
+                            const isFinished = ['match finished', 'ft', 'aet', 'pen', 'fulltime', 'full time', 'finished'].includes((match.strStatus || '').toLowerCase().trim())
+                            const formattedTime = formatMatchTime(match.strTime)
+                            const formattedDate = formatMatchDate(match.strDate)
+                            const borderClass = getLeagueColor(match.strLeague)
+                            const homeBadge = safeBadge(match.strHomeTeamBadge)
+                            const awayBadge = safeBadge(match.strAwayTeamBadge)
+                            const leagueBadgeUrl = getLeagueBadgeUrl(match)
 
                             return (
-                                <div key={match.idEvent} className={`bg-surface border-y border-r border-border rounded-lg flex flex-col hover:bg-surface-elevated transition-colors group relative overflow-hidden h-auto min-h-[120px] shadow-sm border-l-[4px] ${borderClass}`}>
+                                <button
+                                    key={match.idEvent}
+                                    onClick={() => setSelectedMatch(match)}
+                                    className={`bg-surface border-y border-r border-border rounded-lg flex flex-col hover:bg-surface-elevated transition-colors group relative overflow-hidden h-auto min-h-[120px] shadow-sm border-l-[4px] ${borderClass} text-left w-full`}
+                                >
                                     {/* Header Row */}
                                     <div className="flex justify-between items-center px-4 py-2 border-b border-border/50 bg-background/50">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            {leagueBadgeUrl ? (
+                                                <img
+                                                    src={leagueBadgeUrl}
+                                                    alt={match.strLeague}
+                                                    width={24}
+                                                    height={24}
+                                                    className="object-contain rounded-sm shrink-0"
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).style.display = 'none'
+                                                    }}
+                                                />
+                                            ) : null}
                                             <span className="text-[10px] sm:text-xs font-bold text-text-secondary uppercase tracking-wider truncate max-w-[150px] sm:max-w-[250px]">
                                                 {match.strLeague}
                                             </span>
@@ -112,95 +209,115 @@ export function MatchCard() {
                                     </div>
 
                                     {/* Teams and Score Row */}
-                                    <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-3 flex-1 gap-4 sm:gap-2">
+                                    <div className="px-4 py-3 flex-1">
+                                        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto] items-center gap-3">
+                                            {/* Row 1 (mobile): teams + score */}
+                                            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:contents">
+                                                {/* Home team */}
+                                                <div className="flex flex-col items-center text-center md:items-center">
+                                                    <div
+                                                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border bg-surface-elevated overflow-hidden"
+                                                        style={{ backgroundColor: !homeBadge ? getBgColor(match.strHomeTeam) : '' }}
+                                                    >
+                                                        {homeBadge ? (
+                                                            <img
+                                                                src={homeBadge}
+                                                                alt={match.strHomeTeam}
+                                                                className="max-h-8 max-w-8 object-contain"
+                                                                loading="lazy"
+                                                                onError={(e) => {
+                                                                    const t = e.target as HTMLImageElement; t.style.display = 'none'
+                                                                    if (t.parentElement) { t.parentElement.innerHTML = `<span class="text-[8px] font-bold text-white">${getTeamInitials(match.strHomeTeam)}</span>`; t.parentElement.style.backgroundColor = getBgColor(match.strHomeTeam) }
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <span className="text-[8px] font-bold text-white">{getTeamInitials(match.strHomeTeam)}</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-xs mt-1 line-clamp-2 max-w-[80px] leading-tight text-text-primary font-semibold">
+                                                        {match.strHomeTeam}
+                                                    </span>
+                                                </div>
 
-                                        {/* Score / Teams container */}
-                                        <div className="flex items-center justify-between w-full sm:w-auto sm:flex-1 gap-2">
-                                            {/* Home Team */}
-                                            <div className="flex items-center gap-2 flex-1 justify-end">
-                                                <span className="text-sm sm:text-base font-semibold text-text-primary truncate text-right">{match.strHomeTeam}</span>
-                                                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 border border-border bg-surface-elevated overflow-hidden" style={{ backgroundColor: !match.strHomeTeamBadge ? getBgColor(match.strHomeTeam) : '' }}>
-                                                    <img
-                                                        src={match.strHomeTeamBadge ? `${match.strHomeTeamBadge}/tiny` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}
-                                                        alt={match.strHomeTeam}
-                                                        className="max-h-6 max-w-6 sm:max-h-8 sm:max-w-8 object-contain"
-                                                        loading="lazy"
-                                                        onError={(e) => {
-                                                            const target = e.target as HTMLImageElement;
-                                                            target.style.display = 'none';
-                                                            if (target.parentElement) {
-                                                                target.parentElement.innerHTML = `<span class="text-[8px] font-bold text-white">${getTeamInitials(match.strHomeTeam)}</span>`;
-                                                                target.parentElement.style.backgroundColor = getBgColor(match.strHomeTeam);
-                                                            }
-                                                        }}
-                                                    />
+                                                {/* VS + time / score */}
+                                                <div className="flex flex-col items-center px-2">
+                                                    {(isFinished || isLive || (match.intHomeScore !== null && match.intAwayScore !== null)) ? (
+                                                        <div className="flex items-center justify-center gap-1.5">
+                                                            <span className="text-lg font-black text-text-primary">{match.intHomeScore ?? '-'}</span>
+                                                            <span className="text-text-muted font-bold">-</span>
+                                                            <span className="text-lg font-black text-text-primary">{match.intAwayScore ?? '-'}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-gray-500">VS</span>
+                                                    )}
+                                                    <span className="text-xs text-gray-400">{formattedTime}</span>
+                                                    {isLive && (
+                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                            <div className="w-1.5 h-1.5 bg-live-red rounded-full animate-pulse shadow-[0_0_8px_#ff1744]" />
+                                                            <span className="text-[9px] uppercase font-bold text-live-red">Live</span>
+                                                        </div>
+                                                    )}
+                                                    {isFinished && <span className="text-[9px] uppercase font-bold text-text-muted mt-0.5">FT</span>}
+                                                    {!isLive && !isFinished && <Clock className="w-3 h-3 text-accent-primary mt-1" />}
+                                                </div>
+
+                                                {/* Away team */}
+                                                <div className="flex flex-col items-center text-center md:items-center">
+                                                    <div
+                                                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border bg-surface-elevated overflow-hidden"
+                                                        style={{ backgroundColor: !awayBadge ? getBgColor(match.strAwayTeam) : '' }}
+                                                    >
+                                                        {awayBadge ? (
+                                                            <img
+                                                                src={awayBadge}
+                                                                alt={match.strAwayTeam}
+                                                                className="max-h-8 max-w-8 object-contain"
+                                                                loading="lazy"
+                                                                onError={(e) => {
+                                                                    const t = e.target as HTMLImageElement; t.style.display = 'none'
+                                                                    if (t.parentElement) { t.parentElement.innerHTML = `<span class="text-[8px] font-bold text-white">${getTeamInitials(match.strAwayTeam)}</span>`; t.parentElement.style.backgroundColor = getBgColor(match.strAwayTeam) }
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <span className="text-[8px] font-bold text-white">{getTeamInitials(match.strAwayTeam)}</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-xs mt-1 line-clamp-2 max-w-[80px] leading-tight text-text-primary font-semibold">
+                                                        {match.strAwayTeam}
+                                                    </span>
                                                 </div>
                                             </div>
 
-                                            {/* Score / Status Center */}
-                                            <div className="flex flex-col items-center justify-center px-2 min-w-[60px] shrink-0">
-                                                {(isFinished || isLive || (match.intHomeScore !== null && match.intAwayScore !== null)) ? (
-                                                    <div className="flex items-center justify-center gap-1.5">
-                                                        <span className="text-lg sm:text-xl font-black text-text-primary">{match.intHomeScore ?? '-'}</span>
-                                                        <span className="text-text-muted font-bold">-</span>
-                                                        <span className="text-lg sm:text-xl font-black text-text-primary">{match.intAwayScore ?? '-'}</span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center justify-center w-full h-8">
-                                                        <span className="text-text-muted font-bold text-sm">v</span>
-                                                    </div>
-                                                )}
-
-                                                {isLive && (
-                                                    <div className="flex items-center gap-1 mt-0.5">
-                                                        <div className="w-1.5 h-1.5 bg-live-red rounded-full animate-pulse shadow-[0_0_8px_#ff1744]" />
-                                                        <span className="text-[9px] uppercase font-bold text-live-red">Live</span>
-                                                    </div>
-                                                )}
-                                                {isFinished && <span className="text-[9px] uppercase font-bold text-text-muted mt-0.5">FT</span>}
-                                                {!isLive && !isFinished && <Clock className="w-3 h-3 text-accent-primary mt-1" />}
-                                            </div>
-
-                                            {/* Away Team */}
-                                            <div className="flex items-center gap-2 flex-1 justify-start">
-                                                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 border border-border bg-surface-elevated overflow-hidden" style={{ backgroundColor: !match.strAwayTeamBadge ? getBgColor(match.strAwayTeam) : '' }}>
-                                                    <img
-                                                        src={match.strAwayTeamBadge ? `${match.strAwayTeamBadge}/tiny` : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}
-                                                        alt={match.strAwayTeam}
-                                                        className="max-h-6 max-w-6 sm:max-h-8 sm:max-w-8 object-contain"
-                                                        loading="lazy"
-                                                        onError={(e) => {
-                                                            const target = e.target as HTMLImageElement;
-                                                            target.style.display = 'none';
-                                                            if (target.parentElement) {
-                                                                target.parentElement.innerHTML = `<span class="text-[8px] font-bold text-white">${getTeamInitials(match.strAwayTeam)}</span>`;
-                                                                target.parentElement.style.backgroundColor = getBgColor(match.strAwayTeam);
-                                                            }
-                                                        }}
-                                                    />
-                                                </div>
-                                                <span className="text-sm sm:text-base font-semibold text-text-primary truncate text-left">{match.strAwayTeam}</span>
-                                            </div>
+                                            {/* Row 2 (mobile): button full width */}
+                                            <Link
+                                                href="/pricing"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="w-full md:w-auto shrink-0 bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap text-center"
+                                            >
+                                                {isFinished ? "Highlights →" : "Watch →"}
+                                            </Link>
                                         </div>
-
-                                        {/* Watch Button */}
-                                        <Link
-                                            href="/pricing"
-                                            className="w-full sm:w-auto shrink-0 bg-accent-primary/10 hover:bg-accent-primary text-accent-primary hover:text-black font-bold text-xs px-4 py-2 rounded-md transition-colors border border-accent-primary/20 hover:border-accent-primary flex items-center justify-center whitespace-nowrap"
-                                        >
-                                            Watch Live →
-                                        </Link>
                                     </div>
-                                </div>
+                                </button>
                             )
                         })}
                     </div>
                 ) : (
                     <div className="text-center py-12 bg-surface rounded-2xl border border-border">
-                        <p className="text-text-secondary text-lg">No matches found.</p>
+                        <p className="text-text-secondary text-lg">
+                            {tab === "results" ? "No results yet today. Check back after kick-off." : "No matches found."}
+                        </p>
                     </div>
                 )}
             </div>
+
+            {/* Match Popup */}
+            {selectedMatch && (
+                <MatchPopup
+                    match={selectedMatch}
+                    onClose={() => setSelectedMatch(null)}
+                />
+            )}
         </section>
     )
 }

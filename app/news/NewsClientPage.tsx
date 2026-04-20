@@ -146,7 +146,7 @@ export default function NewsClientPage({
   const hasActiveFilters = filters.category || filters.source || filters.sortBy !== "publishedAt"
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-20" style={{ paddingTop: '80px' }}>
+    <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-24 md:pt-32 pb-16">
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Content */}
         <div className="flex-1">

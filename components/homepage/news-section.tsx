@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { getLatestSportsNews } from "@/lib/api/news"
 import { Clock, TrendingUp, Newspaper, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { NewsImage } from "./news-image"
 
 interface NewsSectionProps {
   maxArticles?: number
@@ -21,11 +22,40 @@ const CATEGORY_COLORS: Record<string, string> = {
   'default': 'bg-accent-primary text-black'
 }
 
+/** Normalise "champions league" → "Champions League" for colour lookup */
+function toTitleCase(s: string): string {
+  return s.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+}
+
+function getCategoryBadge(categoryName: string): string {
+  const normalised = toTitleCase(categoryName)
+  return CATEGORY_COLORS[normalised] || CATEGORY_COLORS['default']
+}
+
 export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
   const allArticles = await getLatestSportsNews(undefined, maxArticles);
 
-  // Ensure we always have exactly maxArticles by duplicating mock data if needed
-  let articles = allArticles.slice(0, maxArticles);
+  let rawArticles = allArticles;
+  const seen = new Set<string>()
+  const seenUrls = new Set<string>()
+  let uniqueArticles = rawArticles.filter(article => {
+    const url = article.link || (article as any).url
+    if (url && seenUrls.has(url)) return false
+    if (url) seenUrls.add(url)
+    
+    const key = (article.title || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 60)
+    
+    if (!key || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  let articles = uniqueArticles.slice(0, maxArticles);
   while (articles.length > 0 && articles.length < maxArticles) {
     articles = [...articles, ...articles].slice(0, maxArticles);
   }
@@ -64,7 +94,7 @@ export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.map((article, index) => {
           const categoryName = article.category?.[0] || article.source_name || "News";
-          const badgeClass = CATEGORY_COLORS[categoryName] || CATEGORY_COLORS['default'];
+          const badgeClass = getCategoryBadge(categoryName);
 
           return (
             <div
@@ -77,13 +107,13 @@ export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
                   {/* Top 50%: Image */}
                   <div className="h-1/2 w-full overflow-hidden bg-surface-elevated relative">
                     {article.image_url ? (
-                      <img
+                      <NewsImage
                         src={article.image_url}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-text-muted group-hover:scale-105 transition-transform duration-500 ease-out bg-gradient-to-br from-surface to-surface-elevated">
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-surface to-surface-elevated text-text-muted">
                         <Newspaper className="w-12 h-12 mb-2 opacity-30" />
                       </div>
                     )}

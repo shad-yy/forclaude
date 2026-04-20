@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { SignJWT, jwtVerify } from "jose"
-import { getJwtSecret, hasJwtSecret } from "@/lib/env"
+import { ENV } from "@/lib/config/env"
 import bcrypt from "bcryptjs"
 
 // Admin password hash - securely stored in environment
@@ -11,7 +11,7 @@ const ADMIN_PASSWORD_HASH =
 export async function POST(request: NextRequest) {
   try {
     // Check if JWT_SECRET is available
-    if (!hasJwtSecret()) {
+    if (!(!!ENV.JWT_SECRET)) {
       return NextResponse.json(
         { 
           success: false, 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: "Invalid credentials" }, { status: 401 })
     }
 
-    const jwtSecret = getJwtSecret()
+    const jwtSecret = ENV.JWT_SECRET
     const token = await new SignJWT({
       isAdmin: true,
       loginTime: Date.now(),
@@ -97,10 +97,10 @@ export async function DELETE() {
 
 export async function verifyAdminToken(token: string): Promise<boolean> {
   try {
-    if (!hasJwtSecret()) {
+    if (!(!!ENV.JWT_SECRET)) {
       return false
     }
-    const jwtSecret = getJwtSecret()
+    const jwtSecret = ENV.JWT_SECRET
     await jwtVerify(token, new TextEncoder().encode(jwtSecret))
     return true
   } catch {

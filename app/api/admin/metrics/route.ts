@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
-import { getJwtSecret, hasJwtSecret } from "@/lib/env"
+import { ENV } from "@/lib/config/env"
 import { apiMonitor } from "@/lib/api/api-monitor"
 
 export async function GET() {
   try {
     // Check if JWT_SECRET is available
-    if (!hasJwtSecret()) {
+    if (!(!!ENV.JWT_SECRET)) {
       return NextResponse.json(
         { 
           error: "JWT_SECRET environment variable is required for admin authentication",
@@ -23,7 +23,7 @@ export async function GET() {
     }
 
     // Verify JWT token
-    const jwtSecret = getJwtSecret()
+    const jwtSecret = ENV.JWT_SECRET
     await jwtVerify(token, new TextEncoder().encode(jwtSecret))
 
     const metrics = apiMonitor.getApiMetrics()

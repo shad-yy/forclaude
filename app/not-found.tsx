@@ -47,15 +47,15 @@ export default function NotFound() {
           </div>
 
           <div className="pt-4 border-t border-gray-800">
-            <p className="text-sm text-gray-400 mb-3">Or try searching for what you need:</p>
+            <p className="text-sm text-gray-400 mb-3">Start streaming in seconds:</p>
             <Button
               asChild
               variant="outline"
               className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
             >
-              <Link href="/search">
+              <Link href="/subscribe">
                 <Search className="w-4 h-4 mr-2" />
-                Search Sports Content
+                Browse Plans &amp; Start Watching
               </Link>
             </Button>
           </div>

@@ -59,6 +59,57 @@ a:hover {
 
 @layer base {
   :root {
+    --background: #ffffff;
+    --surface: #f3f4f6;
+    --surface-elevated: #ffffff;
+    --border: #e5e7eb;
+    --accent-primary: #00e676;
+    --accent-secondary: #2563eb;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+    --live-red: #ef4444;
+    --success: #10b981;
+
+    /* Shadcn fallbacks */
+    --foreground: #000000;
+    --card: #ffffff;
+    --card-foreground: #000000;
+    --popover: #ffffff;
+    --popover-foreground: #000000;
+    --primary: #00e676;
+    --primary-foreground: #000000;
+    --secondary: #1565c0;
+    --secondary-foreground: #ffffff;
+    --muted: #f3f4f6;
+    --muted-foreground: #6b7280;
+    --accent: #00e676;
+    --accent-foreground: #000000;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --input: #e5e7eb;
+    --ring: #00e676;
+    --radius: 0.5rem;
+
+    /* Chart color variables */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+
+    /* Sidebar color variables */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
     --background: #0a0a0f;
     --surface: #12121a;
     --surface-elevated: #1a1a24;
@@ -287,13 +338,6 @@ a:hover {
     }
   }
 
-  /* Dark mode preferences */
-  @media (prefers-color-scheme: light) {
-    :root {
-      --background: 0 0% 100%;
-      --foreground: 222.2 84% 4.9%;
-    }
-  }
 
   /* Print styles */
   @media print {

@@ -12,6 +12,43 @@ const FEATURED_LEAGUES = [
     { id: "4334", name: "Ligue 1" },
 ]
 
+// ── TeamBadge ──────────────────────────────────────────────────────────────
+// The badge URL comes pre-normalised from the API (safeBadgeUrl already added
+// /tiny exactly once). We render it verbatim — no /tiny appending here.
+
+const getTeamInitials = (name: string) =>
+    name.split(' ').map((w) => w[0]).join('').slice(0, 3).toUpperCase()
+
+const getBgColor = (name: string) => {
+    let hash = 0
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+    return `hsl(${Math.abs(hash) % 360}, 60%, 20%)`
+}
+
+function TeamBadge({ logoUrl, teamName }: { logoUrl?: string | null; teamName: string }) {
+    const [imgOk, setImgOk] = useState(true)
+    const hasSrc = !!logoUrl
+
+    return (
+        <div
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+            style={{ backgroundColor: (!hasSrc || !imgOk) ? getBgColor(teamName) : 'transparent' }}
+        >
+            {hasSrc && imgOk ? (
+                <img
+                    src={logoUrl!}
+                    alt={teamName}
+                    className="max-h-8 max-w-8 object-contain"
+                    loading="lazy"
+                    onError={() => setImgOk(false)}
+                />
+            ) : (
+                <span className="text-[10px] font-bold text-white">{getTeamInitials(teamName)}</span>
+            )}
+        </div>
+    )
+}
+
 export function LeagueTables() {
     const [activeTab, setActiveTab] = useState(FEATURED_LEAGUES[0])
     const [standings, setStandings] = useState<any[]>([])
@@ -36,37 +73,47 @@ export function LeagueTables() {
         fetchStandings()
     }, [activeTab.id]) // Re-fetch when tab changes
 
-    const getTeamInitials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase()
 
-    // Deterministic color
-    const getBgColor = (name: string) => {
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
-        return `hsl(${Math.abs(hash) % 360}, 60%, 20%)`;
+    const FormPill = ({ result }: { result: string }) => {
+        const colors: Record<string, string> = {
+            W: "bg-green-500 text-black",
+            D: "bg-gray-500 text-white",
+            L: "bg-red-500 text-white",
+        }
+        return (
+            <span
+                className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${colors[result] || "bg-gray-700 text-white"
+                    }`}
+            >
+                {result}
+            </span>
+        )
     }
 
-    const renderFormPills = (formStr: string) => {
-        if (!formStr) return null;
+    const renderFormPills = (formStr?: string) => {
+        if (!formStr) return null
+        const results = formStr.replace(/[^WDL]/g, "").split("").slice(-5)
+        if (results.length === 0) return null
         return (
             <div className="flex items-center gap-1 justify-center">
-                {formStr.split('').slice(0, 5).map((char, idx) => {
-                    let bgColor = "bg-gray-600";
-                    if (char === 'W') bgColor = "bg-accent-primary";
-                    if (char === 'L') bgColor = "bg-live-red";
-                    if (char === 'D') bgColor = "bg-gray-500";
-                    return (
-                        <div key={idx} className={`w-3 h-3 md:w-4 md:h-4 rounded-sm flex items-center justify-center ${bgColor}`}>
-                            <span className="text-[8px] md:text-[10px] font-bold text-white leading-none">{char}</span>
-                        </div>
-                    )
-                })}
+                {results.map((r, idx) => (
+                    <FormPill key={`${r}-${idx}`} result={r} />
+                ))}
             </div>
         )
     }
 
+    const getDescriptionBorder = (desc?: string) => {
+        if (!desc) return ""
+        if (desc.includes("Champions League")) return "border-l-2 border-blue-500"
+        if (desc.includes("Europa League")) return "border-l-2 border-orange-500"
+        if (desc.includes("Relegation")) return "border-l-2 border-red-500"
+        return ""
+    }
+
     return (
         <section className="py-20 bg-background border-t border-border relative overflow-hidden">
-            <div className="container mx-auto px-4 md:px-6 max-w-4xl relative z-10">
+            <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl relative z-10">
                 <div className="text-center mb-10">
                     <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-4">
                         Live Standings <span className="text-accent-primary">— Stream Every Game</span>
@@ -92,14 +139,6 @@ export function LeagueTables() {
 
                 {/* Table Content */}
                 <div className="bg-surface rounded-2xl border border-border overflow-hidden mb-8 shadow-xl">
-                    <div className="grid grid-cols-12 gap-2 p-4 text-xs font-bold text-text-muted uppercase tracking-wider bg-surface-elevated border-b border-border">
-                        <div className="col-span-1 text-center">#</div>
-                        <div className="col-span-4 md:col-span-5">Club</div>
-                        <div className="col-span-2 text-center">MP</div>
-                        <div className="col-span-3 text-center">Form</div>
-                        <div className="col-span-2 text-center text-text-primary">Pts</div>
-                    </div>
-
                     {loading ? (
                         <div className="p-4 space-y-4">
                             {[1, 2, 3, 4, 5].map((i) => (
@@ -107,40 +146,52 @@ export function LeagueTables() {
                             ))}
                         </div>
                     ) : standings.length > 0 ? (
-                        <div className="flex flex-col divide-y divide-border">
-                            {standings.map((team, index) => (
-                                <div key={team.teamId || index} className="grid grid-cols-12 gap-2 p-4 items-center hover:bg-surface-elevated transition-colors text-sm font-medium">
-                                    <div className="col-span-1 text-center text-text-secondary">{team.position}</div>
-                                    <div className="col-span-4 md:col-span-5 flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: !team.teamLogo ? getBgColor(team.team) : 'transparent' }}>
-                                            {team.teamLogo ? (
-                                                <img
-                                                    src={team.teamLogo.includes('/small') || team.teamLogo.includes('/tiny') ? team.teamLogo : `${team.teamLogo}/tiny`}
-                                                    alt={team.team}
-                                                    className="max-h-8 max-w-8 object-contain"
-                                                    loading="lazy"
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.style.display = 'none';
-                                                        if (target.parentElement) {
-                                                            target.parentElement.innerHTML = `<span class="text-[10px] font-bold text-white">${getTeamInitials(team.team)}</span>`;
-                                                            target.parentElement.style.backgroundColor = getBgColor(team.team);
-                                                        }
-                                                    }}
-                                                />
-                                            ) : (
-                                                <span className="text-[10px] font-bold text-white">{getTeamInitials(team.team)}</span>
-                                            )}
-                                        </div>
-                                        <span className="font-bold text-text-primary line-clamp-1">{team.team}</span>
-                                    </div>
-                                    <div className="col-span-2 text-center text-text-secondary">{team.played}</div>
-                                    <div className="col-span-3 text-center">
-                                        {renderFormPills(team.form)}
-                                    </div>
-                                    <div className="col-span-2 text-center font-bold text-accent-primary">{team.points}</div>
-                                </div>
-                            ))}
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="sticky top-0 bg-surface-elevated z-10">
+                                    <tr className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border">
+                                        <th className="py-3 px-3 text-center w-10">#</th>
+                                        <th className="py-3 px-3 text-left">Team</th>
+                                        <th className="py-3 px-3 text-center w-10">P</th>
+                                        <th className="py-3 px-3 text-center w-10">W</th>
+                                        <th className="py-3 px-3 text-center w-10">D</th>
+                                        <th className="py-3 px-3 text-center w-10">L</th>
+                                        <th className="py-3 px-3 text-center w-10 hidden md:table-cell">GF</th>
+                                        <th className="py-3 px-3 text-center w-10 hidden md:table-cell">GA</th>
+                                        <th className="py-3 px-3 text-center w-10 hidden md:table-cell">GD</th>
+                                        <th className="py-3 px-3 text-center">Form</th>
+                                        <th className="py-3 px-3 text-center w-12 text-text-primary">Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {standings.map((team, index) => (
+                                        <tr
+                                            key={team.teamId || index}
+                                            className={[
+                                                "border-b border-border/50 hover:bg-surface-elevated transition-colors",
+                                                "even:bg-white/[0.02]",
+                                            ].join(" ")}
+                                        >
+                                            <td className="py-3 px-3 text-center text-text-secondary">{team.position}</td>
+                                            <td className="py-3 px-3">
+                                                <div className={`flex items-center gap-3 pl-2 ${getDescriptionBorder(team.description)}`}>
+                                                    <TeamBadge logoUrl={team.teamLogo} teamName={team.team} />
+                                                    <span className="font-bold text-text-primary line-clamp-1">{team.team}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3 px-3 text-center text-text-secondary">{team.played}</td>
+                                            <td className="py-3 px-3 text-center text-text-secondary">{team.won}</td>
+                                            <td className="py-3 px-3 text-center text-text-secondary">{team.drawn}</td>
+                                            <td className="py-3 px-3 text-center text-text-secondary">{team.lost}</td>
+                                            <td className="py-3 px-3 text-center text-text-secondary hidden md:table-cell">{team.goalsFor}</td>
+                                            <td className="py-3 px-3 text-center text-text-secondary hidden md:table-cell">{team.goalsAgainst}</td>
+                                            <td className="py-3 px-3 text-center text-text-secondary hidden md:table-cell">{team.goalDifference}</td>
+                                            <td className="py-3 px-3 text-center">{renderFormPills(team.form)}</td>
+                                            <td className="py-3 px-3 text-center font-bold text-accent-primary">{team.points}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     ) : (
                         <div className="p-12 text-center text-text-secondary">

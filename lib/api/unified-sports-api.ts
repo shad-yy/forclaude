@@ -1,4 +1,11 @@
 import { theSportsDB, RateLimitError, allSports as getAllSports } from "./the-sports-db"
+
+// Safely append /tiny to a TheSportsDB image URL without double-appending
+function safeBadgeUrl(url: string | undefined | null): string | undefined {
+  if (!url) return undefined
+  if (/\/(tiny|small|medium|large|preview)$/.test(url)) return url
+  return `${url}/tiny`
+}
 import type {
   SportsDbLeague as SportsDbLeagueType,
   SportsDbTeam as SportsDbTeamType,
@@ -74,6 +81,7 @@ export interface UnifiedStanding {
   goalDifference: number
   points: number
   form?: string
+  description?: string
 }
 
 // Transform TheSportsDB data to unified format
@@ -161,8 +169,8 @@ class UnifiedSportsAPI {
     const eventTime = event.strTime || event.strTimeLocal || ""
 
     // Get team logos from team data if available via API, or natively from event
-    const homeLogo = event.strHomeTeamBadge ? `${event.strHomeTeamBadge}/tiny` : homeTeamData?.strTeamBadge ? `${homeTeamData?.strTeamBadge}/tiny` : homeTeamData?.strTeamLogo ? `${homeTeamData?.strTeamLogo}/tiny` : undefined
-    const awayLogo = event.strAwayTeamBadge ? `${event.strAwayTeamBadge}/tiny` : awayTeamData?.strTeamBadge ? `${awayTeamData?.strTeamBadge}/tiny` : awayTeamData?.strTeamLogo ? `${awayTeamData?.strTeamLogo}/tiny` : undefined
+    const homeLogo = safeBadgeUrl(event.strHomeTeamBadge) ?? safeBadgeUrl(homeTeamData?.strTeamBadge) ?? safeBadgeUrl(homeTeamData?.strTeamLogo)
+    const awayLogo = safeBadgeUrl(event.strAwayTeamBadge) ?? safeBadgeUrl(awayTeamData?.strTeamBadge) ?? safeBadgeUrl(awayTeamData?.strTeamLogo)
 
     const status = event.strStatus || event.strResult || "Scheduled"
     return {
@@ -202,8 +210,8 @@ class UnifiedSportsAPI {
       time: eventTime,
       venue: event.strVenue,
       league: event.strLeague,
-      homeLogo: event.strHomeTeamBadge ? `${event.strHomeTeamBadge}/tiny` : undefined, // Native image directly on event
-      awayLogo: event.strAwayTeamBadge ? `${event.strAwayTeamBadge}/tiny` : undefined,
+      homeLogo: safeBadgeUrl(event.strHomeTeamBadge),
+      awayLogo: safeBadgeUrl(event.strAwayTeamBadge),
       isLive: status === "Live" || status === "HT" || status === "1H" || status === "2H",
     }
   }
@@ -263,7 +271,7 @@ class UnifiedSportsAPI {
         position: rank,
         team: teamName,
         teamId: entry.idTeam,
-        teamLogo: entry.strTeamBadge ? `${entry.strTeamBadge}/tiny` : entry.strBadge ? `${entry.strBadge}/tiny` : '',
+        teamLogo: safeBadgeUrl(entry.strTeamBadge) ?? safeBadgeUrl(entry.strBadge) ?? '',
         played,
         won,
         drawn,
@@ -273,6 +281,7 @@ class UnifiedSportsAPI {
         goalDifference,
         points,
         form: entry.strForm || undefined,
+        description: entry.strDescription || undefined,
       }
     })
   }

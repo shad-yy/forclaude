@@ -2,7 +2,7 @@
 // This route is intentionally not documented and should be kept secret
 import { type NextRequest, NextResponse } from "next/server"
 import { SignJWT } from "jose"
-import { getJwtSecret, hasJwtSecret } from "@/lib/env"
+import { ENV } from "@/lib/config/env"
 import bcrypt from "bcryptjs"
 
 // Admin password hash - securely stored
@@ -11,7 +11,7 @@ const ADMIN_PASSWORD_HASH =
 
 export async function POST(request: NextRequest) {
   try {
-    if (!hasJwtSecret()) {
+    if (!(!!ENV.JWT_SECRET)) {
       return NextResponse.json(
         { success: false, message: "JWT_SECRET environment variable is required" },
         { status: 500 }
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: "Invalid credentials" }, { status: 401 })
     }
 
-    const jwtSecret = getJwtSecret()
+    const jwtSecret = ENV.JWT_SECRET
     const token = await new SignJWT({
       isAdmin: true,
       loginTime: Date.now(),

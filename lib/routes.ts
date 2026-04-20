@@ -9,6 +9,8 @@ export const ROUTES = {
   EVENTS: "/events",
   NEWS: "/news",
   UFC: "/ufc",
+  WATCH: "/watch",
+  FAVORITES: "/favorites",
   SEARCH: "/search",
 
   // Dynamic routes
@@ -35,6 +37,8 @@ export const NAVIGATION_ROUTES = [
   ROUTES.EVENTS,
   ROUTES.NEWS,
   ROUTES.UFC,
+  ROUTES.WATCH,
+  ROUTES.FAVORITES,
 ] as const
 
 // Route metadata for SEO and navigation
@@ -74,6 +78,14 @@ export const ROUTE_METADATA = {
   [ROUTES.SEARCH]: {
     title: "Search Sports Content",
     description: "Find teams, players, leagues, events, and news",
+  },
+  [ROUTES.WATCH]: {
+    title: "Watch Now — Live Channels",
+    description: "Browse and stream live sports channels from around the world",
+  },
+  [ROUTES.FAVORITES]: {
+    title: "My Favorites",
+    description: "Your saved teams, leagues, events, and channels",
   },
 } as const
 

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { SignJWT, jwtVerify } from "jose"
-import { getJwtSecret, hasJwtSecret } from "@/lib/env"
+import { ENV } from "@/lib/config/env"
 
 export async function POST() {
   try {
     // Check if JWT_SECRET is available
-    if (!hasJwtSecret()) {
+    if (!(!!ENV.JWT_SECRET)) {
       return NextResponse.json(
         { 
           success: false, 
@@ -23,7 +23,7 @@ export async function POST() {
     }
 
     // Verify current token
-    const jwtSecret = getJwtSecret()
+    const jwtSecret = ENV.JWT_SECRET
     const { payload } = await jwtVerify(adminToken, new TextEncoder().encode(jwtSecret))
     const isAdmin = Boolean((payload as any).isAdmin)
 

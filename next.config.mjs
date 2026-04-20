@@ -68,6 +68,18 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.newsdata.io',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.newsdata.io',
+        port: '',
+        pathname: '/**',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -191,6 +203,11 @@ const nextConfig = {
           : []
 
       config.externals = [...baseExternals, 'cheerio', 'undici']
+    }
+    // Avoid WasmHash crash on very large source files (e.g. channelData.ts)
+    config.output = {
+      ...config.output,
+      hashFunction: 'xxhash64',
     }
     return config
   },

@@ -1,0 +1,100 @@
+import type { Metadata } from "next"
+import Link from "next/link"
+import { SchemaMarkup } from "@/components/SchemaMarkup"
+import { BLOG_POSTS } from "@/lib/blog/posts"
+
+export const metadata: Metadata = {
+  title: "Sports Streaming Blog | Guides & Tips | Smart Live TV",
+  description:
+    "How to watch Premier League abroad, beat geo-blocks, compare streaming services and more. Expert guides from Smart Live TV.",
+}
+
+const categoryClasses: Record<string, string> = {
+  "how-to": "bg-green-500/20 text-green-300 border border-green-500/30",
+  guides: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
+  news: "bg-orange-500/20 text-orange-300 border border-orange-500/30",
+  comparison: "bg-purple-500/20 text-purple-300 border border-purple-500/30",
+}
+
+export default function BlogIndexPage() {
+  const featuredPosts = BLOG_POSTS.filter((post) => post.featured)
+  const regularPosts = BLOG_POSTS.filter((post) => !post.featured)
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://smartlivetv.com/" },
+      { "@type": "ListItem", position: 2, name: "Blog", item: "https://smartlivetv.com/blog" },
+    ],
+  }
+
+  return (
+    <main className="min-h-screen bg-background pt-24 pb-20">
+      <SchemaMarkup schema={breadcrumbSchema} />
+
+      <section className="py-16 md:py-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="space-y-4 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-text-primary">Sports Streaming Blog</h1>
+            <p className="text-lg text-text-secondary max-w-3xl mx-auto">
+              Expert how-to guides, comparisons, and practical tips for watching every match from anywhere.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {featuredPosts.map((post) => (
+              <article key={post.slug} className="bg-[#12121a] border border-white/10 rounded-2xl p-8">
+                <div className="space-y-4">
+                  <span
+                    className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${categoryClasses[post.category]}`}
+                  >
+                    {post.category}
+                  </span>
+                  <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">{post.title}</h2>
+                  <p className="text-sm text-gray-400 line-clamp-2">{post.description}</p>
+                  <p className="text-sm text-gray-500">
+                    {post.readTime} min read • {new Date(post.publishedAt).toLocaleDateString()}
+                  </p>
+                  <Link href={`/blog/${post.slug}`} className="text-green-400 hover:text-green-300 font-semibold">
+                    Read Article →
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {regularPosts.map((post) => (
+              <article key={post.slug} className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
+                <div className="space-y-4">
+                  <span
+                    className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${categoryClasses[post.category]}`}
+                  >
+                    {post.category}
+                  </span>
+                  <h2 className="text-xl font-bold tracking-tight text-white">{post.title}</h2>
+                  <p className="text-sm text-gray-400 line-clamp-2">{post.description}</p>
+                  <p className="text-sm text-gray-500">
+                    {post.readTime} min read • {new Date(post.publishedAt).toLocaleDateString()}
+                  </p>
+                  <Link href={`/blog/${post.slug}`} className="text-green-400 hover:text-green-300 font-semibold">
+                    Read Article →
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  )
+}

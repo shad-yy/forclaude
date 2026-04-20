@@ -4,15 +4,17 @@
  * Security: RISK-002 - Eliminate hardcoded URLs and keys
  */
 
+import { ENV } from "@/lib/config/env"
+
 // API Base URLs - using NEXT_PUBLIC_* for client-side access
 export const API_CONFIG = {
   thesportsdb: {
     baseUrl: process.env.NEXT_PUBLIC_THESPORTSDB_API_BASE_URL || "/api",
-    apiKey: process.env.THESPORTSDB_API_KEY || "123", // Server-side only
+    apiKey: ENV.THESPORTSDB_KEY, // Server-side only
   },
   newsdata: {
     baseUrl: process.env.NEXT_PUBLIC_NEWSDATA_API_BASE_URL || "https://newsdata.io/api/1",
-    apiKey: process.env.NEWS_API_KEY || "", // Server-side only
+    apiKey: ENV.NEWS_API_KEY, // Server-side only
   },
   ufc: {
     baseUrl: process.env.NEXT_PUBLIC_UFC_API_BASE_URL || "https://www.ufc.com",

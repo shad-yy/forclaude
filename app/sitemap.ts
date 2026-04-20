@@ -1,92 +1,36 @@
 import { MetadataRoute } from "next"
+import { BLOG_POSTS } from "@/lib/blog/posts"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://smart-live-tv.vercel.app"
+  const baseUrl = "https://smartlivetv.com"
 
   return [
-    {
-      url: `${baseUrl}/`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/watch/premier-league`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/watch/la-liga`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/watch/bundesliga`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/watch/serie-a`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/watch/ligue-1`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/watch/champions-league`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/watch/ufc`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/setup/firestick`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/setup/smart-tv`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/setup/android`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/setup/iphone`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/pricing`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
+    { url: `${baseUrl}/`, priority: 1.0, changeFrequency: 'daily', lastModified: new Date() },
+    { url: `${baseUrl}/channels`, priority: 0.9, changeFrequency: 'weekly', lastModified: new Date() },
+    { url: `${baseUrl}/pricing`, priority: 0.9, changeFrequency: 'monthly', lastModified: new Date() },
+    { url: `${baseUrl}/free-trial`, priority: 0.9, changeFrequency: 'weekly', lastModified: new Date() },
+    { url: `${baseUrl}/watch/premier-league`, priority: 0.9, changeFrequency: 'daily', lastModified: new Date() },
+    { url: `${baseUrl}/watch/la-liga`, priority: 0.9, changeFrequency: 'daily', lastModified: new Date() },
+    { url: `${baseUrl}/watch/bundesliga`, priority: 0.9, changeFrequency: 'daily', lastModified: new Date() },
+    { url: `${baseUrl}/watch/serie-a`, priority: 0.9, changeFrequency: 'daily', lastModified: new Date() },
+    { url: `${baseUrl}/watch/ligue-1`, priority: 0.9, changeFrequency: 'daily', lastModified: new Date() },
+    { url: `${baseUrl}/watch/champions-league`, priority: 0.9, changeFrequency: 'daily', lastModified: new Date() },
+    { url: `${baseUrl}/ufc`, priority: 0.8, changeFrequency: 'weekly', lastModified: new Date() },
+    { url: `${baseUrl}/news`, priority: 0.8, changeFrequency: 'daily', lastModified: new Date() },
+    { url: `${baseUrl}/blog`, priority: 0.7, changeFrequency: 'weekly', lastModified: new Date() },
+    { url: `${baseUrl}/setup/firestick`, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date() },
+    { url: `${baseUrl}/setup/smart-tv`, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date() },
+    { url: `${baseUrl}/setup/android`, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date() },
+    { url: `${baseUrl}/setup/iphone`, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date() },
+    { url: `${baseUrl}/about`, priority: 0.5, changeFrequency: 'monthly', lastModified: new Date() },
+    { url: `${baseUrl}/contact`, priority: 0.5, changeFrequency: 'monthly', lastModified: new Date() },
+    { url: `${baseUrl}/privacy`, priority: 0.3, changeFrequency: 'yearly', lastModified: new Date() },
+    { url: `${baseUrl}/terms`, priority: 0.3, changeFrequency: 'yearly', lastModified: new Date() },
+    ...BLOG_POSTS.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.publishedAt,
+      changeFrequency: "monthly" as const,
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/news`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
+    })),
   ]
 }

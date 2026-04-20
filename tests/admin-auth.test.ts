@@ -1,17 +1,16 @@
 import { describe, it, expect, beforeAll } from "vitest"
 import { SignJWT } from "jose"
-import { getJwtSecret, hasJwtSecret } from "@/lib/env"
+import { ENV } from "@/lib/config/env"
 
 async function createAdminToken() {
-  if (!hasJwtSecret()) {
+  if (!ENV.JWT_SECRET) {
     throw new Error("JWT_SECRET is required for testing")
   }
-  const jwtSecret = getJwtSecret()
   return await new SignJWT({ isAdmin: true, loginTime: Date.now() })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("1h")
-    .sign(new TextEncoder().encode(jwtSecret))
+    .sign(new TextEncoder().encode(ENV.JWT_SECRET))
 }
 
 // These tests are lightweight and exercise route handlers as pure functions

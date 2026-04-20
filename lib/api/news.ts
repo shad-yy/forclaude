@@ -1,13 +1,9 @@
 const NEWS_BASE_URL = 'https://newsdata.io/api/1/latest'
+const NEWS_DOMAIN_FILTER = 'skysports.com,bbc.com,goal.com,espn.com,theguardian.com'
+const NEWS_DOMAIN_FALLBACK = 'skysports.com'
 
 // Module-level cache — survives between requests in dev
 const newsCache = new Map<string, { data: NewsArticle[]; expires: number }>()
-
-// Try multiple possible env var name spellings
-const getApiKey = (): string | null =>
-  process.env.NEWS_API_KEY ||
-  process.env.NEWSDATA_API_KEY ||
-  null
 
 export interface NewsArticle {
   article_id: string
@@ -33,8 +29,8 @@ const MOCK_NEWS: NewsArticle[] = [
     pubDate: new Date().toISOString(),
     source_name: 'BBC Sport',
     source_icon: null,
-    image_url: null,
-    category: ['sports'],
+    image_url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&q=80',
+    category: ['champions league'],
     language: 'english',
     country: ['united kingdom'],
     creator: null,
@@ -47,8 +43,8 @@ const MOCK_NEWS: NewsArticle[] = [
     pubDate: new Date().toISOString(),
     source_name: 'Sky Sports',
     source_icon: null,
-    image_url: null,
-    category: ['sports'],
+    image_url: 'https://images.unsplash.com/photo-1508098682722-e99c643e7485?w=800&q=80',
+    category: ['premier league'],
     language: 'english',
     country: ['united kingdom'],
     creator: null,
@@ -61,8 +57,8 @@ const MOCK_NEWS: NewsArticle[] = [
     pubDate: new Date().toISOString(),
     source_name: 'ESPN',
     source_icon: null,
-    image_url: null,
-    category: ['sports'],
+    image_url: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=800&q=80',
+    category: ['transfers'],
     language: 'english',
     country: ['united states of america'],
     creator: null,
@@ -75,8 +71,8 @@ const MOCK_NEWS: NewsArticle[] = [
     pubDate: new Date().toISOString(),
     source_name: 'Goal.com',
     source_icon: null,
-    image_url: null,
-    category: ['sports'],
+    image_url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80',
+    category: ['bundesliga'],
     language: 'english',
     country: ['germany'],
     creator: null,
@@ -89,22 +85,94 @@ const MOCK_NEWS: NewsArticle[] = [
     pubDate: new Date().toISOString(),
     source_name: 'The Guardian',
     source_icon: null,
-    image_url: null,
-    category: ['sports'],
+    image_url: 'https://images.unsplash.com/photo-1551958219-acbc4bbdf75c?w=800&q=80',
+    category: ['serie a'],
     language: 'english',
     country: ['italy'],
     creator: null,
   },
+  {
+    article_id: 'mock-6',
+    title: 'La Liga: El Clásico Preview — Form, Stats & Predictions',
+    link: '#',
+    description: 'The biggest match in club football returns as Madrid and Barça meet in a crucial title showdown.',
+    pubDate: new Date(Date.now() - 3600000).toISOString(),
+    source_name: 'Marca',
+    source_icon: null,
+    image_url: 'https://images.unsplash.com/photo-1560271888-f93a0c3acd37?w=800&q=80',
+    category: ['la liga'],
+    language: 'english',
+    country: ['spain'],
+    creator: null,
+  },
+  {
+    article_id: 'mock-7',
+    title: 'Ligue 1: PSG on Track for Another Title Defence',
+    link: '#',
+    description: 'Paris Saint-Germain maintain their grip on the French league as rivals struggle to keep pace.',
+    pubDate: new Date(Date.now() - 7200000).toISOString(),
+    source_name: 'L\'Équipe',
+    source_icon: null,
+    image_url: 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=800&q=80',
+    category: ['ligue 1'],
+    language: 'english',
+    country: ['france'],
+    creator: null,
+  },
+  {
+    article_id: 'mock-8',
+    title: 'UEFA Nations League: Semi-Final Berths Confirmed',
+    link: '#',
+    description: 'International football heats up as several nations clinch their places in the knockout rounds.',
+    pubDate: new Date(Date.now() - 10800000).toISOString(),
+    source_name: 'UEFA.com',
+    source_icon: null,
+    image_url: 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=800&q=80',
+    category: ['international'],
+    language: 'english',
+    country: ['europe'],
+    creator: null,
+  },
+  {
+    article_id: 'mock-9',
+    title: 'Champions League: Shock Result Sends Giant Home',
+    link: '#',
+    description: 'In a night of stunning football, a heavyweight European side crash out at the Round of 16.',
+    pubDate: new Date(Date.now() - 14400000).toISOString(),
+    source_name: 'Mirror Sport',
+    source_icon: null,
+    image_url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&q=80',
+    category: ['champions league'],
+    language: 'english',
+    country: ['united kingdom'],
+    creator: null,
+  },
+  {
+    article_id: 'mock-10',
+    title: 'Premier League: Injury Crisis Deepens Ahead of Derby',
+    link: '#',
+    description: 'A top-six club faces crisis as multiple first-team players are ruled out for the crucial city derby.',
+    pubDate: new Date(Date.now() - 18000000).toISOString(),
+    source_name: 'Sky Sports',
+    source_icon: null,
+    image_url: 'https://images.unsplash.com/photo-1508098682722-e99c643e7485?w=800&q=80',
+    category: ['premier league'],
+    language: 'english',
+    country: ['united kingdom'],
+    creator: null,
+  },
 ]
 
+import { ENV } from "@/lib/config/env"
+
 export async function getLatestSportsNews(
-  query = 'football OR soccer OR "premier league"',
+  query = 'football OR soccer OR "premier league" OR UFC OR "champions league"',
   size = 10
 ): Promise<NewsArticle[]> {
-  const apiKey = getApiKey()
+  const apiKey = ENV.NEWS_API_KEY
 
   if (!apiKey) {
-    console.warn('[NewsAPI] NEWS_API_KEY not configured — using mock data')
+    console.warn('[NewsAPI] NEWS_API_KEY missing in env')
     return MOCK_NEWS
   }
 
@@ -112,7 +180,7 @@ export async function getLatestSportsNews(
   const safeSize = Math.min(Math.max(1, size), 10)
   const cacheKey = `news:sports:${safeSize}`
 
-  // Check module-level cache first (15 min TTL)
+  // Check module-level cache first (6 hour TTL)
   const cached = newsCache.get(cacheKey)
   if (cached && Date.now() < cached.expires) {
     console.log('[NewsAPI] Cache hit — returning cached articles')
@@ -120,23 +188,30 @@ export async function getLatestSportsNews(
   }
 
   const params = new URLSearchParams({
-    apikey: apiKey,
-    q: query,
+    apikey: ENV.NEWS_API_KEY || '',
     language: 'en',
-    category: 'sports',
-    size: String(safeSize),
-    removeduplicate: '1',
-    prioritydomain: 'top',
-    image: '1',
+    size: '10',
+    q: query,
   })
 
-  const url = `${NEWS_BASE_URL}?${params.toString()}`
+  const domainFilter = 'skysports.com,bbc.com,goal.com,espn.com,theguardian.com,bbc.co.uk,telegraph.co.uk'
+  const url = `https://newsdata.io/api/1/news?${params.toString()}&domainurl=${domainFilter}`
 
   try {
-    console.log('[NewsAPI] Fetching from newsdata.io...')
-    const response = await fetch(url, {
-      next: { revalidate: 900 }, // Next.js cache: 15 min
+    console.log('[NewsAPI DEBUG] fetching:', url.replace(apiKey, 'REDACTED'))
+    let response = await fetch(url, {
+      next: { revalidate: 21600 }, // Next.js cache: 6 hours
     })
+
+    // Some plans reject multiple domains and return 422; retry with one domain.
+    if (response.status === 422) {
+      const fallbackUrl = `https://newsdata.io/api/1/news?${params.toString()}&domainurl=${NEWS_DOMAIN_FALLBACK}`
+      console.warn('[NewsAPI] Domain filter rejected, retrying with fallback domain')
+      console.log('[NewsAPI DEBUG] retrying:', fallbackUrl.replace(apiKey || '', 'REDACTED'))
+      response = await fetch(fallbackUrl, {
+        next: { revalidate: 21600 },
+      })
+    }
 
     if (response.status === 401 || response.status === 403) {
       console.error('[NewsAPI] Unauthorized — check NEWS_API_KEY in .env.local')
@@ -149,7 +224,7 @@ export async function getLatestSportsNews(
     }
 
     if (!response.ok) {
-      console.error(`[NewsAPI] HTTP ${response.status} — using mock data`)
+      console.error(`[NewsAPI] Request failed with status ${response.status} — using mock data`)
       return MOCK_NEWS
     }
 
@@ -162,10 +237,10 @@ export async function getLatestSportsNews(
 
     console.log(`[NewsAPI] Success — got ${data.results.length} articles`)
 
-    // Store in module-level cache for 15 minutes
+    // Store in module-level cache for 6 hours
     newsCache.set(cacheKey, {
       data: data.results as NewsArticle[],
-      expires: Date.now() + 15 * 60 * 1000,
+      expires: Date.now() + 21600 * 1000,
     })
 
     return data.results as NewsArticle[]

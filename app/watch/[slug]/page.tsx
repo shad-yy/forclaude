@@ -4,18 +4,48 @@ import { notFound } from 'next/navigation'
 import { unifiedSportsAPI } from '@/lib/api/unified-sports-api'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { generateFAQSchema } from '@/lib/schema'
+import { LEAGUES, LeagueSlug } from '@/lib/constants/leagues'
+import { LeagueBadge } from '@/components/league/league-badge'
 
-const LEAGUES = {
-    'premier-league': { id: '4328', name: 'Premier League', hasBlackout: true },
-    'la-liga': { id: '4335', name: 'La Liga', hasBlackout: false },
-    'bundesliga': { id: '4331', name: 'Bundesliga', hasBlackout: false },
-    'serie-a': { id: '4332', name: 'Serie A', hasBlackout: false },
-    'ligue-1': { id: '4334', name: 'Ligue 1', hasBlackout: false },
+/** Only append a size suffix if the URL doesn't already have one */
+function safeBadge(url: string | null | undefined, size: 'tiny' | 'small' | 'medium' = 'small'): string {
+    if (!url) return '/placeholder-logo.png'
+    if (/\/(tiny|small|medium|large|preview)$/.test(url)) return url
+    return `${url}/${size}`
 }
 
 const DEVICES = ['firestick', 'smart-tv', 'android', 'iphone']
 
 type Props = { params: { slug: string } }
+
+function safeParseSportsDBDate(date: string, time?: string): Date | null {
+    if (!date) return null
+    const parts = date.split('-').map(Number)
+    if (parts.length !== 3 || parts.some(isNaN)) return null
+    const [year, month, day] = parts
+    if (time) {
+      const t = time.split('+')[0].split('-')[0]
+      const [h, m] = t.split(':').map(Number)
+      return new Date(Date.UTC(year, month - 1, day, h || 0, m || 0))
+    }
+    return new Date(Date.UTC(year, month - 1, day))
+}
+
+function formatMatchDate(dateStr: string | null | undefined): string {
+    const d = safeParseSportsDBDate(dateStr || '')
+    if (!d) return 'TBA'
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+// Exact titles per spec — all verified under 60 chars
+const LEAGUE_TITLES: Record<string, string> = {
+    'premier-league': 'Watch Premier League Live Streaming | Free Trial | Smart Live TV',
+    'la-liga':        'Watch La Liga Live Streaming | Free Trial | Smart Live TV',
+    'bundesliga':     'Watch Bundesliga Live Streaming | Free Trial | Smart Live TV',
+    'serie-a':        'Watch Serie A Live Streaming | Free Trial | Smart Live TV',
+    'ligue-1':        'Watch Ligue 1 Live Streaming | Free Trial | Smart Live TV',
+    'champions-league': 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
+}
 
 // Force static building for the top SEO pages
 export function generateStaticParams() {
@@ -23,93 +53,169 @@ export function generateStaticParams() {
 }
 
 export function generateMetadata({ params }: Props): Metadata {
-    const league = LEAGUES[params.slug as keyof typeof LEAGUES]
+    const league = LEAGUES[params.slug as LeagueSlug]
     if (!league) return { title: 'League Not Found' }
 
+    const title = LEAGUE_TITLES[params.slug] ?? `Watch ${league.name} Live Streaming | Free Trial | Smart Live TV`
+    const description = `Stream every ${league.name} match live in HD. No blackouts, all devices. Start your free 24-hour trial today.`
+
     return {
-        title: `How to Watch ${league.name} Live Online in 2025 | SmartLiveTV`,
-        description: `Stream every ${league.name} match live in HD. No blackouts, all devices. Watch ${league.name} on Firestick, Smart TV, iPhone & Android.`,
+        title,
+        description,
+        alternates: {
+            canonical: `https://smartlivetv.com/watch/${params.slug}`,
+        },
         openGraph: {
-            title: `How to Watch ${league.name} Live Online in 2025`,
-            description: `Stream every ${league.name} match live in HD. No blackouts.`,
-            type: 'article',
-        }
+            title,
+            description,
+            type: 'website',
+            images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: ['/og-default.png'],
+        },
     }
 }
 
 export default async function WatchLeaguePage({ params }: Props) {
-    const league = LEAGUES[params.slug as keyof typeof LEAGUES]
+    const slug = params.slug
+    const theme = LEAGUES[slug as LeagueSlug]
 
-    if (!league) {
-        notFound()
-    }
+    if (!theme) return notFound()
 
     const [allFixtures, fullStandings] = await Promise.all([
-        unifiedSportsAPI.getFixtures({ leagueId: league.id, next: 15 }),
-        unifiedSportsAPI.getStandings(league.id)
+        unifiedSportsAPI.getFixtures({ leagueId: theme.id, next: 15 }),
+        unifiedSportsAPI.getStandings(theme.id)
     ])
 
     const fixtures = allFixtures.filter(e => e.status !== "Match Finished").slice(0, 5)
     const standings = fullStandings || []
 
+    const FormPill = ({ result }: { result: string }) => {
+        const colors: Record<string, string> = {
+            W: 'bg-green-500 text-black',
+            D: 'bg-gray-500 text-white',
+            L: 'bg-red-500 text-white'
+        }
+        return (
+            <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${colors[result] || 'bg-gray-700 text-white'}`}>
+                {result}
+            </span>
+        )
+    }
+
+    const renderForm = (formStr?: string) => {
+        if (!formStr) return null
+        const results = formStr.replace(/[^WDL]/g, '').split('').slice(-5)
+        if (results.length === 0) return null
+        return (
+            <div className="flex items-center gap-1 justify-center">
+                {results.map((r, idx) => <FormPill key={`${r}-${idx}`} result={r} />)}
+            </div>
+        )
+    }
+
+    const getDescriptionBorder = (desc?: string) => {
+        if (!desc) return ''
+        if (desc.includes('Champions League')) return 'border-l-2 border-blue-500'
+        if (desc.includes('Europa League')) return 'border-l-2 border-orange-500'
+        if (desc.includes('Relegation')) return 'border-l-2 border-red-500'
+        return ''
+    }
+
     const faqs = [
         {
-            question: `Is it legal to use IPTV for ${league.name}?`,
-            answer: `Yes, using a streaming service to watch ${league.name} is completely legal. SmartLiveTV provides a secure and reliable platform for accessing your favorite sports content without restrictions.`
+            question: `Is it legal to use IPTV for ${theme.name}?`,
+            answer: `Yes, using a streaming service to watch ${theme.name} is completely legal. SmartLiveTV provides a secure and reliable platform for accessing your favorite sports content without restrictions.`
         },
         {
-            question: `Can I watch ${league.name} on my Firestick?`,
+            question: `Can I watch ${theme.name} on my Firestick?`,
             answer: `Absolutely! SmartLiveTV is fully compatible with Amazon Firestick. We also support Smart TVs, Android devices, iPhones, and desktop computers.`
         },
         {
-            question: `How much does it cost to watch ${league.name} online?`,
-            answer: `We offer a free 24-hour trial to test the service. After that, our Sports Fan package is just £9.99/month, covering all ${league.name} matches along with other major sports.`
+            question: `How much does it cost to watch ${theme.name} online?`,
+            answer: `We offer a free 24-hour trial to test the service. After that, our Sports Fan package is just £9.99/month, covering all ${theme.name} matches along with other major sports.`
         },
         {
-            question: `Can I watch ${league.name} games abroad?`,
-            answer: `Yes, you can stream ${league.name} matches from anywhere in the world using our service. No VPN is required, and there are no regional restrictions.`
+            question: `Can I watch ${theme.name} games abroad?`,
+            answer: `Yes, you can stream ${theme.name} matches from anywhere in the world using our service. No VPN is required, and there are no regional restrictions.`
         }
     ]
 
     const faqSchema = generateFAQSchema(faqs)
 
+    const sportsOrgSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'SportsOrganization',
+        name: theme.name,
+        url: `https://smartlivetv.com/watch/${slug}`,
+        sport: 'Soccer',
+        location: {
+            '@type': 'Place',
+            addressCountry: theme.country,
+        },
+    }
+
     return (
         <div className="min-h-screen bg-gray-950 text-gray-100">
             <SchemaMarkup schema={faqSchema} />
+            <SchemaMarkup schema={sportsOrgSchema} />
 
             {/* Hero Section */}
-            <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-gradient-to-b from-gray-900 to-gray-950 text-center px-4">
+            <section
+                className="pt-32 pb-16 md:pt-40 md:pb-24 text-center px-4 border-b"
+                style={{
+                    background: `linear-gradient(135deg, ${theme.primary} 0%, #0a0a0f 100%)`,
+                    borderColor: theme.secondary,
+                }}
+            >
                 <div className="container mx-auto max-w-4xl">
+                    <div className="flex items-center justify-center mb-6">
+                        <LeagueBadge src={theme.badgeUrl} alt={theme.name} size={64} className="object-contain" />
+                    </div>
                     <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
-                        Watch {league.name} Live — Every Match, No Blackouts
+                        {theme.heroText}
                     </h1>
                     <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
                         Tired of missing the biggest games because of expensive cable packages and restricted broadcasts? Get access to every single kick-off this season—crystal clear, on any device.
                     </p>
                     <Link
                         href="/pricing"
-                        className="inline-block px-8 py-4 bg-green-500 hover:bg-green-400 text-black font-bold rounded-lg text-lg transition-transform transform hover:-translate-y-1 shadow-lg"
+                        className="inline-block px-8 py-4 text-black font-bold rounded-lg text-lg transition-transform transform hover:-translate-y-1 shadow-lg border"
+                        style={{ backgroundColor: theme.secondary, borderColor: theme.secondary }}
                     >
-                        Stream {league.name} Free For 24 Hours
+                        Stream {theme.name} Free For 24 Hours
                     </Link>
                 </div>
             </section>
 
-            <div className="container mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl">
+            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl">
                 {/* Left Column: Content + Fixtures */}
                 <div className="lg:col-span-2 space-y-16">
 
                     {/* SEO Content Block */}
                     <section className="prose prose-invert prose-lg max-w-none">
-                        <h2 className="text-3xl font-bold text-white mb-6">How to Watch {league.name} Live Online</h2>
+                        <h2 className="text-3xl font-bold text-white mb-6">How to Watch {theme.name} Live Online</h2>
                         <p>
-                            Following {league.name} has consistently become more frustrating for fans. Splitting subscriptions across multiple providers just to watch your team is expensive. Even when you pay, {league.hasBlackout && <strong className="text-green-400">the traditional 3pm blackout rule means you still miss crucial games. </strong>}You're left settling for delayed highlights or radio broadcasts.
+                            Following {theme.name} has consistently become more frustrating for fans. Splitting subscriptions across multiple providers just to watch your team is expensive. Even when you pay, you&apos;re left settling for delayed highlights or radio broadcasts.
                         </p>
                         <p>
-                            SmartLiveTV changes everything. Our IPTV solution bypasses the restrictions entirely, bringing every single {league.name} fixture directly to you in HD at a fraction of the cost of standard cable. Best of all, our app works identically across devices, meaning you can easily <Link href="/setup/firestick" className="text-blue-400 hover:text-blue-300">set it up on your Firestick</Link>, cast it to your Smart TV, or watch live while commuting on your mobile.
+                            SmartLiveTV changes everything. Our IPTV solution bypasses the restrictions entirely, bringing every single {theme.name} fixture directly to you in HD at a fraction of the cost of standard cable. Best of all, our app works identically across devices — you can easily{' '}
+                            <Link href="/setup/firestick" className="text-blue-400 hover:text-blue-300">set it up on your Firestick</Link>,
+                            cast it to your Smart TV, or watch live while commuting on your mobile.
                         </p>
                         <p>
-                            Stop paying for missing coverage. Try our 24-hour trial and never miss a goal again.
+                            Start your{' '}
+                            <Link href="/pricing" className="text-green-400 hover:text-green-300">free trial</Link>
+                            {' '}and never miss a goal again.
+                            {slug !== 'champions-league' && (
+                                <> Also available: stream the{' '}
+                                <Link href="/watch/champions-league" className="text-blue-400 hover:text-blue-300">Champions League</Link>
+                                {' '}on the same subscription.</>
+                            )}
                         </p>
 
                         <div className="my-10 p-8 border border-gray-800 rounded-2xl bg-gray-900/50">
@@ -140,25 +246,34 @@ export default async function WatchLeaguePage({ params }: Props) {
 
                     {/* Upcoming Matches */}
                     <section>
-                        <h2 className="text-2xl font-bold text-white mb-6">Upcoming {league.name} Fixtures</h2>
+                        <div className="h-px w-full mb-6" style={{ backgroundColor: theme.secondary, opacity: 0.35 }} />
+                        <h2 className="text-2xl font-bold text-white mb-6">Upcoming {theme.name} Fixtures</h2>
                         {fixtures.length > 0 ? (
                             <div className="space-y-4">
                                 {fixtures.map((match: any) => (
                                     <div key={match.id} className="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-gray-700 transition">
                                         <div className="flex items-center gap-6 w-full md:w-auto flex-1">
                                             <div className="flex flex-col items-center w-24">
-                                                <img src={match.homeLogo ? `${match.homeLogo}/small` : '/placeholder-logo.png'} alt={match.homeTeam} className="w-12 h-12 object-contain mb-2" />
+                                                <img src={safeBadge(match.homeLogo)} alt={match.homeTeam} className="w-12 h-12 object-contain mb-2" />
                                                 <span className="text-xs text-center font-bold text-gray-300">{match.homeTeam}</span>
                                             </div>
                                             <div className="text-center px-4 text-sm text-gray-500 font-bold">
-                                                VS<br /><span className="text-xs font-normal">{new Date(match.time).toLocaleDateString()}</span>
+                                                VS<br /><span className="text-xs font-normal">{formatMatchDate(match.date)}</span>
                                             </div>
                                             <div className="flex flex-col items-center w-24">
-                                                <img src={match.awayLogo ? `${match.awayLogo}/small` : '/placeholder-logo.png'} alt={match.awayTeam} className="w-12 h-12 object-contain mb-2" />
+                                                <img src={safeBadge(match.awayLogo)} alt={match.awayTeam} className="w-12 h-12 object-contain mb-2" />
                                                 <span className="text-xs text-center font-bold text-gray-300">{match.awayTeam}</span>
                                             </div>
                                         </div>
-                                        <Link href="/pricing" className="whitespace-nowrap px-6 py-3 bg-green-500 hover:bg-green-400 text-black font-bold rounded-lg transition-transform transform hover:-translate-y-0.5 w-full md:w-auto text-center">
+                                        <Link
+                                            href="/pricing"
+                                            className="whitespace-nowrap px-6 py-3 text-black font-bold rounded-lg transition-transform transform hover:-translate-y-0.5 w-full md:w-auto text-center border hover:shadow-[0_0_18px_var(--accent)]"
+                                            style={{
+                                                backgroundColor: theme.secondary,
+                                                borderColor: theme.secondary,
+                                                ['--accent' as any]: theme.accent,
+                                            }}
+                                        >
                                             Watch This Match →
                                         </Link>
                                     </div>
@@ -187,50 +302,97 @@ export default async function WatchLeaguePage({ params }: Props) {
                 {/* Right Column: Standings Sidebar */}
                 <div className="lg:col-span-1">
                     <div className="sticky top-24 bg-gray-900 rounded-3xl border border-gray-800 overflow-hidden">
-                        <div className="p-4 border-b border-gray-800 bg-gray-800/50">
-                            <h3 className="text-lg font-bold text-white">Live {league.name} Table</h3>
+                        <div className="p-4 border-b bg-gray-800/50" style={{ borderColor: theme.secondary }}>
+                            <h3 className="text-lg font-bold text-white">Live {theme.name} Table</h3>
                         </div>
 
-                        <div className="flex flex-col text-sm">
-                            <div className="grid grid-cols-12 gap-2 p-3 border-b border-gray-800 text-gray-500 font-bold text-xs uppercase">
-                                <div className="col-span-2 text-center">#</div>
-                                <div className="col-span-6">Team</div>
-                                <div className="col-span-2 text-center">P</div>
-                                <div className="col-span-2 text-center">Pts</div>
-                            </div>
-
-                            {standings.slice(0, 10).map((team: any, i: number) => (
-                                <div key={team.teamId} className={`grid grid-cols-12 gap-2 p-3 items-center hover:bg-gray-800/50 transition-colors ${i !== Math.min(standings.length, 10) - 1 ? 'border-b border-gray-800/50' : ''}`}>
-                                    <div className="col-span-2 text-center font-bold text-gray-500">{team.rank}</div>
-                                    <div className="col-span-6 flex items-center gap-2">
-                                        <img src={team.logo ? `${team.logo}/small` : '/placeholder-logo.png'} alt={team.teamName} className="w-5 h-5 object-contain" />
-                                        <span className="font-semibold text-gray-200 line-clamp-1 flex-1 text-xs">{team.teamName}</span>
-                                    </div>
-                                    <div className="col-span-2 text-center text-gray-500">{team.played}</div>
-                                    <div className="col-span-2 text-center font-bold text-white">{team.points}</div>
-                                </div>
-                            ))}
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs">
+                                <thead className="sticky top-0 z-10" style={{ backgroundColor: '#0f1118' }}>
+                                    <tr className="text-gray-200 font-bold uppercase border-b" style={{ borderColor: theme.secondary }}>
+                                        <th className="py-2 px-2 text-center w-8">#</th>
+                                        <th className="py-2 px-2 text-left">Team</th>
+                                        <th className="py-2 px-2 text-center w-8">P</th>
+                                        <th className="py-2 px-2 text-center w-8">W</th>
+                                        <th className="py-2 px-2 text-center w-8">D</th>
+                                        <th className="py-2 px-2 text-center w-8">L</th>
+                                        <th className="py-2 px-2 text-center w-8 hidden md:table-cell">GF</th>
+                                        <th className="py-2 px-2 text-center w-8 hidden md:table-cell">GA</th>
+                                        <th className="py-2 px-2 text-center w-8 hidden md:table-cell">GD</th>
+                                        <th className="py-2 px-2 text-center">Form</th>
+                                        <th className="py-2 px-2 text-center w-10 text-white">Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {standings.slice(0, 10).map((team: any, i: number) => (
+                                        <tr
+                                            key={team.teamId || i}
+                                            className={`border-b border-gray-800/60 hover:bg-gray-800/50 transition-colors even:bg-white/[0.02]`}
+                                        >
+                                            <td className="py-2 px-2 text-center font-bold text-gray-500">{team.position}</td>
+                                            <td className="py-2 px-2">
+                                                <div className={`flex items-center gap-2 pl-2 ${getDescriptionBorder(team.description)}`}>
+                                                    <img src={safeBadge(team.teamLogo)} alt={team.team} className="w-5 h-5 object-contain" />
+                                                    <span className="font-semibold text-gray-200 line-clamp-1 flex-1">{team.team}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-2 px-2 text-center text-gray-500">{team.played}</td>
+                                            <td className="py-2 px-2 text-center text-gray-500">{team.won}</td>
+                                            <td className="py-2 px-2 text-center text-gray-500">{team.drawn}</td>
+                                            <td className="py-2 px-2 text-center text-gray-500">{team.lost}</td>
+                                            <td className="py-2 px-2 text-center text-gray-500 hidden md:table-cell">{team.goalsFor}</td>
+                                            <td className="py-2 px-2 text-center text-gray-500 hidden md:table-cell">{team.goalsAgainst}</td>
+                                            <td className="py-2 px-2 text-center text-gray-500 hidden md:table-cell">{team.goalDifference}</td>
+                                            <td className="py-2 px-2 text-center">{renderForm(team.form)}</td>
+                                            <td className="py-2 px-2 text-center font-bold text-white">{team.points}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
 
                         <div className="p-4 border-t border-gray-800 bg-gray-800/20 text-center">
-                            <Link href="/pricing" className="text-green-500 hover:text-green-400 font-bold text-sm">Unlock full table & all games</Link>
+                            <Link href="/pricing" className="text-green-500 hover:text-green-400 font-bold text-sm">Unlock full table &amp; all games</Link>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Bottom CTA */}
-            <section className="py-24 bg-gradient-to-t from-gray-900 to-gray-950 text-center px-4 border-t border-gray-800">
+            <section className="py-24 text-center px-4 border-t" style={{ borderColor: theme.secondary, background: `linear-gradient(180deg, #0a0a0f 0%, ${theme.primary}33 100%)` }}>
                 <div className="container mx-auto max-w-3xl">
                     <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">Ready to ditch the cable?</h2>
                     <Link
                         href="/pricing"
-                        className="inline-block px-10 py-5 bg-green-500 hover:bg-green-400 text-black font-extrabold rounded-lg text-xl transition-transform transform hover:-translate-y-1 shadow-xl"
+                        className="inline-block px-10 py-5 text-black font-extrabold rounded-lg text-xl transition-transform transform hover:-translate-y-1 shadow-xl border"
+                        style={{ backgroundColor: theme.secondary, borderColor: theme.secondary }}
                     >
-                        Start Watching {league.name} Tonight — Free Trial
+                        Start Watching {theme.name} Tonight — Free Trial
                     </Link>
                 </div>
             </section>
+
+      {/* Mobile Sticky CTA — md:hidden */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0f]/95 backdrop-blur-md border-t border-[#2a2a3a] p-4">
+        <div className="grid grid-cols-2 gap-3">
+          <a
+            href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-[#00e676] text-black font-bold text-sm py-3.5 rounded-xl text-center"
+          >
+            Get Free Trial
+          </a>
+          <a
+            href="https://wa.me/message/PLACEHOLDER"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-[#25D366] text-black font-bold text-sm py-3.5 rounded-xl text-center"
+          >
+            💬 WhatsApp
+          </a>
+        </div>
+      </div>
         </div>
     )
 }
