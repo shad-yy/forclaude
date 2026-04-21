@@ -3,6 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { SchemaMarkup } from "@/components/SchemaMarkup"
 import { BLOG_POSTS } from "@/lib/blog/posts"
+import { ENV } from "@/lib/config/env"
 
 type BlogPostPageProps = {
   params: { slug: string }
@@ -26,7 +27,7 @@ export function generateMetadata({ params }: BlogPostPageProps): Metadata {
     title: `${post.title} | Smart Live TV Blog`,
     description: post.description,
     alternates: {
-      canonical: `https://smartlivetv.com/blog/${post.slug}`,
+      canonical: `${ENV.BASE_URL}/blog/${post.slug}`,
     },
     openGraph: {
       title: post.title,
@@ -72,9 +73,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     publisher: {
       "@type": "Organization",
       name: "Smart Live TV",
-      url: "https://smartlivetv.com",
+      url: ENV.BASE_URL,
     },
-    url: `https://smartlivetv.com/blog/${post.slug}`,
+    url: `${ENV.BASE_URL}/blog/${post.slug}`,
   }
 
   const lastUpdated = new Date(dateModified).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })

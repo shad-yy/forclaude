@@ -5,6 +5,7 @@ import "./globals.css"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { cn } from "@/lib/utils"
+import { ENV } from "@/lib/config/env"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,7 +21,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://smartlivetv.com"),
+  metadataBase: new URL(ENV.BASE_URL),
   title: {
     default: "Smart Live TV",
     template: "%s | Smart Live TV",
@@ -50,9 +51,9 @@ export const metadata: Metadata = {
     images: ["/og-default.png"],
   },
   alternates: {
-    canonical: "https://smartlivetv.com",
+    canonical: ENV.BASE_URL,
     languages: {
-      "en-GB": "https://smartlivetv.com",
+      "en-GB": ENV.BASE_URL,
     },
   },
   robots: {

@@ -2,11 +2,13 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { SchemaMarkup } from "@/components/SchemaMarkup"
 import { BLOG_POSTS } from "@/lib/blog/posts"
+import { ENV } from "@/lib/config/env"
 
 export const metadata: Metadata = {
   title: "Sports Streaming Blog | Guides & Tips | Smart Live TV",
   description:
     "How to watch Premier League abroad, beat geo-blocks, compare streaming services and more. Expert guides from Smart Live TV.",
+  alternates: { canonical: `${ENV.BASE_URL}/blog` },
 }
 
 const categoryClasses: Record<string, string> = {
@@ -24,8 +26,8 @@ export default function BlogIndexPage() {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://smartlivetv.com/" },
-      { "@type": "ListItem", position: 2, name: "Blog", item: "https://smartlivetv.com/blog" },
+      { "@type": "ListItem", position: 1, name: "Home", item: `${ENV.BASE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${ENV.BASE_URL}/blog` },
     ],
   }
 

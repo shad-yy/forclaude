@@ -168,4 +168,34 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>If there's a Champions League match tonight, you can watch it. Start your <a href="/pricing">free 24-hour trial</a> at smartlivetv.com/pricing — no card required, setup takes under 5 minutes.</p>
     `,
   },
+  {
+    slug: "is-iptv-legal-uk",
+    title: "Is IPTV Legal in the UK? What You Need to Know (2026)",
+    description:
+      "We break down exactly what IPTV is, where the legal lines are drawn in the UK, and how to ensure you're staying on the right side of the law.",
+    category: "guides",
+    publishedAt: "2026-04-20",
+    readTime: 5,
+    featured: true,
+    content: `
+<h2>What is IPTV?</h2>
+<p>IPTV is simply a method of delivering television content over the internet, rather than through traditional terrestrial, satellite, or cable formats. If you use BBC iPlayer, Netflix, or Amazon Prime Video, you're already using a form of IPTV. The technology itself is 100% legal.</p>
+
+<h2>Legal vs. Illegal IPTV: The Key Difference</h2>
+<p>The difference between a legal and an illegal IPTV service comes down to <strong>licensing</strong>. Legal services have paid for the rights to broadcast the content they provide. Illegal services stream content (like Sky Sports, TNT Sports, or new cinema releases) without obtaining the necessary licenses.</p>
+
+<h2>Is it Illegal to Use a Non-Licensed Service?</h2>
+<p>In the UK, the focus of law enforcement is primarily on the <strong>providers and sellers</strong> of illegal IPTV services, not the individual viewers. However, using an unlicensed service carries risks including service shutdowns, security threats, and ISP blocks during major events.</p>
+
+<h2>How to Stay Safe and Legal</h2>
+<ul>
+  <li><strong>Check for Official Apps</strong> — Legal services usually have official apps in major app stores.</li>
+  <li><strong>Be Wary of "Too Good to Be True" Prices</strong> — Every premium channel for £5 a month is a red flag.</li>
+  <li><strong>Look for Reseller Agreements</strong> — Legitimate resellers will often state their relationship with content providers.</li>
+</ul>
+
+<h2>The Smart Live TV Approach</h2>
+<p>At Smart Live TV, we operate as a legitimate streaming reseller. We provide access to high-quality international feeds that are licensed for global distribution. Our goal is to provide a reliable, high-quality, and accessible streaming experience for sports fans worldwide.</p>
+    `,
+  },
 ]

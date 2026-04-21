@@ -1,18 +1,19 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqAccordion } from '@/components/pricing/faq-accordion'
+import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: 'IPTV Pricing UK — From £5.99/mo | Smart Live TV',
   description:
     'Stream Premier League, Champions League & 15,000+ channels from £5.99/mo. No contract. Start your free 24-hour trial today.',
   alternates: {
-    canonical: 'https://smartlivetv.com/pricing',
+    canonical: `${ENV.BASE_URL}/pricing`,
   },
   openGraph: {
     title: 'IPTV Pricing UK — From £5.99/mo | Smart Live TV',
     description: 'Flexible IPTV plans from £5.99/mo. No contracts, cancel anytime. Free 24-hour trial.',
-    url: 'https://smartlivetv.com/pricing',
+    url: `${ENV.BASE_URL}/pricing`,
     siteName: 'Smart Live TV',
     images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],
   },
@@ -332,7 +333,7 @@ export default function PricingPage() {
             Get My Free Trial →
           </Link>
           <a 
-            href="https://wa.me/message/PLACEHOLDER"
+            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full md:w-auto px-8 py-4 bg-[#25D366] text-black font-bold rounded-xl hover:brightness-110 transition-colors whitespace-nowrap"
@@ -360,7 +361,7 @@ export default function PricingPage() {
             Get Free Trial
           </a>
           <a
-            href="https://wa.me/message/PLACEHOLDER"
+            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#25D366] text-black font-bold text-sm py-3.5 rounded-xl text-center"

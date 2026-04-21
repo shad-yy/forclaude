@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
+import { ENV } from "@/lib/config/env"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
   description:
     "Latest UFC events, fighter rankings, and mixed martial arts coverage. Stay updated with upcoming fights and champion rankings.",
   keywords: ["UFC", "MMA", "Mixed Martial Arts", "Fighter Rankings", "UFC Events", "Combat Sports"],
+  alternates: { canonical: `${ENV.BASE_URL}/ufc` },
   openGraph: {
     title: "UFC - Ultimate Fighting Championship",
     description: "Latest UFC events, fighter rankings, and mixed martial arts coverage",

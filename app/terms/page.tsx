@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
+import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: 'Terms of Service | Smart Live TV',
   description: 'Smart Live TV terms of service — your rights and responsibilities as a subscriber.',
-  alternates: { canonical: 'https://smartlivetv.com/terms' },
+  alternates: { canonical: `${ENV.BASE_URL}/terms` },
 }
 
 export default function TermsPage() {

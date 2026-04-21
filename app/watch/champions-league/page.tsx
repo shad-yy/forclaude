@@ -3,13 +3,14 @@ import Link from 'next/link'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { generateFAQSchema } from '@/lib/schema'
 import { LeagueBadge } from '@/components/league/league-badge'
+import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
   description:
     'Stream every UEFA Champions League match in 4K. No BT Sport needed. Watch from anywhere with a free 24-hour trial.',
   alternates: {
-    canonical: 'https://smartlivetv.com/watch/champions-league',
+    canonical: `${ENV.BASE_URL}/watch/champions-league`,
   },
   openGraph: {
     title: 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
@@ -125,9 +126,9 @@ export default async function ChampionsLeaguePage() {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://smartlivetv.com/' },
-      { '@type': 'ListItem', position: 2, name: 'Watch Live', item: 'https://smartlivetv.com/watch' },
-      { '@type': 'ListItem', position: 3, name: 'UEFA Champions League', item: 'https://smartlivetv.com/watch/champions-league' },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${ENV.BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Watch Live', item: `${ENV.BASE_URL}/watch` },
+      { '@type': 'ListItem', position: 3, name: 'UEFA Champions League', item: `${ENV.BASE_URL}/watch/champions-league` },
     ],
   }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
-import { withCache } from "@/lib/cache/persistentCache"
+import { withCache } from "@/lib/cache/redis"
 
 const VALID_LEAGUE_IDS = ["4328", "4335", "4331", "4332", "4334"]
 

@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { Metadata } from "next"
+import { ENV } from "@/lib/config/env"
 
 import { HeroSection } from "@/components/homepage/hero-section"
 import { MatchCard } from "@/components/homepage/match-card"
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
   title: 'Smart Live TV — Watch 15,000+ Channels | Free 24H Trial',
   description: 'Stream Premier League, La Liga, Champions League, UFC & more on any device. Get your free 24-hour trial today.',
   alternates: {
-    canonical: '/',
+    canonical: ENV.BASE_URL,
   },
 }
 
@@ -31,10 +32,10 @@ export default function HomePage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebSite",
-            url: "https://smartlivetv.com/",
+            url: `${ENV.BASE_URL}/`,
             potentialAction: {
               "@type": "SearchAction",
-              target: "https://smartlivetv.com/search?q={search_term_string}",
+              target: `${ENV.BASE_URL}/search?q={search_term_string}`,
               "query-input": "required name=search_term_string"
             }
           })

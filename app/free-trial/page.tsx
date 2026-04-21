@@ -1,10 +1,11 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: 'Get Your Free 24-Hour IPTV Trial | Smart Live TV',
   description: 'Claim your free 24-hour trial. No credit card. All 15,000+ channels included. Set up in 5 minutes on any device.',
-  alternates: { canonical: 'https://smartlivetv.com/free-trial' },
+  alternates: { canonical: `${ENV.BASE_URL}/free-trial` },
 }
 
 export default function FreeTrialPage() {
@@ -58,7 +59,7 @@ export default function FreeTrialPage() {
         </p>
 
         <a
-          href="https://wa.me/PLACEHOLDER?text=Hi%2C+I%27d+like+to+claim+my+free+24h+trial.+Device%3A+"
+          href={process.env.NEXT_PUBLIC_WHATSAPP_URL ? `${process.env.NEXT_PUBLIC_WHATSAPP_URL}&text=Hi%2C+I%27d+like+to+claim+my+free+24h+trial.+Device%3A+` : '#'}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:brightness-110 text-black font-extrabold text-lg px-8 py-5 rounded-2xl transition-all shadow-[0_0_30px_rgba(37,211,102,0.3)]"

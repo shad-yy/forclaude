@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { ENV } from "@/lib/config/env"
 import { getLatestSportsNews } from "@/lib/api/news"
 import { NewsPageClient } from "./client"
 
@@ -6,6 +7,7 @@ export const metadata: Metadata = {
   title: "Sports News | Latest Football & MMA | Smart Live TV",
   description:
     "Latest Premier League, Champions League and UFC news updated daily.",
+  alternates: { canonical: `${ENV.BASE_URL}/news` },
 }
 
 export default async function NewsPage() {

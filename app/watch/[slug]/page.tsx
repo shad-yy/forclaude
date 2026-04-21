@@ -6,6 +6,7 @@ import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { generateFAQSchema } from '@/lib/schema'
 import { LEAGUES, LeagueSlug } from '@/lib/constants/leagues'
 import { LeagueBadge } from '@/components/league/league-badge'
+import { ENV } from '@/lib/config/env'
 
 /** Only append a size suffix if the URL doesn't already have one */
 function safeBadge(url: string | null | undefined, size: 'tiny' | 'small' | 'medium' = 'small'): string {
@@ -63,7 +64,7 @@ export function generateMetadata({ params }: Props): Metadata {
         title,
         description,
         alternates: {
-            canonical: `https://smartlivetv.com/watch/${params.slug}`,
+            canonical: `${ENV.BASE_URL}/watch/${params.slug}`,
         },
         openGraph: {
             title,
@@ -151,7 +152,7 @@ export default async function WatchLeaguePage({ params }: Props) {
         '@context': 'https://schema.org',
         '@type': 'SportsOrganization',
         name: theme.name,
-        url: `https://smartlivetv.com/watch/${slug}`,
+        url: `${ENV.BASE_URL}/watch/${slug}`,
         sport: 'Soccer',
         location: {
             '@type': 'Place',
@@ -384,7 +385,7 @@ export default async function WatchLeaguePage({ params }: Props) {
             Get Free Trial
           </a>
           <a
-            href="https://wa.me/message/PLACEHOLDER"
+            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#25D366] text-black font-bold text-sm py-3.5 rounded-xl text-center"

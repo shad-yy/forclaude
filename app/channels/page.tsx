@@ -6,7 +6,7 @@ import ChannelLibrary from '@/components/channels/channel-library'
 export const metadata: Metadata = {
   title: 'IPTV Channel List UK — 15,000+ Live Channels | Smart Live TV',
   description: 'Browse 15,000+ live channels including UK, Arabic, French, German, Indian, US and more. Premier League, La Liga, UFC, Sky Sports, BT Sport & more. Free 24-hour trial, no card required.',
-  alternates: { canonical: 'https://smartlivetv.com/channels' },
+  alternates: { canonical: `${ENV.BASE_URL}/channels` },
   openGraph: {
     title: 'IPTV Channel List UK — 15,000+ Channels',
     description: 'Every channel you want. No blackouts. Cancel anytime.',
@@ -30,7 +30,7 @@ const TOP_10_CHANNELS = [
 
 export default function ChannelsPage() {
   const storeUrl = ENV.STORE_URL
-  const whatsappUrl = "https://wa.me/message/PLACEHOLDER"
+  const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'
 
   const schema = {
     "@context": "https://schema.org",
@@ -136,12 +136,12 @@ export default function ChannelsPage() {
         {/* SECTION 4 — REAL STATS BAND */}
         <section className="bg-[#12121a] border-y border-[#2a2a3a] py-12 text-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-white mb-8">Trusted by Sports Fans Across the UK</h2>
+            <h2 className="text-2xl font-bold text-white mb-10">Why Sports Fans Choose Smart Live TV</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
               <div className="flex flex-col">
                 <span className="text-4xl font-extrabold text-[#00e676] mb-2">10</span>
-                <span className="text-sm text-white font-medium">Free trials given daily</span>
+                <span className="text-sm text-white font-medium">Free trials activated daily</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-4xl font-extrabold text-[#00e676] mb-2">5 min</span>
@@ -149,12 +149,12 @@ export default function ChannelsPage() {
               </div>
               <div className="flex flex-col">
                 <span className="text-4xl font-extrabold text-[#00e676] mb-2">24H</span>
-                <span className="text-sm text-white font-medium">Trial with no card needed</span>
+                <span className="text-sm text-white font-medium">Full trial period</span>
               </div>
             </div>
 
-            <p className="text-gray-500 text-sm text-center mt-6">
-              Join our growing community of subscribers — start your free trial today.
+            <p className="text-gray-500 text-sm text-center mt-8">
+              Join our growing community of UK subscribers — start your free trial today.
             </p>
           </div>
         </section>

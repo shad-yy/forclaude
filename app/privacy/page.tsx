@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
+import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Smart Live TV',
   description: 'Smart Live TV privacy policy — how we collect, use and protect your personal data.',
-  alternates: { canonical: 'https://smartlivetv.com/privacy' },
+  alternates: { canonical: `${ENV.BASE_URL}/privacy` },
 }
 
 export default function PrivacyPage() {
