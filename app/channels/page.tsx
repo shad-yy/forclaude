@@ -111,7 +111,7 @@ export default function ChannelsPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x-0 md:divide-x divide-[#2a2a3a]">
               <div className="flex flex-col p-4 border-b md:border-b-0 border-[#2a2a3a] md:border-none">
-                <span className="text-3xl font-extrabold text-[#00e676]">15,000+</span>
+                <span className="text-3xl font-extrabold text-[#00e676]">230,000+</span>
                 <span className="text-sm text-gray-400 mt-1">Live Channels</span>
               </div>
               <div className="flex flex-col p-4 border-b md:border-b-0 border-[#2a2a3a] md:border-none">
@@ -119,7 +119,7 @@ export default function ChannelsPage() {
                 <span className="text-sm text-gray-400 mt-1">Stream Quality</span>
               </div>
               <div className="flex flex-col p-4">
-                <span className="text-3xl font-extrabold text-[#00e676]">29</span>
+                <span className="text-3xl font-extrabold text-[#00e676]">50+</span>
                 <span className="text-sm text-gray-400 mt-1">Countries</span>
               </div>
               <div className="flex flex-col p-4">
@@ -129,6 +129,21 @@ export default function ChannelsPage() {
             </div>
           </div>
         </section>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-12">
+          <div className="bg-[#00e676]/5 border border-[#00e676]/20 rounded-2xl p-5 mb-4 max-w-4xl mx-auto text-center">
+            <p className="text-sm text-gray-300 leading-relaxed">
+              <span className="font-bold text-[#00e676]">ℹ Note:</span>{' '}
+              This page shows a representative sample of available channels. 
+              Your full subscription includes{' '}
+              <span className="font-bold text-white">230,000+ live channels, 
+              movies, series, and VOD content</span>{' '}
+              not all listed here — including exclusive PPV events, 
+              regional packages, and continuously updated on-demand titles.
+              What you see here is just a preview.
+            </p>
+          </div>
+        </div>
 
         {/* SECTION 3 — CHANNEL LIBRARY (Client Component) */}
         <ChannelLibrary storeUrl={storeUrl} />

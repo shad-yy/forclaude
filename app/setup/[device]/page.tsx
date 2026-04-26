@@ -3,6 +3,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { generateFAQSchema } from '@/lib/schema'
+import { FadeIn } from "@/components/ui/fade-in"
+import { StaggerIn } from "@/components/ui/stagger-in"
+import { ShimmerButton } from "@/components/ui/shimmer-button"
 
 const DEVICES = {
     'firestick': { name: 'Firestick' },
@@ -70,7 +73,8 @@ export default async function SetupDevicePage({ params }: Props) {
             <SchemaMarkup schema={faqSchema} />
 
             {/* Hero Section */}
-            <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-gradient-to-b from-gray-900 to-gray-950 text-center px-4 border-b border-gray-900">
+            <FadeIn>
+            <section className="pt-28 md:pt-36 pb-16 md:pb-20 bg-gradient-to-b from-gray-900 to-gray-950 text-center px-4 border-b border-gray-900">
                 <div className="container mx-auto max-w-3xl">
                     <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
                         How to Watch Live Sports on {deviceParams.name}
@@ -80,12 +84,14 @@ export default async function SetupDevicePage({ params }: Props) {
                     </p>
                 </div>
             </section>
+            </FadeIn>
 
-            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl">
+            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12 max-w-7xl">
                 {/* Left Column: Instructions */}
-                <div className="lg:col-span-2 space-y-12">
+                <div className="lg:col-span-2 space-y-0">
 
-                    <section className="bg-gray-900 p-8 md:p-10 rounded-3xl border border-gray-800">
+                    <FadeIn direction="up">
+                    <section className="bg-gray-900 p-8 md:p-10 rounded-3xl border border-gray-800 mb-16 md:mb-20">
                         <h2 className="text-3xl font-bold text-white mb-8">Step-by-Step Setup Guide</h2>
                         <div className="space-y-6">
                             <div className="flex gap-4">
@@ -122,15 +128,17 @@ export default async function SetupDevicePage({ params }: Props) {
                         </div>
 
                         <div className="mt-10 pt-8 border-t border-gray-800 text-center">
-                            <Link
+                            <ShimmerButton
                                 href="/pricing"
-                                className="inline-block px-8 py-4 bg-green-500 hover:bg-green-400 text-black font-bold rounded-lg text-lg transition-transform transform hover:-translate-y-1 shadow-lg w-full md:w-auto"
+                                className="w-full md:w-auto px-8 py-4 font-bold rounded-lg text-lg text-black bg-green-500"
                             >
                                 Set Up on My {deviceParams.name} — Start Free Trial
-                            </Link>
+                            </ShimmerButton>
                         </div>
                     </section>
+                    </FadeIn>
 
+                    <FadeIn direction="up">
                     <section>
                         <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
                         <div className="space-y-4">
@@ -142,6 +150,7 @@ export default async function SetupDevicePage({ params }: Props) {
                             ))}
                         </div>
                     </section>
+                    </FadeIn>
                 </div>
 
                 {/* Right Column: Sidebar */}

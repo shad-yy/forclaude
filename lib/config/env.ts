@@ -1,9 +1,17 @@
 export const ENV = {
   get THESPORTSDB_KEY() {
-    return process.env.THESPORTSDB_API_KEY || "123"
+    if (!process.env.THESPORTSDB_API_KEY) {
+      console.warn('[ENV] THESPORTSDB_API_KEY not set')
+      return "123"
+    }
+    return process.env.THESPORTSDB_API_KEY
   },
   get NEWS_API_KEY() {
-    return process.env.NEWS_API_KEY || ""
+    if (!process.env.NEWS_API_KEY) {
+      console.warn('[ENV] NEWS_API_KEY not set')
+      return ""
+    }
+    return process.env.NEWS_API_KEY
   },
   get NEXT_PUBLIC_APP_URL() {
     return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"

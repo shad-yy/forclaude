@@ -4,6 +4,8 @@ import { notFound } from "next/navigation"
 import { SchemaMarkup } from "@/components/SchemaMarkup"
 import { BLOG_POSTS } from "@/lib/blog/posts"
 import { ENV } from "@/lib/config/env"
+import { FadeIn } from "@/components/ui/fade-in"
+import { ShimmerButton } from "@/components/ui/shimmer-button"
 
 type BlogPostPageProps = {
   params: { slug: string }
@@ -81,10 +83,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   const lastUpdated = new Date(dateModified).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
   return (
-    <main className="min-h-screen bg-background pt-24 pb-20">
+    <main className="min-h-screen bg-background pt-28 md:pt-36 pb-16 md:pb-20">
       <SchemaMarkup schema={articleSchema} />
 
-      <section className="py-16">
+      <FadeIn>
+      <section className="pb-8">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <nav className="text-sm text-gray-400">
             <Link href="/" className="hover:text-white">
@@ -99,8 +102,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           </nav>
         </div>
       </section>
+      </FadeIn>
 
-      <section className="py-20">
+      <FadeIn direction="up">
+      <section className="pb-16 md:pb-20">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <header className="max-w-4xl space-y-4">
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400">
@@ -120,8 +125,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           </header>
         </div>
       </section>
+      </FadeIn>
 
-      <section className="py-20">
+      <FadeIn direction="up">
+      <section className="pb-16 md:pb-20">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl">
             <article
@@ -131,22 +138,25 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </div>
       </section>
+      </FadeIn>
 
-      <section className="py-20">
+      <FadeIn direction="up">
+      <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl bg-[#12121a] border border-green-500/30 rounded-2xl p-8 text-center">
             <div className="space-y-4">
               <h2 className="text-2xl md:text-3xl font-bold text-white">Ready to watch? Start your free 24-hour trial</h2>
-              <Link
+              <ShimmerButton
                 href="/pricing"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-green-500 hover:bg-green-400 text-black font-bold transition-colors"
+                className="px-8 py-4 font-bold rounded-xl text-lg text-black bg-green-500 mx-auto"
               >
                 View Pricing
-              </Link>
+              </ShimmerButton>
             </div>
           </div>
         </div>
       </section>
+      </FadeIn>
     </main>
   )
 }

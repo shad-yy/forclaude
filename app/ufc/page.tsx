@@ -8,6 +8,8 @@ import { OptimizedImage } from "@/components/ui/optimized-image"
 import { Calendar, MapPin, Trophy, Users, Clock, Star } from "lucide-react"
 import Link from "next/link"
 import { getUpcomingEvents, getPastEvents, getRankings } from "@/lib/api/ufc"
+import { FadeIn } from "@/components/ui/fade-in"
+import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
   title: "UFC - Ultimate Fighting Championship | Smart Live TV",
@@ -34,7 +36,7 @@ async function UFCEvents() {
           Upcoming Events
         </h3>
         {upcomingEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {upcomingEvents.map((event) => (
               <Link key={event.id} href={`/ufc/events/${event.id}`}>
                 <Card className="bg-gray-900/50 border-gray-800 hover:border-red-500/50 transition-all duration-300 cursor-pointer group">
@@ -74,7 +76,7 @@ async function UFCEvents() {
                 </Card>
               </Link>
             ))}
-          </div>
+          </StaggerIn>
         ) : (
           <Card className="bg-gray-900/50 border-gray-800">
             <CardContent className="p-8 text-center">
@@ -93,7 +95,7 @@ async function UFCEvents() {
           Recent Events
         </h3>
         {Array.isArray(pastEvents) && pastEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pastEvents.slice(0, 6).map((event) => (
               <Link key={event.id} href={`/ufc/events/${event.id}`}>
                 <Card className="bg-gray-900/50 border-gray-800 hover:border-yellow-500/50 transition-all duration-300 cursor-pointer group">
@@ -133,7 +135,7 @@ async function UFCEvents() {
                 </Card>
               </Link>
             ))}
-          </div>
+          </StaggerIn>
         ) : (
           <Card className="bg-gray-900/50 border-gray-800">
             <CardContent className="p-8 text-center">
@@ -161,7 +163,7 @@ async function UFCRankings() {
       </div>
 
       {rankings.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StaggerIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rankings.map((fighter) => (
             <Link key={fighter.id} href={`/ufc/fighters/${fighter.id}`}>
               <Card className="bg-gray-900/50 border-gray-800 hover:border-blue-500/50 transition-all duration-300 cursor-pointer group">
@@ -218,7 +220,7 @@ async function UFCRankings() {
               </Card>
             </Link>
           ))}
-        </div>
+        </StaggerIn>
       ) : (
         <Card className="bg-gray-900/50 border-gray-800">
           <CardContent className="p-8 text-center">
@@ -234,8 +236,9 @@ async function UFCRankings() {
 
 export default function UFCPage() {
   return (
-    <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-24 md:pt-32 pb-16 md:pb-20 space-y-8 bg-gray-950 min-h-screen">
+    <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-28 md:pt-36 pb-16 md:pb-20 space-y-8 bg-gray-950 min-h-screen">
       {/* Header */}
+      <FadeIn>
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
           <span className="text-white">UFC</span>
@@ -245,8 +248,10 @@ export default function UFCPage() {
           The Ultimate Fighting Championship - Where champions are made and legends are born
         </p>
       </div>
+      </FadeIn>
 
       {/* Main Content */}
+      <FadeIn direction="up">
       <Tabs defaultValue="events" className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-gray-800 mb-8">
           <TabsTrigger value="events" className="data-[state=active]:bg-red-500">
@@ -305,6 +310,7 @@ export default function UFCPage() {
           </Suspense>
         </TabsContent>
       </Tabs>
+      </FadeIn>
     </div>
   )
 }

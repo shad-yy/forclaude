@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ENV } from '@/lib/config/env'
+import { FadeIn } from "@/components/ui/fade-in"
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Smart Live TV',
@@ -9,10 +10,11 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 pt-28 pb-20">
+    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 pt-28 md:pt-36 pb-16 md:pb-20">
+      <FadeIn>
       <div className="container mx-auto px-4 max-w-3xl">
-        <h1 className="text-4xl font-extrabold text-white mb-4">Privacy Policy</h1>
-        <p className="text-gray-500 text-sm mb-10">Last updated: April 2026</p>
+        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 md:mb-6">Privacy Policy</h1>
+        <p className="text-gray-500 text-sm mb-8 md:mb-12">Last updated: April 2026</p>
 
         <div className="space-y-8 text-gray-300 leading-relaxed">
           <section>
@@ -60,6 +62,7 @@ export default function PrivacyPage() {
           </section>
         </div>
       </div>
+      </FadeIn>
     </div>
   )
 }

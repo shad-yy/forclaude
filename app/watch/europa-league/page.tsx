@@ -9,20 +9,20 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
+  title: 'Watch UEFA Europa League Live | Free Trial | Smart Live TV',
   description:
-    'Stream every UEFA Champions League match in 4K. No BT Sport needed. Watch from anywhere with a free 24-hour trial.',
+    'Stream every UEFA Europa League match in 4K. Watch from anywhere with a free 24-hour trial.',
   alternates: {
-    canonical: `${ENV.BASE_URL}/watch/champions-league`,
+    canonical: `${ENV.BASE_URL}/watch/europa-league`,
   },
   openGraph: {
-    title: 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
-    description: 'Stream every UEFA Champions League match in 4K. No BT Sport needed. Watch from anywhere with a free 24-hour trial.',
+    title: 'Watch UEFA Europa League Live | Free Trial | Smart Live TV',
+    description: 'Stream every UEFA Europa League match in 4K. Watch from anywhere with a free 24-hour trial.',
     images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
+    title: 'Watch UEFA Europa League Live | Free Trial | Smart Live TV',
     images: ['/og-default.png'],
   },
 }
@@ -92,11 +92,11 @@ const renderForm = (formStr?: string) => {
   )
 }
 
-export default async function ChampionsLeaguePage() {
+export default async function EuropaLeaguePage() {
   const [nextEvent, standings, pastEvents] = await Promise.allSettled([
-    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventsnextleague.php?id=4480'),
-    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/lookuptable.php?l=4480&s=2025-2026'),
-    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventspastleague.php?id=4480'),
+    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventsnextleague.php?id=4735'),
+    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/lookuptable.php?l=4735&s=2025-2026'),
+    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventspastleague.php?id=4735'),
   ])
 
   const nextJson = nextEvent.status === 'fulfilled' ? nextEvent.value : null
@@ -109,18 +109,18 @@ export default async function ChampionsLeaguePage() {
 
   const faqs = [
     {
-      question: 'Where can I watch Champions League live?',
+      question: 'Where can I watch Europa League live?',
       answer:
-        'Smart Live TV carries all UCL matches live in 4K, including qualifying rounds and the final.',
+        'Smart Live TV carries all Europa League matches live in 4K, including qualifying rounds and the final.',
     },
     {
-      question: 'Is Champions League on free TV in the UK?',
+      question: 'Is Europa League on free TV in the UK?',
       answer:
-        'Some UCL matches air on free TV. Smart Live TV covers every match with no blackouts.',
+        'Some Europa League matches may air on free TV, but the vast majority are on paid networks. Smart Live TV covers every match with no blackouts.',
     },
     {
-      question: 'How to watch UCL without BT Sport?',
-      answer: "Smart Live TV is the alternative. Get a free 24-hour trial and watch tonight's match in 4K.",
+      question: 'How to watch Europa League abroad?',
+      answer: "Smart Live TV lets you stream from anywhere. Get a free 24-hour trial and watch tonight's match in 4K without needing a VPN.",
     },
   ]
 
@@ -131,7 +131,7 @@ export default async function ChampionsLeaguePage() {
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: `${ENV.BASE_URL}/` },
       { '@type': 'ListItem', position: 2, name: 'Watch Live', item: `${ENV.BASE_URL}/watch` },
-      { '@type': 'ListItem', position: 3, name: 'UEFA Champions League', item: `${ENV.BASE_URL}/watch/champions-league` },
+      { '@type': 'ListItem', position: 3, name: 'UEFA Europa League', item: `${ENV.BASE_URL}/watch/europa-league` },
     ],
   }
 
@@ -145,20 +145,20 @@ export default async function ChampionsLeaguePage() {
         <section
           className="pt-28 md:pt-36 pb-16 text-center px-4 border-b"
           style={{
-            background: 'linear-gradient(135deg, #001a4e 0%, #0a0a0f 100%)',
-            borderColor: '#c8a951',
+            background: 'linear-gradient(135deg, #2a1000 0%, #0a0a0f 100%)',
+            borderColor: '#f97316',
           }}
         >
           <div className="container mx-auto max-w-4xl">
             <div className="flex items-center justify-center mb-6">
               <LeagueBadge
-                src="https://r2.thesportsdb.com/images/media/league/badge/ucl.png"
-                alt="UEFA Champions League"
+                src="https://www.thesportsdb.com/images/media/league/badge/yvwvqu1432120355.png"
+                alt="UEFA Europa League"
                 size={64}
                 className="object-contain"
               />
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 md:mb-6">The Greatest Club Competition on Earth</h1>
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 md:mb-6">The Europa League — Every Match Live</h1>
             {nextFixture ? (
               <p className="text-gray-300 text-sm md:text-base mb-10">
                 Next fixture:{' '}
@@ -176,10 +176,10 @@ export default async function ChampionsLeaguePage() {
             <ShimmerButton
               href="/pricing"
               variant="league"
-              leagueColor="#c8a951"
+              leagueColor="#f97316"
               className="px-8 py-4 text-lg rounded-lg"
             >
-              Watch Champions League in 4K →
+              Watch Europa League in 4K →
             </ShimmerButton>
           </div>
         </section>
@@ -196,7 +196,7 @@ export default async function ChampionsLeaguePage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 z-10" style={{ backgroundColor: '#0f1118' }}>
-                      <tr className="text-xs font-bold uppercase border-b" style={{ borderColor: '#c8a951' }}>
+                      <tr className="text-xs font-bold uppercase border-b" style={{ borderColor: '#f97316' }}>
                         <th className="py-3 px-3 text-center w-10">#</th>
                         <th className="py-3 px-3 text-left">Team</th>
                         <th className="py-3 px-3 text-center w-10">P</th>
@@ -227,7 +227,7 @@ export default async function ChampionsLeaguePage() {
                             <td className="py-3 px-3">
                               <div
                                 className={`flex items-center gap-3 pl-3 ${top8 ? 'border-l-2' : ''}`}
-                                style={top8 ? { borderColor: '#c8a951' } : undefined}
+                                style={top8 ? { borderColor: '#f97316' } : undefined}
                               >
                                 <img
                                   src={safeBadge(t.strTeamBadge || t.strBadge)}
@@ -261,14 +261,14 @@ export default async function ChampionsLeaguePage() {
                   Live group standings are available to verified league data partners.
                 </p>
                 <p className="text-white font-bold text-lg mb-4">
-                  2024–25 UEFA Champions League
+                  2024–25 UEFA Europa League
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-6">
                   {[
                     { round: 'Quarter-Finals', date: 'Apr 2025' },
                     { round: 'Semi-Finals', date: 'Apr/May 2025' },
-                    { round: 'Final', date: '31 May 2025 · Munich' },
-                    { round: 'Champions', date: 'Real Madrid' },
+                    { round: 'Final', date: '21 May 2025 · Bilbao' },
+                    { round: 'Champions', date: 'TBD' },
                   ].map(item => (
                     <div key={item.round} className="bg-gray-900 rounded-xl p-3 border border-gray-700">
                       <div className="text-gray-400 text-xs mb-1">{item.round}</div>
@@ -277,7 +277,7 @@ export default async function ChampionsLeaguePage() {
                   ))}
                 </div>
                 <Link href="/pricing" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-black text-sm"
-                  style={{ backgroundColor: '#c8a951' }}>
+                  style={{ backgroundColor: '#f97316' }}>
                   Watch Every Match Live →
                 </Link>
               </div>
@@ -296,7 +296,7 @@ export default async function ChampionsLeaguePage() {
                     key={`${e.idEvent || i}`}
                     className="bg-gray-950/60 rounded-2xl border border-gray-800 overflow-hidden"
                   >
-                    <div className="h-1" style={{ backgroundColor: '#c8a951' }} />
+                    <div className="h-1" style={{ backgroundColor: '#f97316' }} />
                     <div className="p-5">
                       <div className="text-sm font-bold text-white mb-2 line-clamp-2">
                         {e.strHomeTeam} vs {e.strAwayTeam}
@@ -317,33 +317,33 @@ export default async function ChampionsLeaguePage() {
             </section>
           </FadeIn>
 
-          {/* UCL GREATEST MOMENTS */}
+          {/* EUROPA LEAGUE GREATEST MOMENTS */}
           <FadeIn direction="up">
             <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
-              <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12">UCL Greatest Moments</h2>
+              <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12">Europa League Greatest Moments</h2>
               <StaggerIn className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 {
-                  title: 'The Istanbul Miracle',
-                  subtitle: 'Liverpool 3-3 AC Milan, 2005 Final',
+                  title: 'Sevilla\'s Dominance',
+                  subtitle: 'Record Winners',
                   body:
-                    'Down 3-0 at half time. Liverpool scored 3 in 6 minutes. Won on penalties. The greatest comeback in football history.',
+                    'Sevilla has dominated the Europa League, winning it a record number of times and making the competition their own.',
                 },
                 {
-                  title: "Ronaldo's Bicycle Kick",
-                  subtitle: 'Real Madrid vs Juventus, 2018 QF',
+                  title: 'Atalanta\'s Triumph',
+                  subtitle: '2024 Final',
                   body:
-                    'Cristiano Ronaldo scored one of the greatest goals ever seen. Even Juventus fans gave him a standing ovation.',
+                    'Atalanta shocked the world by defeating the previously unbeaten Bayer Leverkusen 3-0 in Dublin.',
                 },
                 {
-                  title: "Messi's Wembley Masterclass",
-                  subtitle: 'Barcelona 3-1 Manchester United, 2011 Final',
+                  title: 'Chelsea\'s Amsterdam Win',
+                  subtitle: '2013 Final',
                   body:
-                    'Messi scored twice as Barcelona put on a tactical masterclass. Widely regarded as the greatest UCL final performance ever.',
+                    'Branislav Ivanović scored a looping header in stoppage time to secure the trophy against Benfica.',
                 },
               ].map((c) => (
                 <div key={c.title} className="bg-gray-950/60 rounded-2xl border border-gray-800 p-6">
-                  <div className="border-b pb-3 mb-3" style={{ borderColor: '#c8a951' }}>
+                  <div className="border-b pb-3 mb-3" style={{ borderColor: '#f97316' }}>
                     <h3 className="font-extrabold text-white">{c.title}</h3>
                     <p className="text-xs text-gray-400 mt-1">{c.subtitle}</p>
                   </div>
@@ -362,10 +362,10 @@ export default async function ChampionsLeaguePage() {
               {[
                 { n: 1, title: 'Start your free trial', body: 'Claim a 24-hour free trial and get instant access.' },
                 { n: 2, title: 'Set up on any device', body: <>Works on <Link href="/setup/firestick" className="text-[#00e676] hover:underline">Firestick</Link>, Smart TV, Android, iPhone and more.</> },
-                { n: 3, title: 'Watch in 4K', body: 'Stream every UCL match with no blackouts.' },
+                { n: 3, title: 'Watch in 4K', body: 'Stream every Europa League match with no blackouts.' },
               ].map((s) => (
                 <div key={s.n} className="bg-gray-950/60 rounded-2xl border border-gray-800 p-6">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-black mb-4" style={{ backgroundColor: '#c8a951' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-black mb-4" style={{ backgroundColor: '#f97316' }}>
                     {s.n}
                   </div>
                   <h3 className="font-bold text-white mb-2">{s.title}</h3>
@@ -395,17 +395,17 @@ export default async function ChampionsLeaguePage() {
         {/* Right Column CTA */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 bg-gray-950/60 rounded-3xl border border-gray-800 overflow-hidden">
-            <div className="p-6 border-b" style={{ borderColor: '#c8a951' }}>
+            <div className="p-6 border-b" style={{ borderColor: '#f97316' }}>
               <h3 className="text-lg font-extrabold text-white">Start Watching Tonight</h3>
               <p className="text-sm text-gray-400 mt-2">
-                Get access to every Champions League match with a 24-hour free trial.
+                Get access to every Europa League match with a 24-hour free trial.
               </p>
             </div>
             <div className="p-6">
               <ShimmerButton
                 href="/pricing"
                 variant="league"
-                leagueColor="#c8a951"
+                leagueColor="#f97316"
                 className="w-full text-center py-4 rounded-xl text-black font-extrabold"
               >
                 Claim Free Trial →

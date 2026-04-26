@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { FadeIn } from "@/components/ui/fade-in"
+import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
   title: 'About Smart Live TV | IPTV Streaming Service',
@@ -9,9 +11,10 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-100">
-      <section className="pt-32 pb-16 px-4 border-b border-gray-800">
+      <FadeIn>
+      <section className="pt-28 md:pt-36 pb-16 md:pb-20 px-4 border-b border-[#2a2a3a]">
         <div className="container mx-auto max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-6">About Smart Live TV</h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 md:mb-6">About Smart Live TV</h1>
           <p className="text-gray-300 text-lg leading-relaxed mb-4">
             Smart Live TV is a premium IPTV streaming service built for sports fans
             who are tired of expensive cable packages, regional blackouts, and
@@ -48,6 +51,7 @@ export default function AboutPage() {
           </Link>
         </div>
       </section>
+      </FadeIn>
     </div>
   )
 }

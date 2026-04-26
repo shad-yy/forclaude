@@ -1,6 +1,9 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { ENV } from '@/lib/config/env'
+import { FadeIn } from "@/components/ui/fade-in"
+import { StaggerIn } from "@/components/ui/stagger-in"
+import { ShimmerButton } from "@/components/ui/shimmer-button"
 
 export const metadata: Metadata = {
   title: 'Get Your Free 24-Hour IPTV Trial | Smart Live TV',
@@ -10,8 +13,9 @@ export const metadata: Metadata = {
 
 export default function FreeTrialPage() {
   return (
-    <div className="bg-[#0a0a0f] min-h-screen pt-28 pb-20 px-4">
+    <div className="bg-[#0a0a0f] min-h-screen pt-28 md:pt-36 pb-16 md:pb-20 px-4">
       {/* SECTION 1 — HERO */}
+      <FadeIn>
       <section className="text-center max-w-2xl mx-auto">
         <span className="bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-bold px-4 py-2 rounded-full mb-6 inline-block">
           ✦ Only 10 Free Trials Available Daily
@@ -46,9 +50,11 @@ export default function FreeTrialPage() {
           </div>
         </div>
       </section>
+      </FadeIn>
 
       {/* SECTION 2 — THE WHATSAPP CTA */}
-      <section className="bg-[#12121a] border border-[#2a2a3a] rounded-3xl p-8 md:p-12 max-w-lg mx-auto text-center mb-12">
+      <FadeIn direction="up">
+      <section className="bg-[#12121a] border border-[#2a2a3a] rounded-3xl p-8 md:p-12 max-w-lg mx-auto text-center mb-16 md:mb-20">
         <h2 className="text-2xl font-extrabold text-white mb-3">
           Claim Your Trial on WhatsApp
         </h2>
@@ -74,14 +80,16 @@ export default function FreeTrialPage() {
           We respond within 5 minutes · Available 9am–11pm UK time
         </div>
       </section>
+      </FadeIn>
 
       {/* SECTION 3 — HOW IT WORKS */}
-      <section className="max-w-2xl mx-auto mb-16">
+      <FadeIn direction="up">
+      <section className="max-w-2xl mx-auto mb-16 md:mb-20">
         <h2 className="text-2xl font-bold text-white text-center mb-8">
           How It Works
         </h2>
 
-        <div className="flex flex-col gap-4">
+        <StaggerIn className="flex flex-col gap-4">
           <div className="flex items-start gap-4">
             <div className="w-8 h-8 rounded-full bg-[#00e676] text-black font-extrabold text-sm flex items-center justify-center flex-shrink-0">
               1
@@ -109,16 +117,18 @@ export default function FreeTrialPage() {
               <div className="text-gray-500 text-sm">Full access to all 15,000+ channels. No restrictions. If you love it, choose a plan. No pressure.</div>
             </div>
           </div>
-        </div>
+        </StaggerIn>
       </section>
+      </FadeIn>
 
       {/* SECTION 4 — WHAT'S INCLUDED */}
+      <FadeIn direction="up">
       <section className="max-w-2xl mx-auto">
         <h2 className="text-2xl font-bold text-white text-center mb-8">
           What's Included in Your Trial
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <StaggerIn className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
             "Sky Sports Premier League (live matches)",
             "TNT Sports (Champions League)",
@@ -138,15 +148,16 @@ export default function FreeTrialPage() {
               <span className="text-sm text-gray-300">{item}</span>
             </div>
           ))}
-        </div>
+        </StaggerIn>
 
-        <div className="text-center mt-6">
+        <div className="text-center mt-8">
           <span className="text-sm text-gray-500">Plus 15,000+ more channels across every category</span>
           <Link href="/channels" className="text-[#00e676] text-sm hover:underline ml-2">
             Browse full channel list →
           </Link>
         </div>
       </section>
+      </FadeIn>
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { memo } from "react"
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
+import { motion } from "framer-motion"
 
 const footerLinks = [
   {
@@ -53,18 +54,50 @@ export const Footer = memo(function Footer() {
               Stream all sports on any device with our premium IPTV service. No blackouts, no cable required.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-accent-primary hover:bg-surface border border-border transition-colors">
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-accent-primary hover:bg-surface border border-border transition-colors">
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-accent-primary hover:bg-surface border border-border transition-colors">
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-accent-primary hover:bg-surface border border-border transition-colors">
-                <Youtube className="w-4 h-4" />
-              </a>
+              {process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK && (
+                <motion.a
+                  href={process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-[#00e676] hover:bg-surface border border-border transition-colors"
+                >
+                  <Facebook className="w-4 h-4" />
+                </motion.a>
+              )}
+              {process.env.NEXT_PUBLIC_SOCIAL_TWITTER && (
+                <motion.a
+                  href={process.env.NEXT_PUBLIC_SOCIAL_TWITTER}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-[#00e676] hover:bg-surface border border-border transition-colors"
+                >
+                  <Twitter className="w-4 h-4" />
+                </motion.a>
+              )}
+              {process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM && (
+                <motion.a
+                  href={process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-[#00e676] hover:bg-surface border border-border transition-colors"
+                >
+                  <Instagram className="w-4 h-4" />
+                </motion.a>
+              )}
+              {process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE && (
+                <motion.a
+                  href={process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-[#00e676] hover:bg-surface border border-border transition-colors"
+                >
+                  <Youtube className="w-4 h-4" />
+                </motion.a>
+              )}
             </div>
           </div>
 

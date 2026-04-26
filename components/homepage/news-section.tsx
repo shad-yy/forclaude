@@ -91,7 +91,7 @@ export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {articles.map((article, index) => {
           const categoryName = article.category?.[0] || article.source_name || "News";
           const badgeClass = getCategoryBadge(categoryName);

@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+
+const orderSchema = z.object({
+  name: z.string().min(2).max(100).trim(),
+  email: z.string().email().max(200).toLowerCase().trim(),
+  whatsapp: z.string().max(20).optional(),
+  plan: z.enum(['1 Month', '3 Months', '6 Months', '12 Months']),
+  message: z.string().max(500).optional(),
+})
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, email, whatsapp, plan, message } = body
-
-    if (!name || !email || !plan) {
+    const parsed = orderSchema.safeParse(body)
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Invalid input' },
         { status: 400 }
       )
     }
+    const { name, email, whatsapp, plan, message } = parsed.data
 
     const resendKey = process.env.RESEND_API_KEY
     const notifyEmail = process.env.ORDER_NOTIFY_EMAIL || 'orders@smartlivetv.com'
@@ -65,10 +74,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Always log as backup regardless of Resend
-    console.log('[ORDER]', {
-      name, email, whatsapp, plan,
-      timestamp: new Date().toISOString(),
-    })
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[ORDER]', {
+        name, email, whatsapp, plan,
+        timestamp: new Date().toISOString(),
+      })
+    }
 
     return NextResponse.json({ success: true })
 

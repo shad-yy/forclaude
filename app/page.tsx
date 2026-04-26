@@ -10,6 +10,8 @@ import { PricingPreview } from "@/components/homepage/pricing-preview"
 import { NewsSection } from "@/components/homepage/news-section"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
+import { FadeIn } from "@/components/ui/fade-in"
+import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
   title: 'Smart Live TV — Watch 15,000+ Channels | Free 24H Trial',
@@ -41,11 +43,15 @@ export default function HomePage() {
           })
         }}
       />
-      <HeroSection />
+      <FadeIn delay={0.1}>
+        <HeroSection />
+      </FadeIn>
 
-      <ScrollReveal>
-        <MatchCard />
-      </ScrollReveal>
+      <FadeIn direction="up">
+        <ScrollReveal>
+          <MatchCard />
+        </ScrollReveal>
+      </FadeIn>
 
       {/* Decorative separator */}
       <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
@@ -65,11 +71,11 @@ export default function HomePage() {
       </ScrollReveal>
 
       <ScrollReveal>
-        <section className="py-20 bg-background border-t border-border relative">
+        <section className="py-16 md:py-20 bg-background border-t border-[#2a2a3a] relative">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
             <Suspense fallback={<NewsSkeleton />}>
-              <NewsSection maxArticles={3} />
+              <NewsSection maxArticles={6} />
             </Suspense>
           </div>
         </section>

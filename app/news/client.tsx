@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react"
 import { Clock, ExternalLink } from "lucide-react"
 import type { NewsArticle } from "@/lib/api/news"
+import { FadeIn } from "@/components/ui/fade-in"
+import { StaggerIn } from "@/components/ui/stagger-in"
 
 const TABS = [
   { key: "all", label: "All" },
@@ -115,7 +117,8 @@ export function NewsPageClient({ initialArticles }: NewsPageClientProps) {
   const rest = filtered.slice(3)
 
   return (
-    <main className="min-h-screen bg-background pt-24 pb-16">
+    <main className="min-h-screen bg-background pt-28 md:pt-36 pb-16 md:pb-20">
+      <FadeIn>
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
         <div className="mb-8">
           <p className="text-xs uppercase tracking-widest text-gray-500 border-t border-white/10 pt-4 mb-6">
@@ -189,7 +192,7 @@ export function NewsPageClient({ initialArticles }: NewsPageClientProps) {
 
             {/* Featured row */}
             {featured.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <StaggerIn className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {featured.map((a) => (
                   <a
                     key={a.article_id}
@@ -217,7 +220,7 @@ export function NewsPageClient({ initialArticles }: NewsPageClientProps) {
                     </div>
                   </a>
                 ))}
-              </div>
+              </StaggerIn>
             ) : null}
 
             {/* Newspaper grid */}
@@ -226,7 +229,7 @@ export function NewsPageClient({ initialArticles }: NewsPageClientProps) {
                 <p className="text-xs uppercase tracking-widest text-gray-500 border-t border-white/10 pt-4 mb-6">
                   More stories
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8">
+                <StaggerIn className="grid grid-cols-1 md:grid-cols-3 gap-x-8">
                   {rest.map((a) => (
                     <a
                       key={a.article_id}
@@ -244,12 +247,13 @@ export function NewsPageClient({ initialArticles }: NewsPageClientProps) {
                       </div>
                     </a>
                   ))}
-                </div>
+                </StaggerIn>
               </div>
             ) : null}
           </div>
         )}
       </div>
+      </FadeIn>
     </main>
   )
 }

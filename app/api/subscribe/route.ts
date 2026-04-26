@@ -30,7 +30,6 @@ export async function POST(request: Request) {
     (globalThis as any).__subscribeRate.set(email, now)
 
     // Log subscription (in production, integrate with email service)
-    console.log(`Newsletter subscription: ${email}`)
 
     return NextResponse.json({ 
       success: true, 

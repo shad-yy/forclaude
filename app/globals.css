@@ -12,6 +12,68 @@ body {
   padding: 0;
 }
 
+/* ── Mobile scroll & touch fixes ── */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent momentum scroll from getting stuck on iOS */
+.overflow-y-auto,
+.overflow-y-scroll,
+[data-radix-scroll-area-viewport] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Prevent body scroll when mobile menu is open */
+body.menu-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* CTA button touch improvements */
+.cta-button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* Prevent scroll lock on modals/overlays */
+.overflow-hidden {
+  touch-action: none;
+}
+
+/* ── Section spacing utilities ── */
+.section {
+  @apply py-16 md:py-24 px-4;
+}
+
+.section-sm {
+  @apply py-10 md:py-16 px-4;
+}
+
+.container-content {
+  @apply max-w-7xl mx-auto px-4 md:px-6 lg:px-8;
+}
+
+.hero-padding {
+  @apply pt-28 md:pt-36 pb-16 md:pb-24 px-4;
+}
+
+.section-divider {
+  @apply border-t border-[#2a2a3a];
+}
+
+/* ── Prevent layout shift during animation ── */
+[data-framer-motion] {
+  will-change: transform, opacity;
+}
+
 * {
   box-sizing: border-box;
 }

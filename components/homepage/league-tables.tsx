@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Skeleton } from "@/components/ui/skeleton"
+import { LEAGUES } from "@/lib/constants/leagues"
 
 const FEATURED_LEAGUES = [
-    { id: "4328", name: "Premier League" },
-    { id: "4335", name: "La Liga" },
-    { id: "4331", name: "Bundesliga" },
-    { id: "4332", name: "Serie A" },
-    { id: "4334", name: "Ligue 1" },
+    { id: "4328", name: "Premier League", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4328")?.badgeUrl },
+    { id: "4335", name: "La Liga", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4335")?.badgeUrl },
+    { id: "4331", name: "Bundesliga", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4331")?.badgeUrl },
+    { id: "4332", name: "Serie A", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4332")?.badgeUrl },
+    { id: "4334", name: "Ligue 1", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4334")?.badgeUrl },
 ]
 
 // ── TeamBadge ──────────────────────────────────────────────────────────────
@@ -132,7 +133,17 @@ export function LeagueTables() {
                                     : 'bg-surface-elevated text-text-secondary hover:bg-white/10 hover:text-text-primary'
                                 }`}
                         >
-                            {league.name}
+                            <div className="flex items-center gap-2">
+                                <img 
+                                    src={league.badgeUrl}
+                                    alt={league.name}
+                                    className="w-5 h-5 object-contain flex-shrink-0"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none'
+                                    }}
+                                />
+                                <span>{league.name}</span>
+                            </div>
                         </button>
                     ))}
                 </div>

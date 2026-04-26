@@ -7,6 +7,9 @@ import { generateFAQSchema } from '@/lib/schema'
 import { LEAGUES, LeagueSlug } from '@/lib/constants/leagues'
 import { LeagueBadge } from '@/components/league/league-badge'
 import { ENV } from '@/lib/config/env'
+import { ShimmerButton } from "@/components/ui/shimmer-button"
+import { FadeIn } from "@/components/ui/fade-in"
+import { StaggerIn } from "@/components/ui/stagger-in"
 
 /** Only append a size suffix if the URL doesn't already have one */
 function safeBadge(url: string | null | undefined, size: 'tiny' | 'small' | 'medium' = 'small'): string {
@@ -166,91 +169,95 @@ export default async function WatchLeaguePage({ params }: Props) {
             <SchemaMarkup schema={sportsOrgSchema} />
 
             {/* Hero Section */}
-            <section
-                className="pt-32 pb-16 md:pt-40 md:pb-24 text-center px-4 border-b"
-                style={{
-                    background: `linear-gradient(135deg, ${theme.primary} 0%, #0a0a0f 100%)`,
-                    borderColor: theme.secondary,
-                }}
-            >
-                <div className="container mx-auto max-w-4xl">
-                    <div className="flex items-center justify-center mb-6">
-                        <LeagueBadge src={theme.badgeUrl} alt={theme.name} size={64} className="object-contain" />
+            <FadeIn>
+                <section
+                    className="pt-28 md:pt-36 pb-16 text-center px-4 border-b"
+                    style={{
+                        background: `linear-gradient(135deg, ${theme.primary} 0%, #0a0a0f 100%)`,
+                        borderColor: theme.secondary,
+                    }}
+                >
+                    <div className="container mx-auto max-w-4xl">
+                        <div className="flex items-center justify-center mb-6">
+                            <LeagueBadge src={theme.badgeUrl} alt={theme.name} size={64} className="object-contain" />
+                        </div>
+                        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 md:mb-6">
+                            {theme.heroText}
+                        </h1>
+                        <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
+                            Tired of missing the biggest games because of expensive cable packages and restricted broadcasts? Get access to every single kick-off this season—crystal clear, on any device.
+                        </p>
+                        <ShimmerButton
+                            href="/free-trial"
+                            variant="league"
+                            leagueColor={theme.secondary}
+                            className="px-8 py-4 text-lg rounded-lg"
+                        >
+                            Stream {theme.name} Free For 24 Hours
+                        </ShimmerButton>
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
-                        {theme.heroText}
-                    </h1>
-                    <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-                        Tired of missing the biggest games because of expensive cable packages and restricted broadcasts? Get access to every single kick-off this season—crystal clear, on any device.
-                    </p>
-                    <Link
-                        href="/pricing"
-                        className="inline-block px-8 py-4 text-black font-bold rounded-lg text-lg transition-transform transform hover:-translate-y-1 shadow-lg border"
-                        style={{ backgroundColor: theme.secondary, borderColor: theme.secondary }}
-                    >
-                        Stream {theme.name} Free For 24 Hours
-                    </Link>
-                </div>
-            </section>
+                </section>
+            </FadeIn>
 
-            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl">
+            <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12 max-w-7xl">
                 {/* Left Column: Content + Fixtures */}
-                <div className="lg:col-span-2 space-y-16">
+                <div className="lg:col-span-2 space-y-0">
 
                     {/* SEO Content Block */}
-                    <section className="prose prose-invert prose-lg max-w-none">
-                        <h2 className="text-3xl font-bold text-white mb-6">How to Watch {theme.name} Live Online</h2>
-                        <p>
-                            Following {theme.name} has consistently become more frustrating for fans. Splitting subscriptions across multiple providers just to watch your team is expensive. Even when you pay, you&apos;re left settling for delayed highlights or radio broadcasts.
-                        </p>
-                        <p>
-                            SmartLiveTV changes everything. Our IPTV solution bypasses the restrictions entirely, bringing every single {theme.name} fixture directly to you in HD at a fraction of the cost of standard cable. Best of all, our app works identically across devices — you can easily{' '}
-                            <Link href="/setup/firestick" className="text-blue-400 hover:text-blue-300">set it up on your Firestick</Link>,
-                            cast it to your Smart TV, or watch live while commuting on your mobile.
-                        </p>
-                        <p>
-                            Start your{' '}
-                            <Link href="/pricing" className="text-green-400 hover:text-green-300">free trial</Link>
-                            {' '}and never miss a goal again.
-                            {slug !== 'champions-league' && (
-                                <> Also available: stream the{' '}
-                                <Link href="/watch/champions-league" className="text-blue-400 hover:text-blue-300">Champions League</Link>
-                                {' '}on the same subscription.</>
-                            )}
-                        </p>
+                    <FadeIn direction="up">
+                        <section className="prose prose-invert prose-lg max-w-none">
+                            <h2 className="text-3xl font-bold text-white mb-8 md:mb-12">How to Watch {theme.name} Live Online</h2>
+                            <p className="max-w-2xl">
+                                Following {theme.name} has consistently become more frustrating for fans. Splitting subscriptions across multiple providers just to watch your team is expensive. Even when you pay, you&apos;re left settling for delayed highlights or radio broadcasts.
+                            </p>
+                            <p className="max-w-2xl">
+                                SmartLiveTV changes everything. Our IPTV solution bypasses the restrictions entirely, bringing every single {theme.name} fixture directly to you in HD at a fraction of the cost of standard cable. Best of all, our app works identically across devices — you can easily{' '}
+                                <Link href="/setup/firestick" className="text-blue-400 hover:text-blue-300">set it up on your Firestick</Link>,
+                                cast it to your Smart TV, or watch live while commuting on your mobile.
+                            </p>
+                            <p className="max-w-2xl">
+                                Start your{' '}
+                                <Link href="/pricing" className="text-green-400 hover:text-green-300">free trial</Link>
+                                {' '}and never miss a goal again.
+                                {slug !== 'champions-league' && (
+                                    <> Also available: stream the{' '}
+                                    <Link href="/watch/champions-league" className="text-blue-400 hover:text-blue-300">Champions League</Link>
+                                    {' '}on the same subscription.</>
+                                )}
+                            </p>
 
-                        <div className="my-10 p-8 border border-gray-800 rounded-2xl bg-gray-900/50">
-                            <h3 className="text-2xl font-bold text-white mb-6">Supported Devices</h3>
-                            <p className="mb-4">Need help setting up? Check our quick installation guides:</p>
-                            <div className="flex flex-wrap gap-4">
-                                {DEVICES.map(device => (
-                                    <Link key={device} href={`/setup/${device}`} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium capitalize text-white border border-gray-700 transition">
-                                        {device.replace('-', ' ')}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="my-10 p-8 border border-gray-800 rounded-2xl bg-gray-900/50">
-                            <h3 className="text-2xl font-bold text-white mb-6">Other Top Leagues Supported</h3>
-                            <div className="flex flex-wrap gap-4">
-                                {Object.entries(LEAGUES)
-                                    .filter(([s]) => s !== params.slug)
-                                    .map(([s, l]) => (
-                                        <Link key={s} href={`/watch/${s}`} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white border border-gray-700 transition">
-                                            {l.name}
+                            <div className="my-10 p-6 border border-gray-800 rounded-2xl bg-gray-900/50">
+                                <h3 className="text-2xl font-bold text-white mb-6">Supported Devices</h3>
+                                <p className="mb-4">Need help setting up? Check our quick installation guides:</p>
+                                <div className="flex flex-wrap gap-4">
+                                    {DEVICES.map(device => (
+                                        <Link key={device} href={`/setup/${device}`} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium capitalize text-white border border-gray-700 transition">
+                                            {device.replace('-', ' ')}
                                         </Link>
                                     ))}
+                                </div>
                             </div>
-                        </div>
-                    </section>
+
+                            <div className="my-10 p-6 border border-gray-800 rounded-2xl bg-gray-900/50">
+                                <h3 className="text-2xl font-bold text-white mb-6">Other Top Leagues Supported</h3>
+                                <div className="flex flex-wrap gap-4">
+                                    {Object.entries(LEAGUES)
+                                        .filter(([s]) => s !== params.slug)
+                                        .map(([s, l]) => (
+                                            <Link key={s} href={`/watch/${s}`} className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium text-white border border-gray-700 transition">
+                                                {l.name}
+                                            </Link>
+                                        ))}
+                                </div>
+                            </div>
+                        </section>
+                    </FadeIn>
 
                     {/* Upcoming Matches */}
-                    <section>
-                        <div className="h-px w-full mb-6" style={{ backgroundColor: theme.secondary, opacity: 0.35 }} />
-                        <h2 className="text-2xl font-bold text-white mb-6">Upcoming {theme.name} Fixtures</h2>
+                    <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
+                        <h2 className="text-2xl font-bold text-white mb-8 md:mb-12">Upcoming {theme.name} Fixtures</h2>
                         {fixtures.length > 0 ? (
-                            <div className="space-y-4">
+                            <StaggerIn className="space-y-6">
                                 {fixtures.map((match: any) => (
                                     <div key={match.id} className="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-gray-700 transition">
                                         <div className="flex items-center gap-6 w-full md:w-auto flex-1">
@@ -266,37 +273,36 @@ export default async function WatchLeaguePage({ params }: Props) {
                                                 <span className="text-xs text-center font-bold text-gray-300">{match.awayTeam}</span>
                                             </div>
                                         </div>
-                                        <Link
-                                            href="/pricing"
-                                            className="whitespace-nowrap px-6 py-3 text-black font-bold rounded-lg transition-transform transform hover:-translate-y-0.5 w-full md:w-auto text-center border hover:shadow-[0_0_18px_var(--accent)]"
-                                            style={{
-                                                backgroundColor: theme.secondary,
-                                                borderColor: theme.secondary,
-                                                ['--accent' as any]: theme.accent,
-                                            }}
+                                        <ShimmerButton
+                                            href="/free-trial"
+                                            variant="league"
+                                            leagueColor={theme.secondary}
+                                            className="px-6 py-3 text-sm rounded-lg whitespace-nowrap w-full md:w-auto"
                                         >
                                             Watch This Match →
-                                        </Link>
+                                        </ShimmerButton>
                                     </div>
                                 ))}
-                            </div>
+                            </StaggerIn>
                         ) : (
                             <p className="text-gray-500 p-6 bg-gray-900 rounded-xl border border-gray-800 text-center">No upcoming fixtures scheduled right now.</p>
                         )}
                     </section>
 
                     {/* FAQ Sections */}
-                    <section>
-                        <h2 className="text-3xl font-bold text-white mb-8">Frequently Asked Questions</h2>
-                        <div className="space-y-4">
-                            {faqs.map((faq, i) => (
-                                <div key={i} className="p-6 bg-gray-900 rounded-2xl border border-gray-800">
-                                    <h3 className="text-xl font-bold text-white mb-3">{faq.question}</h3>
-                                    <p className="text-gray-400">{faq.answer}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+                    <FadeIn direction="up">
+                        <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
+                            <h2 className="text-3xl font-bold text-white mb-8 md:mb-12">Frequently Asked Questions</h2>
+                            <StaggerIn className="space-y-6">
+                                {faqs.map((faq, i) => (
+                                    <div key={i} className="p-6 bg-gray-900 rounded-2xl border border-gray-800">
+                                        <h3 className="text-xl font-bold text-white mb-3">{faq.question}</h3>
+                                        <p className="text-gray-400">{faq.answer}</p>
+                                    </div>
+                                ))}
+                            </StaggerIn>
+                        </section>
+                    </FadeIn>
 
                 </div>
 
@@ -360,18 +366,21 @@ export default async function WatchLeaguePage({ params }: Props) {
             </div>
 
             {/* Bottom CTA */}
-            <section className="py-24 text-center px-4 border-t" style={{ borderColor: theme.secondary, background: `linear-gradient(180deg, #0a0a0f 0%, ${theme.primary}33 100%)` }}>
-                <div className="container mx-auto max-w-3xl">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">Ready to ditch the cable?</h2>
-                    <Link
-                        href="/pricing"
-                        className="inline-block px-10 py-5 text-black font-extrabold rounded-lg text-xl transition-transform transform hover:-translate-y-1 shadow-xl border"
-                        style={{ backgroundColor: theme.secondary, borderColor: theme.secondary }}
-                    >
-                        Start Watching {theme.name} Tonight — Free Trial
-                    </Link>
-                </div>
-            </section>
+            <FadeIn direction="up">
+                <section className="py-16 md:py-20 text-center px-4 border-t" style={{ borderColor: theme.secondary, background: `linear-gradient(180deg, #0a0a0f 0%, ${theme.primary}33 100%)` }}>
+                    <div className="container mx-auto max-w-3xl">
+                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">Ready to ditch the cable?</h2>
+                        <ShimmerButton
+                            href="/free-trial"
+                            variant="league"
+                            leagueColor={theme.secondary}
+                            className="px-10 py-5 text-xl rounded-xl"
+                        >
+                            Start Watching {theme.name} Tonight — Free Trial
+                        </ShimmerButton>
+                    </div>
+                </section>
+            </FadeIn>
 
       {/* Mobile Sticky CTA — md:hidden */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0f]/95 backdrop-blur-md border-t border-[#2a2a3a] p-4">
@@ -380,7 +389,7 @@ export default async function WatchLeaguePage({ params }: Props) {
             href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-[#00e676] text-black font-bold text-sm py-3.5 rounded-xl text-center"
+            className="bg-[#00e676] text-black font-bold text-base py-4 rounded-2xl text-center touch-manipulation active:scale-95 transition-transform cta-button"
           >
             Get Free Trial
           </a>
@@ -388,7 +397,7 @@ export default async function WatchLeaguePage({ params }: Props) {
             href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-[#25D366] text-black font-bold text-sm py-3.5 rounded-xl text-center"
+            className="bg-[#25D366] text-black font-bold text-base py-4 rounded-2xl text-center touch-manipulation active:scale-95 transition-transform cta-button"
           >
             💬 WhatsApp
           </a>

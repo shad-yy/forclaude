@@ -3,6 +3,8 @@ import Link from "next/link"
 import { SchemaMarkup } from "@/components/SchemaMarkup"
 import { BLOG_POSTS } from "@/lib/blog/posts"
 import { ENV } from "@/lib/config/env"
+import { FadeIn } from "@/components/ui/fade-in"
+import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
   title: "Sports Streaming Blog | Guides & Tips | Smart Live TV",
@@ -32,9 +34,10 @@ export default function BlogIndexPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background pt-24 pb-20">
+    <main className="min-h-screen bg-background pt-28 md:pt-36 pb-16 md:pb-20">
       <SchemaMarkup schema={breadcrumbSchema} />
 
+      <FadeIn>
       <section className="py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
           <div className="space-y-4 text-center">
@@ -45,10 +48,12 @@ export default function BlogIndexPage() {
           </div>
         </div>
       </section>
+      </FadeIn>
 
-      <section className="py-20">
+      <FadeIn direction="up">
+      <section className="pb-16 md:pb-20">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <StaggerIn className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {featuredPosts.map((post) => (
               <article key={post.slug} className="bg-[#12121a] border border-white/10 rounded-2xl p-8">
                 <div className="space-y-4">
@@ -68,13 +73,15 @@ export default function BlogIndexPage() {
                 </div>
               </article>
             ))}
-          </div>
+          </StaggerIn>
         </div>
       </section>
+      </FadeIn>
 
-      <section className="py-20">
+      <FadeIn direction="up">
+      <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <StaggerIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {regularPosts.map((post) => (
               <article key={post.slug} className="bg-[#12121a] border border-white/10 rounded-2xl p-6">
                 <div className="space-y-4">
@@ -94,9 +101,10 @@ export default function BlogIndexPage() {
                 </div>
               </article>
             ))}
-          </div>
+          </StaggerIn>
         </div>
       </section>
+      </FadeIn>
     </main>
   )
 }

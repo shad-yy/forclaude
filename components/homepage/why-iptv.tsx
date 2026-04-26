@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Check, Shield, MonitorSmartphone, Zap, Ban } from "lucide-react"
+import { StaggerChildren } from "@/components/ui/stagger-children"
 
 const features = [
     {
@@ -35,7 +36,7 @@ export function WhyIPTV() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" staggerDelay={0.12}>
                     {features.map((feature, i) => (
                         <div key={i} className="bg-gray-950 p-8 rounded-2xl border border-gray-800 hover:border-gray-700 transition-colors flex flex-col items-start gap-4">
                             <div className="p-3 bg-gray-900 rounded-xl border border-gray-800">
@@ -47,7 +48,7 @@ export function WhyIPTV() {
                             </p>
                         </div>
                     ))}
-                </div>
+                </StaggerChildren>
 
                 <div className="mt-16 text-center">
                     <Link

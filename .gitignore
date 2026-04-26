@@ -1,23 +1,22 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
+node_modules/
 
 # next.js
 /.next/
+.next/
 /out/
-
-# production
+out/
 /build
+dist/
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files
-.env*
+# Environment files
+.env
+.env.local
+.env.production
+.env.production.local
+.env.development.local
+.env.test.local
 *.pem
 *.key
 *.crt
@@ -25,6 +24,24 @@ secrets/
 config/secrets.json
 api-keys.txt
 credentials.json
+
+# Cache and logs
+.cache/
+cache/
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+*.swp
 
 # vercel
 .vercel

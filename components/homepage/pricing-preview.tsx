@@ -1,122 +1,130 @@
-import Link from "next/link"
-import { Check } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+"use client"
 
-const tiers = [
-    {
-        name: "Basic",
-        price: "£5.99",
-        period: "/mo",
-        description: "Standard IPTV channels for casual viewers.",
-        features: [
-            "5,000+ Channels",
-            "1 Connection",
-            "720p/1080p Quality",
-            "Standard Support",
-            "VOD Movies Library",
-        ],
-        popular: false,
-    },
-    {
-        name: "Sports Fan",
-        price: "£9.99",
-        period: "/mo",
-        description: "Everything a die-hard sports fan needs.",
-        features: [
-            "15,000+ Channels",
-            <span key="1"><strong>Premier League</strong> ✓</span>,
-            <span key="2"><strong>La Liga</strong> ✓</span>,
-            <span key="3"><strong>Champions League</strong> ✓</span>,
-            <span key="4"><strong>UFC</strong> ✓</span>,
-            <span key="5"><strong>NBA</strong> ✓</span>,
-            <span key="6"><strong>NFL</strong> ✓</span>,
-            "2 Connections",
-            "4K/60FPS Quality",
-            "Anti-Freeze Tech",
-        ],
-        popular: true,
-    },
-    {
-        name: "Premium",
-        price: "£14.99",
-        period: "/mo",
-        description: "The ultimate entertainment package.",
-        features: [
-            "All Sports Fan Features",
-            "20,000+ Channels",
-            "4 Connections",
-            "Adult Channels (Optional)",
-            "Priority 24/7 Support",
-            "Massive VOD Library",
-        ],
-        popular: false,
-    },
+import Link from "next/link"
+import { motion } from "framer-motion"
+import { Check } from "lucide-react"
+
+const PRICING_PLANS = [
+  {
+    period: "1 Month",
+    price: "£12",
+    label: "Flexible",
+    color: "neutral"
+  },
+  {
+    period: "3 Months",
+    price: "£24",
+    sub: "£8/mo",
+    label: "Popular",
+    color: "highlighted",
+    badge: "BEST VALUE"
+  },
+  {
+    period: "6 Months",
+    price: "£36",
+    sub: "£6/mo",
+    label: "Standard",
+    color: "neutral"
+  },
+  {
+    period: "12 Months",
+    price: "£54",
+    sub: "£4.50/mo",
+    label: "Best Price",
+    color: "neutral"
+  }
+]
+
+const FEATURES = [
+  "230,000+ Live Channels",
+  "4K Ultra HD Quality",
+  "All Live Sports & PPV",
+  "Anti-Buffer Technology",
+  "Works on All Devices"
 ]
 
 export function PricingPreview() {
-    return (
-        <section className="py-20 md:py-32 bg-gray-950">
-            <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
-                <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Choose Your Plan</h2>
-                    <p className="text-lg text-gray-400">
-                        Simple, transparent pricing. 24-hour free trial. Cancel anytime. No contracts.
-                    </p>
+  return (
+    <section className="py-24 bg-[#0a0a0f] relative overflow-hidden">
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
+            Choose Your Plan
+          </h2>
+          <p className="text-lg text-gray-400">
+            All plans include 230,000+ channels, 4K quality and a free 24-hour trial.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+          {PRICING_PLANS.map((plan) => (
+            <motion.div
+              key={plan.period}
+              whileHover={{ y: -5 }}
+              className={`relative bg-[#12121a] border rounded-2xl p-6 flex flex-col transition-all
+                ${plan.color === 'highlighted' 
+                  ? 'border-[#00e676] shadow-[0_0_20px_rgba(0,230,118,0.1)] scale-105 z-10' 
+                  : 'border-[#2a2a3a] hover:border-[#00e676]/30'}`}
+            >
+              {plan.badge && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#00e676] text-black text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter shadow-lg shadow-[#00e676]/20">
+                  {plan.badge}
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
-                    {tiers.map((tier) => (
-                        <div
-                            key={tier.name}
-                            className={`relative bg-gray-900 rounded-3xl p-8 flex flex-col h-full border ${tier.popular ? 'border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.15)] md:-mt-4 md:mb-4' : 'border-gray-800'}`}
-                        >
-                            {tier.popular && (
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                    <Badge className="bg-green-500 text-black hover:bg-green-400 font-bold px-4 py-1 text-sm border-none uppercase tracking-wide">
-                                        Most Popular
-                                    </Badge>
-                                </div>
-                            )}
-
-                            <div className="mb-6">
-                                <h3 className="text-2xl font-bold text-white mb-2">{tier.name}</h3>
-                                <p className="text-gray-400 text-sm">{tier.description}</p>
-                            </div>
-
-                            <div className="mb-8">
-                                <span className="text-4xl font-extrabold text-white">{tier.price}</span>
-                                <span className="text-gray-400">{tier.period}</span>
-                            </div>
-
-                            <div className="flex-1">
-                                <ul className="space-y-4 mb-8">
-                                    {tier.features.map((feature, i) => (
-                                        <li key={i} className="flex items-start gap-3">
-                                            <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
-                                            <span className="text-gray-300">{feature}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            <div className="mt-auto pt-4">
-                                <Link
-                                    href="/pricing"
-                                    className={`flex w-full justify-center px-6 py-4 rounded-xl font-bold text-lg transition-transform transform hover:-translate-y-1 ${tier.popular
-                                            ? 'bg-green-500 text-black hover:bg-green-400'
-                                            : 'bg-gray-800 text-white hover:bg-gray-700'
-                                        }`}
-                                >
-                                    Start Free Trial
-                                </Link>
-                                <div className="text-center mt-4">
-                                    <span className="text-xs text-gray-500">24-hour free trial • Cancel anytime • No contracts</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+              )}
+              
+              <div className="text-center mb-6 border-b border-[#2a2a3a]/50 pb-6">
+                <p className="text-xs text-gray-500 uppercase tracking-widest mb-2">
+                  {plan.period}
+                </p>
+                <div className="flex items-end justify-center gap-1 mb-1">
+                  <span className="text-4xl font-extrabold text-white">
+                    {plan.price}
+                  </span>
                 </div>
-            </div>
-        </section>
-    )
+                {plan.sub && (
+                  <p className="text-sm text-[#00e676] font-semibold">
+                    {plan.sub}
+                  </p>
+                )}
+                <p className="text-sm text-gray-400 mt-2 font-medium">
+                  {plan.label}
+                </p>
+              </div>
+
+              <div className="flex-grow">
+                <ul className="space-y-3 mb-6">
+                  {FEATURES.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-sm text-gray-300">
+                      <div className="mt-0.5 w-4 h-4 rounded-full bg-[#00e676]/10 flex items-center justify-center shrink-0">
+                        <Check className="w-3 h-3 text-[#00e676]" />
+                      </div>
+                      <span className="leading-tight">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <Link 
+                href="/free-trial"
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-all text-center mt-auto
+                  ${plan.color === 'highlighted'
+                    ? 'bg-[#00e676] text-black hover:bg-[#00ff87] shadow-[0_0_15px_rgba(0,230,118,0.3)]'
+                    : 'bg-[#1a1a24] text-white hover:bg-[#2a2a3a] border border-[#2a2a3a]'
+                  }`}
+              >
+                Start Free Trial
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <p className="text-sm text-gray-500 font-medium bg-[#12121a] inline-block px-6 py-2 rounded-full border border-[#2a2a3a]">
+            <span className="text-[#00e676] mr-2">✓</span>
+            All plans have identical features · Only duration differs · Cancel anytime
+          </p>
+        </div>
+      </div>
+    </section>
+  )
 }
