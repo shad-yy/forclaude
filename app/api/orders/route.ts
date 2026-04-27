@@ -5,7 +5,10 @@ const orderSchema = z.object({
   name: z.string().min(2).max(100).trim(),
   email: z.string().email().max(200).toLowerCase().trim(),
   whatsapp: z.string().max(20).optional(),
-  plan: z.enum(['1 Month', '3 Months', '6 Months', '12 Months']),
+  plan: z.enum([
+    '1 Month', '3 Months', '6 Months', '12 Months', 
+    'Free Trial Request'
+  ]),
   message: z.string().max(500).optional(),
 })
 
