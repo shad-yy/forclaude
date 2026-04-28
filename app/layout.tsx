@@ -85,7 +85,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* ... head ... */}
+      <head>
+        <link rel="preconnect" href="https://www.thesportsdb.com" />
+        <link rel="dns-prefetch" href="https://www.thesportsdb.com" />
+        <link rel="preconnect" href="https://r2.thesportsdb.com" />
+        <link rel="dns-prefetch" href="https://r2.thesportsdb.com" />
+      </head>
       <body className={cn(inter.className, "antialiased")}>
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
         <SportThemeProvider>

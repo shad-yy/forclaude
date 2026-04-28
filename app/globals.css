@@ -70,9 +70,6 @@ body.menu-open {
 }
 
 /* ── Prevent layout shift during animation ── */
-[data-framer-motion] {
-  will-change: transform, opacity;
-}
 
 * {
   box-sizing: border-box;

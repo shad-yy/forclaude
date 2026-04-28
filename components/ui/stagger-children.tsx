@@ -30,6 +30,7 @@ export function StaggerChildren({
             delay: i * staggerDelay,
             ease: [0.21, 0.47, 0.32, 0.98]
           }}
+          style={{ willChange: isInView ? 'auto' : 'transform, opacity' }}
         >
           {child}
         </motion.div>

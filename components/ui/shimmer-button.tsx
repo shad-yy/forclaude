@@ -36,7 +36,7 @@ export function ShimmerButton({
         className
       )}
       style={leagueStyle}
-      whileHover={{ scale: 1.03, y: -2 }}
+      whileHover={{ scale: 1.03, y: -2, willChange: 'transform' }}
       whileTap={{ scale: 0.97 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
