@@ -6,6 +6,9 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { cn } from "@/lib/utils"
 import { ENV } from "@/lib/config/env"
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics"
+import { WebVitals } from "@/components/analytics/WebVitals"
+import { CookieBanner } from "@/components/consent/CookieBanner"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -123,6 +126,9 @@ export default function RootLayout({
             `,
           }}
         />
+        <GoogleAnalytics measurementId={ENV.GA_MEASUREMENT_ID} />
+        <WebVitals />
+        <CookieBanner />
       </body>
     </html>
   )

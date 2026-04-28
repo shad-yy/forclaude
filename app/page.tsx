@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { Metadata } from "next"
 import { ENV } from "@/lib/config/env"
+import { SchemaMarkup } from "@/components/SchemaMarkup"
 
 import { HeroSection } from "@/components/homepage/hero-section"
 import { MatchCard } from "@/components/homepage/match-card"
@@ -26,6 +27,35 @@ function NewsSkeleton() {
 }
 
 export default function HomePage() {
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Smart Live TV',
+    url: ENV.BASE_URL,
+    logo: `${ENV.BASE_URL}/og-default.png`,
+    description: 'UK IPTV service providing 230,000+ live channels including all Sky Sports, TNT Sports, beIN Sports and Premier League coverage from £12/month.',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      availableLanguage: ['English', 'French', 'Arabic'],
+      areaServed: ['GB', 'MA', 'FR', 'IE'],
+      hoursAvailable: 'Mo-Su 09:00-23:00'
+    },
+    sameAs: [
+      process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK,
+      process.env.NEXT_PUBLIC_SOCIAL_TWITTER,
+      process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM,
+      process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE,
+    ].filter(Boolean),
+    offers: {
+      '@type': 'AggregateOffer',
+      lowPrice: '12',
+      highPrice: '54',
+      priceCurrency: 'GBP',
+      offerCount: 4,
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 overflow-x-hidden text-gray-100">
       <script
@@ -43,6 +73,7 @@ export default function HomePage() {
           })
         }}
       />
+      <SchemaMarkup schema={organizationSchema} />
       <FadeIn delay={0.1}>
         <HeroSection />
       </FadeIn>

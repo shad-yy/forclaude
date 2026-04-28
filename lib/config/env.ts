@@ -1,4 +1,7 @@
 export const ENV = {
+  get GA_MEASUREMENT_ID() {
+    return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ""
+  },
   get THESPORTSDB_KEY() {
     if (!process.env.THESPORTSDB_API_KEY) {
       console.warn('[ENV] THESPORTSDB_API_KEY not set')

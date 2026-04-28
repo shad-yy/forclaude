@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { generateFAQSchema } from '@/lib/schema'
+import { ENV } from '@/lib/config/env'
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
@@ -68,9 +69,70 @@ export default async function SetupDevicePage({ params }: Props) {
 
     const faqSchema = generateFAQSchema(faqs)
 
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', 
+          item: `${ENV.BASE_URL}/` },
+        { '@type': 'ListItem', position: 2, name: 'Setup Guides', 
+          item: `${ENV.BASE_URL}/setup` },
+        { '@type': 'ListItem', position: 3, name: `${deviceParams.name} Setup`, 
+          item: `${ENV.BASE_URL}/setup/${params.device}` },
+      ],
+    }
+
+    const howToSteps: Record<string, Array<{name: string; text: string}>> = {
+      firestick: [
+        { name: 'Enable Unknown Sources', text: 'Go to Settings → My Fire TV → Developer Options → Apps from Unknown Sources → turn ON.' },
+        { name: 'Install Downloader App', text: 'Search for "Downloader" in the Amazon Appstore and install it for free.' },
+        { name: 'Download the IPTV Player', text: 'Open Downloader and enter the URL provided in your Smart Live TV welcome email.' },
+        { name: 'Enter Your Credentials', text: 'Open the IPTV app, enter your username and password from your Smart Live TV account.' },
+        { name: 'Start Watching', text: 'Navigate to Live TV → Sports to find all Premier League, Champions League and sports channels.' },
+      ],
+      'smart-tv': [
+        { name: 'Open Smart Hub or App Store', text: 'Press the Home button on your remote and navigate to Apps or Smart Hub.' },
+        { name: 'Search for IPTV Player', text: 'Search for "Smart IPTV" or "IPTV Smarters" in the app store and install.' },
+        { name: 'Enter Your Playlist URL', text: 'Open the app and enter the M3U URL provided in your Smart Live TV welcome email.' },
+        { name: 'Load Your Channels', text: 'The app will load your 230,000+ channels automatically. Navigate to Sports for live matches.' },
+      ],
+      android: [
+        { name: 'Download the App', text: 'Go to Google Play Store and download "IPTV Smarters Pro" or the app link we provide.' },
+        { name: 'Open and Add Playlist', text: 'Open the app, tap "Add User" and enter your Smart Live TV login credentials.' },
+        { name: 'Select Your Content', text: 'Choose Live TV for sports channels, or VOD for movies and on-demand content.' },
+      ],
+      iphone: [
+        { name: 'Download the App', text: 'Go to the App Store and download "GSE Smart IPTV" or the player app we recommend.' },
+        { name: 'Add Your Playlist', text: 'In the app settings, add playlist URL and enter the M3U link from your welcome email.' },
+        { name: 'Browse Channels', text: 'Open Live TV and navigate to Sports for all live sports channels in HD and 4K.' },
+      ],
+    }
+
+    const deviceSteps = howToSteps[params.device] || []
+
+    const howToSchema = deviceSteps.length > 0 ? {
+      '@context': 'https://schema.org',
+      '@type': 'HowTo',
+      name: `How to Set Up Smart Live TV on ${deviceParams.name}`,
+      description: `Step-by-step guide to installing and setting up Smart Live TV IPTV service on ${deviceParams.name}. Takes under 5 minutes.`,
+      totalTime: 'PT5M',
+      supply: [
+        { '@type': 'HowToSupply', name: deviceParams.name },
+        { '@type': 'HowToSupply', name: 'Smart Live TV subscription credentials' },
+      ],
+      step: deviceSteps.map((step, i) => ({
+        '@type': 'HowToStep',
+        position: i + 1,
+        name: step.name,
+        text: step.text,
+      })),
+    } : null
+
     return (
         <div className="min-h-screen bg-gray-950 text-gray-100 pb-20">
             <SchemaMarkup schema={faqSchema} />
+            <SchemaMarkup schema={breadcrumbSchema} />
+            {howToSchema && <SchemaMarkup schema={howToSchema} />}
 
             {/* Hero Section */}
             <FadeIn>

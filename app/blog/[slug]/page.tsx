@@ -80,11 +80,25 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     url: `${ENV.BASE_URL}/blog/${post.slug}`,
   }
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', 
+        item: `${ENV.BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Blog', 
+        item: `${ENV.BASE_URL}/blog` },
+      { '@type': 'ListItem', position: 3, name: post.title, 
+        item: `${ENV.BASE_URL}/blog/${post.slug}` },
+    ],
+  }
+
   const lastUpdated = new Date(dateModified).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
   return (
     <main className="min-h-screen bg-background pt-28 md:pt-36 pb-16 md:pb-20">
       <SchemaMarkup schema={articleSchema} />
+      <SchemaMarkup schema={breadcrumbSchema} />
 
       <FadeIn>
       <section className="pb-8">

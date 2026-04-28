@@ -42,9 +42,10 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-bold text-white mb-3">4. Cookies</h2>
-            <p>This website uses essential cookies only — for site functionality 
-            and analytics. We do not use advertising or tracking cookies.
-            You can disable cookies in your browser settings.</p>
+            <p>We use Google Analytics cookies to measure site usage. 
+            These are only set after you give explicit consent via our 
+            cookie banner. You can withdraw consent at any time by 
+            clearing your browser cookies and declining on next visit.</p>
           </section>
 
           <section>

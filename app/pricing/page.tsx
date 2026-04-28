@@ -72,11 +72,26 @@ export default function PricingPage() {
     })),
   }
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', 
+        item: `${ENV.BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Pricing', 
+        item: `${ENV.BASE_URL}/pricing` },
+    ],
+  }
+
   return (
     <main className="min-h-screen font-sans bg-[#0a0a0f] pb-28 md:pb-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       
       {/* SECTION 1 — HERO */}

@@ -1,6 +1,8 @@
 "use client"
-import { useState } from "react"
+import { useState, useRef } from "react"
+import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { useRouter } from "next/navigation"
+import { trackEvent } from "@/lib/analytics"
 
 const COUNTRIES = [
   "United Kingdom", "Morocco", "France", "Germany", "Spain",
@@ -31,6 +33,9 @@ export function TrialForm() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
 
+  const captchaRef = useRef<HCaptcha>(null)
+  const [captchaToken, setCaptchaToken] = useState("")
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -56,6 +61,11 @@ export function TrialForm() {
       return
     }
 
+    if (process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY && !captchaToken) {
+      setError("Please complete the security check.")
+      return
+    }
+
     setError("")
     setLoading(true)
 
@@ -66,12 +76,14 @@ export function TrialForm() {
         body: JSON.stringify({
           ...form,
           plan: "Free Trial Request",
+          captchaToken,
           message: `Device: ${form.device} | Connection: ${form.connectionType} | Speed: ${form.internetSpeed} | Country: ${form.country}`,
         }),
       })
 
       if (!res.ok) throw new Error("Submission failed")
       setSubmitted(true)
+      trackEvent('trial_request', 'conversion', form.device)
     } catch {
       setError("Something went wrong. Please try WhatsApp instead.")
     } finally {
@@ -220,6 +232,18 @@ export function TrialForm() {
           border-red-500/20 rounded-xl px-4 py-3">
           {error}
         </p>
+      )}
+
+      {process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY && (
+        <div className="flex justify-center">
+          <HCaptcha
+            sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY}
+            onVerify={(token) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken("")}
+            ref={captchaRef}
+            theme="dark"
+          />
+        </div>
       )}
 
       {/* Submit */}

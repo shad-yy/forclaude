@@ -2,11 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { generateFAQSchema } from '@/lib/schema'
-import { LeagueBadge } from '@/components/league/league-badge'
 import { ENV } from '@/lib/config/env'
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
+import { getF1Schedule, getF1News } from '@/lib/api/espn'
 
 export const metadata: Metadata = {
   title: 'Watch Formula 1 Live 2026 | Stream Every F1 Race | Smart Live TV',
@@ -15,22 +15,39 @@ export const metadata: Metadata = {
 }
 
 export default async function Formula1Page() {
+  const [schedule, news] = await Promise.allSettled([
+    getF1Schedule(),
+    getF1News(),
+  ])
+
+  const races = schedule.status === 'fulfilled' ? schedule.value : []
+  const articles = news.status === 'fulfilled' ? news.value : []
+
+  // Next race
+  const nextRace = races.find(r => !r.status?.type?.completed) || races[0] || null
+
+  // Recent results
+  const recentRaces = races
+    .filter(r => r.status?.type?.completed)
+    .slice(0, 3)
+
+  // Upcoming races
+  const upcomingRaces = races
+    .filter(r => !r.status?.type?.completed)
+    .slice(0, 6)
+
   const faqs = [
     {
       question: 'Does IPTV include Sky Sports F1?',
-      answer: 'Yes, Smart Live TV includes Sky Sports F1 in full 4K UHD so you can watch every practice, qualifying, and race session live.',
+      answer: 'Yes. Smart Live TV includes Sky Sports F1 — every Formula 1 race live with no ad breaks, including practice sessions and qualifying.',
     },
     {
-      question: 'Can I watch F1 without a Sky subscription?',
-      answer: 'Absolutely. You do not need a cable or satellite TV subscription. Just connect your device to the internet and launch the app.',
+      question: 'Can I watch F1 without Sky Sports?',
+      answer: 'Yes. Sky Sports F1 is included in Smart Live TV from £12/month, compared to £43/month for Sky Sports standalone. A free 24-hour trial is available.',
     },
     {
-      question: 'Is there a way to watch F1 without ads?',
-      answer: "We offer international feeds (like F1 TV Pro streams or specific international broadcasters) that often run without ad breaks during the race, giving you uninterrupted action.",
-    },
-    {
-      question: 'How to watch F1 from abroad?',
-      answer: "With Smart Live TV, there are no geo-blocks. You can stream F1 whether you're in the UK, Europe, or traveling anywhere else in the world.",
+      question: 'Can I watch F1 from Morocco or abroad?',
+      answer: 'Smart Live TV works worldwide with no regional restrictions or VPN required. Stream every F1 race from Morocco, France, or anywhere.',
     },
   ]
 
@@ -60,12 +77,20 @@ export default async function Formula1Page() {
           }}
         >
           <div className="container mx-auto max-w-4xl">
-            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 md:mb-6 text-white">Every F1 Race. Zero Ad Breaks.</h1>
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-4 md:mb-6 text-white">
+              Formula 1 2026 — Every Race Live
+            </h1>
+            {nextRace && (
+              <div className="inline-flex items-center gap-2 bg-[#e10600]/10 border border-[#e10600]/30 text-[#ff4444] text-sm font-bold px-4 py-2 rounded-full mb-6">
+                🏎️ Next race: {nextRace.name} — {new Date(nextRace.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })}
+              </div>
+            )}
             <p className="text-gray-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
-              Stream the entire 2026 Formula 1 season in 4K UHD. Enjoy Sky Sports F1, F1 TV feeds, and uninterrupted international coverage. F1 is the fastest-growing sport globally — 1.6 billion viewers in 2024.
+              Stream the entire 2026 Formula 1 season in 4K UHD. Sky Sports F1 included,
+              every practice, qualifying, and race session live with no ad breaks.
             </p>
             <ShimmerButton
-              href="/pricing"
+              href="/free-trial"
               variant="league"
               leagueColor="#e10600"
               className="px-8 py-4 text-lg rounded-lg"
@@ -78,36 +103,101 @@ export default async function Formula1Page() {
 
       <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12 max-w-7xl">
         <div className="lg:col-span-2 space-y-0">
-          
-          <FadeIn direction="up">
-            <section className="pb-16 md:pb-20">
-              <div className="bg-gray-950/60 rounded-2xl border border-gray-800 p-8 text-center">
-                <p className="text-gray-400 text-sm mb-2">
-                  The complete calendar for the greatest motorsport in the world.
-                </p>
-                <p className="text-white font-bold text-lg mb-4">
-                  2026 Formula 1 Season
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-6">
-                  {[
-                    { round: 'Bahrain Grand Prix', date: 'March 2026' },
-                    { round: 'Monaco Grand Prix', date: 'May 2026' },
-                    { round: 'British Grand Prix', date: 'July 2026' },
-                    { round: 'Abu Dhabi Finale', date: 'December 2026' },
-                  ].map(item => (
-                    <div key={item.round} className="bg-gray-900 rounded-xl p-3 border border-gray-700">
-                      <div className="text-gray-400 text-xs mb-1">{item.round}</div>
-                      <div className="text-white font-bold text-sm">{item.date}</div>
-                    </div>
-                  ))}
+
+          {/* RACE SCHEDULE */}
+          {upcomingRaces.length > 0 && (
+            <FadeIn direction="up">
+              <section className="pb-16 md:pb-20">
+                <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12">Upcoming Races</h2>
+                <StaggerIn className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {upcomingRaces.map(race => {
+                    const venue = race.competitions?.[0]?.venue
+                    return (
+                      <div key={race.id} className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl p-5 hover:border-[#e10600]/40 transition-colors">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="font-bold text-white text-sm leading-tight pr-2">{race.name}</h3>
+                          <span className="text-xs bg-[#e10600]/10 text-[#ff4444] px-2 py-1 rounded-full font-bold whitespace-nowrap flex-shrink-0">
+                            {race.status?.type?.description || 'Scheduled'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 mb-1">
+                          📅 {new Date(race.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })}
+                        </p>
+                        {venue && (
+                          <p className="text-xs text-gray-500">
+                            📍 {venue.fullName}{venue.address?.city ? `, ${venue.address.city}` : ''}
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </StaggerIn>
+              </section>
+            </FadeIn>
+          )}
+
+          {/* RECENT RESULTS */}
+          {recentRaces.length > 0 && (
+            <FadeIn direction="up">
+              <section className="pb-16 md:pb-20 border-t border-[#2a2a3a] pt-16 md:pt-20">
+                <h2 className="text-2xl md:text-3xl font-bold mb-8 md:mb-12">Recent Results</h2>
+                <StaggerIn className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {recentRaces.map(race => {
+                    const venue = race.competitions?.[0]?.venue
+                    return (
+                      <div key={race.id} className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl p-5">
+                        <h3 className="font-bold text-white text-sm mb-2">{race.name}</h3>
+                        <p className="text-xs text-gray-400 mb-1">
+                          📅 {new Date(race.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long' })}
+                        </p>
+                        {venue && (
+                          <p className="text-xs text-gray-500">
+                            📍 {venue.fullName}
+                          </p>
+                        )}
+                        <span className="inline-block mt-2 text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded-full font-medium">
+                          Completed
+                        </span>
+                      </div>
+                    )
+                  })}
+                </StaggerIn>
+              </section>
+            </FadeIn>
+          )}
+
+          {/* FALLBACK — Static schedule when no ESPN data */}
+          {races.length === 0 && (
+            <FadeIn direction="up">
+              <section className="pb-16 md:pb-20">
+                <div className="bg-gray-950/60 rounded-2xl border border-gray-800 p-8 text-center">
+                  <p className="text-gray-400 text-sm mb-2">
+                    The complete calendar for the greatest motorsport in the world.
+                  </p>
+                  <p className="text-white font-bold text-lg mb-4">
+                    2026 Formula 1 Season
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-6">
+                    {[
+                      { round: 'Bahrain Grand Prix', date: 'March 2026' },
+                      { round: 'Monaco Grand Prix', date: 'May 2026' },
+                      { round: 'British Grand Prix', date: 'July 2026' },
+                      { round: 'Abu Dhabi Finale', date: 'December 2026' },
+                    ].map(item => (
+                      <div key={item.round} className="bg-gray-900 rounded-xl p-3 border border-gray-700">
+                        <div className="text-gray-400 text-xs mb-1">{item.round}</div>
+                        <div className="text-white font-bold text-sm">{item.date}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <Link href="/free-trial" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white text-sm"
+                    style={{ backgroundColor: '#e10600' }}>
+                    Watch F1 Live →
+                  </Link>
                 </div>
-                <Link href="/pricing" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white text-sm"
-                  style={{ backgroundColor: '#e10600' }}>
-                  Watch F1 Live →
-                </Link>
-              </div>
-            </section>
-          </FadeIn>
+              </section>
+            </FadeIn>
+          )}
 
           {/* F1 HIGHLIGHTS */}
           <FadeIn direction="up">
@@ -153,7 +243,7 @@ export default async function Formula1Page() {
               <StaggerIn className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 { n: 1, title: 'Start your free trial', body: 'Claim a 24-hour free trial and get instant access.' },
-                { n: 2, title: 'Set up on any device', body: <>Works on <Link href="/setup/firestick" className="text-[#00e676] hover:underline">Firestick</Link>, Smart TV, Android, iPhone and more.</> },
+                { n: 2, title: 'Set up on any device', body: <>{`Works on `}<Link href="/setup/firestick" className="text-[#00e676] hover:underline">Firestick</Link>, Smart TV, Android, iPhone and more.</> },
                 { n: 3, title: 'Watch in 4K', body: 'Stream every F1 race live in stunning 4K.' },
               ].map((s) => (
                 <div key={s.n} className="bg-gray-950/60 rounded-2xl border border-gray-800 p-6">
@@ -195,7 +285,7 @@ export default async function Formula1Page() {
             </div>
             <div className="p-6">
               <ShimmerButton
-                href="/pricing"
+                href="/free-trial"
                 variant="league"
                 leagueColor="#e10600"
                 className="w-full text-center py-4 rounded-xl text-white font-extrabold"

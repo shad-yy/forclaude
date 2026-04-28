@@ -370,63 +370,89 @@ function setCachedData<T>(key: string, data: T): void {
 
 export async function getUpcomingEvents(): Promise<UFCEvent[]> {
   try {
-    const cacheKey = "upcoming-events"
-    const cached = getCachedData<UFCEvent[]>(cacheKey)
-    if (cached) return cached
-
-    // Use scraper to get real data from ufc.com (dynamic import to avoid cheerio in client bundle)
-    const { ufcScraper } = await import("./ufc-scraper")
-    const events = await ufcScraper.getUpcomingEvents()
-
-    // Filter for upcoming events only
-    const upcoming = events.filter(e => e.status === "Upcoming")
-
-    if (upcoming.length > 0) {
-      setCachedData(cacheKey, upcoming)
-      return upcoming
+    const { getUFCEvents } = await import('./espn')
+    const events = await getUFCEvents()
+    
+    if (!events || events.length === 0) {
+      throw new Error('No ESPN UFC data')
     }
-
-    // Fallback to mock data if scraper fails
-    console.warn("[UFC API] Scraper returned no events, using fallback data")
-    setCachedData(cacheKey, mockUpcomingEvents)
-    return mockUpcomingEvents
-  } catch (error) {
-    console.error("Error fetching upcoming UFC events:", error)
-    // Fallback to mock data on error
+    
+    // Filter to upcoming/scheduled events
+    const upcoming = events
+      .filter(e => !e.status?.type?.completed)
+      .map(e => {
+        const competition = e.competitions?.[0]
+        const venue = competition?.venue
+        const mainFight = competition?.notes?.[0]?.headline || e.name
+        
+        return {
+          id: e.id,
+          name: e.name || e.shortName || 'UFC Event',
+          date: e.date,
+          location: venue 
+            ? `${venue.fullName}${venue.address?.city ? ', ' + venue.address.city : ''}`
+            : 'TBA',
+          status: 'Upcoming',
+          image: '/placeholder-logo.png',
+          mainEvent: mainFight,
+          fights: [],
+        } as UFCEvent
+      })
+      .slice(0, 6)
+    
+    if (upcoming.length > 0) return upcoming
+    
+    // No upcoming — return soonest events regardless
+    return events.slice(0, 3).map(e => ({
+      id: e.id,
+      name: e.name || 'UFC Event',
+      date: e.date,
+      location: e.competitions?.[0]?.venue?.fullName || 'TBA',
+      status: 'Upcoming',
+      image: '/placeholder-logo.png',
+      mainEvent: e.name,
+      fights: [],
+    } as UFCEvent))
+    
+  } catch (err) {
+    console.warn('[UFC] Falling back to mock data:', err)
     return mockUpcomingEvents
   }
 }
 
 export async function getPastEvents(): Promise<UFCEvent[]> {
   try {
-    const cacheKey = "past-events"
-    const cached = getCachedData<UFCEvent[]>(cacheKey)
-    if (cached) return cached
-
-    // Use scraper to get real data from ufc.com (dynamic import to avoid cheerio in client bundle)
-    const { ufcScraper } = await import("./ufc-scraper")
-    const events = await ufcScraper.getUpcomingEvents()
-
-    // Filter for past events only
-    const past = events.filter(e => e.status === "Past").map(e => {
-      if (e.image && (e.image.includes("Arsenal") || e.image.includes("133610"))) {
-        return { ...e, image: "https://www.thesportsdb.com/images/media/event/poster/ufc-generic.jpg" };
-      }
-      return e;
-    });
-
-    if (past.length > 0) {
-      setCachedData(cacheKey, past)
-      return past
+    const { getUFCEvents } = await import('./espn')
+    const events = await getUFCEvents()
+    
+    if (!events || events.length === 0) {
+      throw new Error('No ESPN UFC data')
     }
-
-    // Fallback to mock data if scraper fails
-    console.warn("[UFC API] Scraper returned no past events, using fallback data")
-    setCachedData(cacheKey, mockPastEvents)
-    return mockPastEvents
-  } catch (error) {
-    console.error("Error fetching past UFC events:", error)
-    // Fallback to mock data on error
+    
+    const past = events
+      .filter(e => e.status?.type?.completed)
+      .map(e => {
+        const competition = e.competitions?.[0]
+        const venue = competition?.venue
+        
+        return {
+          id: e.id,
+          name: e.name || 'UFC Event',
+          date: e.date,
+          location: venue?.fullName || 'TBA',
+          status: 'Past',
+          image: '/placeholder-logo.png',
+          mainEvent: competition?.notes?.[0]?.headline || e.name,
+          fights: [],
+        } as UFCEvent
+      })
+      .slice(0, 6)
+    
+    if (past.length > 0) return past
+    throw new Error('No past events from ESPN')
+    
+  } catch (err) {
+    console.warn('[UFC] Past events falling back to mock:', err)
     return mockPastEvents
   }
 }

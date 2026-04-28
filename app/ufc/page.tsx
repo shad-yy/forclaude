@@ -235,8 +235,23 @@ async function UFCRankings() {
 }
 
 export default function UFCPage() {
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', 
+        item: `${ENV.BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'UFC', 
+        item: `${ENV.BASE_URL}/ufc` },
+    ],
+  }
+
   return (
     <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-28 md:pt-36 pb-16 md:pb-20 space-y-8 bg-gray-950 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Header */}
       <FadeIn>
       <div className="text-center space-y-4">

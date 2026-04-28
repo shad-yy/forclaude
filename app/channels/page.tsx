@@ -46,11 +46,26 @@ export default function ChannelsPage() {
     }))
   }
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', 
+        item: `${ENV.BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Channel List', 
+        item: `${ENV.BASE_URL}/channels` },
+    ],
+  }
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <div className="min-h-screen bg-[#0a0a0f] text-white selection:bg-[#00e676] selection:text-black">
         
