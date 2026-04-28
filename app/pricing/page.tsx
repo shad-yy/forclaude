@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqAccordion } from '@/components/pricing/faq-accordion'
+import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { ENV } from '@/lib/config/env'
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
@@ -83,6 +84,73 @@ export default function PricingPage() {
     ],
   }
 
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'Smart Live TV IPTV Subscription',
+    description: 'Access to 230,000+ live TV channels including all Sky Sports, TNT Sports, beIN Sports, UFC, NBA, Premier League and 50+ countries. 4K quality, works on Firestick, Smart TV, Android and iPhone.',
+    brand: {
+      '@type': 'Brand',
+      name: 'Smart Live TV',
+    },
+    image: `${ENV.BASE_URL}/og-default.png`,
+    url: `${ENV.BASE_URL}/pricing`,
+    offers: [
+      {
+        '@type': 'Offer',
+        name: '1 Month Subscription',
+        price: '12.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        url: `${ENV.BASE_URL}/free-trial`,
+        validFrom: new Date().toISOString().split('T')[0],
+        priceValidUntil: new Date(
+          new Date().setFullYear(new Date().getFullYear() + 1)
+        ).toISOString().split('T')[0],
+        seller: {
+          '@type': 'Organization',
+          name: 'Smart Live TV',
+        },
+      },
+      {
+        '@type': 'Offer',
+        name: '3 Month Subscription',
+        price: '24.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        url: `${ENV.BASE_URL}/free-trial`,
+        validFrom: new Date().toISOString().split('T')[0],
+        priceValidUntil: new Date(
+          new Date().setFullYear(new Date().getFullYear() + 1)
+        ).toISOString().split('T')[0],
+        seller: {
+          '@type': 'Organization',
+          name: 'Smart Live TV',
+        },
+      },
+      {
+        '@type': 'Offer',
+        name: '6 Month Subscription',
+        price: '36.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        url: `${ENV.BASE_URL}/free-trial`,
+        seller: { '@type': 'Organization', name: 'Smart Live TV' },
+      },
+      {
+        '@type': 'Offer',
+        name: '12 Month Subscription',
+        price: '54.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        url: `${ENV.BASE_URL}/free-trial`,
+        seller: { '@type': 'Organization', name: 'Smart Live TV' },
+      },
+    ],
+    // NOTE: Only add AggregateRating once you have real reviews
+    // Fake ratings are a Google manual action — do not fabricate
+  }
+
   return (
     <main className="min-h-screen font-sans bg-[#0a0a0f] pb-28 md:pb-0">
       <script
@@ -93,6 +161,7 @@ export default function PricingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      <SchemaMarkup schema={productSchema} />
       
       {/* SECTION 1 — HERO */}
       <FadeIn>
@@ -300,6 +369,22 @@ export default function PricingPage() {
         </p>
       </section>
       </FadeIn>
+
+      {/* TRUST BADGES */}
+      <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 py-8 max-w-2xl mx-auto">
+        {[
+          { icon: "🔒", text: "Secure Payment" },
+          { icon: "↩️", text: "7-Day Money Back" },
+          { icon: "⚡", text: "Instant Activation" },
+          { icon: "🚫", text: "No Contract" },
+          { icon: "📞", text: "24/7 Support" },
+        ].map(badge => (
+          <div key={badge.text} className="flex items-center gap-2 bg-[#12121a] border border-[#2a2a3a] rounded-full px-4 py-2">
+            <span className="text-sm">{badge.icon}</span>
+            <span className="text-xs font-semibold text-gray-300">{badge.text}</span>
+          </div>
+        ))}
+      </div>
 
       {/* SECTION 3 — WHAT'S INCLUDED */}
       <FadeIn direction="up">

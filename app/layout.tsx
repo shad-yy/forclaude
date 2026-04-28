@@ -9,6 +9,7 @@ import { ENV } from "@/lib/config/env"
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics"
 import { WebVitals } from "@/components/analytics/WebVitals"
 import { CookieBanner } from "@/components/consent/CookieBanner"
+import { WhatsAppFloat } from "@/components/chat/WhatsAppFloat"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -129,6 +130,7 @@ export default function RootLayout({
         <GoogleAnalytics measurementId={ENV.GA_MEASUREMENT_ID} />
         <WebVitals />
         <CookieBanner />
+        <WhatsAppFloat />
       </body>
     </html>
   )

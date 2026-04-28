@@ -50,6 +50,42 @@ export function WhyIPTV() {
                     ))}
                 </StaggerChildren>
 
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
+                    {[
+                        { 
+                        value: "£372", 
+                        label: "Average annual saving vs Sky Sports",
+                        sub: "Based on Sky's 2026 pricing"
+                        },
+                        { 
+                        value: "5 min", 
+                        label: "Average setup time",
+                        sub: "Firestick, Smart TV, Android, iPhone"
+                        },
+                        { 
+                        value: "230K+", 
+                        label: "Live channels included",
+                        sub: "Every plan, no extras"
+                        },
+                        { 
+                        value: "99.9%", 
+                        label: "Service uptime target",
+                        sub: "Anti-buffer technology"
+                        },
+                    ].map(stat => (
+                        <div key={stat.value} 
+                        className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl p-5 text-center">
+                        <div className="text-2xl font-extrabold text-[#00e676] mb-1">
+                            {stat.value}
+                        </div>
+                        <div className="text-white font-bold text-xs mb-1">
+                            {stat.label}
+                        </div>
+                        <div className="text-gray-600 text-[10px]">{stat.sub}</div>
+                        </div>
+                    ))}
+                </div>
+
                 <div className="mt-16 text-center">
                     <Link
                         href="/pricing"

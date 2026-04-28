@@ -1,30 +1,46 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { CHANNELS, REGIONS, CATEGORIES } from './channelData'
 
 export default function ChannelLibrary({ storeUrl }: { storeUrl: string }) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debounceRef = useRef<NodeJS.Timeout>()
+  
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedRegion, setSelectedRegion] = useState('UK')
   const [displayedCount, setDisplayedCount] = useState(48)
 
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value)
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value)
+    }, 150)
+  }, [])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => clearTimeout(debounceRef.current)
+  }, [])
+
   const filteredChannels = useMemo(() => {
     return CHANNELS.filter(channel => {
-      const matchesSearch = searchQuery === '' || channel.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesSearch = debouncedSearch === '' || channel.name.toLowerCase().includes(debouncedSearch.toLowerCase())
       const matchesCategory = selectedCategory === 'All' || channel.category === selectedCategory
       const matchesRegion = selectedRegion === 'All regions' || channel.region === selectedRegion
       return matchesSearch && matchesCategory && matchesRegion
     })
-  }, [searchQuery, selectedCategory, selectedRegion])
+  }, [debouncedSearch, selectedCategory, selectedRegion])
 
   const visibleChannels = useMemo(() => {
-    if (searchQuery.trim() !== '') {
+    if (debouncedSearch.trim() !== '') {
       return filteredChannels.slice(0, 100)
     }
     return filteredChannels.slice(0, displayedCount)
-  }, [filteredChannels, searchQuery, displayedCount])
+  }, [filteredChannels, debouncedSearch, displayedCount])
 
   // Helper to grab initials for the fallback avatar
   const getInitials = (name: string) => {
@@ -62,7 +78,7 @@ export default function ChannelLibrary({ storeUrl }: { storeUrl: string }) {
     setDisplayedCount(prev => prev + 48)
   }
 
-  const showMoreButtonVisible = searchQuery.trim() === '' && displayedCount < filteredChannels.length
+  const showMoreButtonVisible = debouncedSearch.trim() === '' && displayedCount < filteredChannels.length
 
   return (
     <section className="bg-[#0a0a0f] py-16">
@@ -75,7 +91,7 @@ export default function ChannelLibrary({ storeUrl }: { storeUrl: string }) {
               type="text"
               placeholder="Search channels..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="bg-[#12121a] border border-[#2a2a3a] rounded-lg px-4 py-2 text-white w-full sm:max-w-xs focus:outline-none focus:border-[#00e676]/50 transition-colors"
             />
             <select
@@ -152,7 +168,7 @@ export default function ChannelLibrary({ storeUrl }: { storeUrl: string }) {
               ))}
             </div>
 
-            {searchQuery.trim() !== '' && filteredChannels.length > 100 && (
+            {debouncedSearch.trim() !== '' && filteredChannels.length > 100 && (
               <div className="mt-8 text-center text-gray-400">
                 Showing top 100 results. Please refine your search to see more.
               </div>
@@ -176,6 +192,7 @@ export default function ChannelLibrary({ storeUrl }: { storeUrl: string }) {
             <button 
               onClick={() => {
                 setSearchQuery('')
+                setDebouncedSearch('')
                 setSelectedCategory('All')
                 setSelectedRegion('All regions')
                 setDisplayedCount(48)
