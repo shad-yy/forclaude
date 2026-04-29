@@ -37,7 +37,7 @@ export default function ContactPage() {
             <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
               <h2 className="font-bold text-white mb-2">⚡ Free Trial</h2>
               <p className="text-gray-400 text-sm mb-4">
-                No card needed. Get instant access to 15,000+ channels.
+                No card needed. Get instant access to 230,000+ channels.
               </p>
               <a href="/pricing" className="inline-flex items-center px-6 py-3 bg-[#00e676] text-black font-bold rounded-lg hover:bg-[#00ff87] transition-colors">
                 Start Free Trial →

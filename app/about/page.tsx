@@ -5,7 +5,7 @@ import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
   title: 'About Smart Live TV | IPTV Streaming Service',
-  description: 'Learn about Smart Live TV — the UK\'s premium IPTV service with 15,000+ channels, 4K streaming, and no contracts. Free 24-hour trial.',
+  description: 'Learn about Smart Live TV — the UK\'s premium IPTV service with 230,000+ channels, 4K streaming, and no contracts. Free 24-hour trial.',
 }
 
 export default function AboutPage() {
@@ -21,7 +21,7 @@ export default function AboutPage() {
             missing the matches that matter.
           </p>
           <p className="text-gray-300 text-lg leading-relaxed mb-4">
-            We provide access to over 15,000 live channels — including every Premier
+            We provide access to over 230,000 live channels — including every Premier
             League, La Liga, Champions League, Bundesliga, Serie A, and Ligue 1
             fixture — streamed in crystal-clear 4K on any device.
           </p>
@@ -30,7 +30,7 @@ export default function AboutPage() {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {[
-              { stat: '15,000+', label: 'Live Channels' },
+              { stat: '230,000+', label: 'Live Channels' },
               { stat: '4K', label: 'Streaming Quality' },
               { stat: '24h', label: 'Free Trial' },
             ].map(item => (

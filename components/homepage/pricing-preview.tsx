@@ -8,7 +8,7 @@ const PRICING_PLANS = [
   {
     period: "1 Month",
     price: "£12",
-    label: "Flexible",
+    label: "Starter",
     color: "neutral"
   },
   {
@@ -30,7 +30,7 @@ const PRICING_PLANS = [
     period: "12 Months",
     price: "£54",
     sub: "£4.50/mo",
-    label: "Best Price",
+    label: "Ultimate",
     color: "neutral"
   }
 ]

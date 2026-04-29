@@ -11,35 +11,35 @@ interface FaqItem {
 const faqs: FaqItem[] = [
   {
     q: "Do I need a credit card for the free trial?",
-    a: "No. Your 24-hour free trial requires no credit card or payment details. Just sign up and start watching immediately."
+    a: "No. Your 24-hour free trial requires zero payment details. Message us on WhatsApp and we activate your trial immediately."
   },
   {
-    q: "How long does setup take?",
-    a: "Most customers are watching live TV within 5 minutes. We provide step-by-step guides for every device."
+    q: "How many screens can I watch on simultaneously?",
+    a: "All plans support up to 2 simultaneous streams. If you need more, contact us — we can accommodate specific requirements."
   },
   {
-    q: "Can I watch on multiple screens?",
-    a: "Yes. Starter supports 1 screen, Sports Fan supports 2 screens, and Ultimate supports 4 screens simultaneously."
-  },
-  {
-    q: "What sports channels are included?",
-    a: "All Sky Sports channels, TNT Sports 1-4, beIN Sports 1-7, Eurosport 1-2, Premier Sports, UFC Fight Pass, NFL Game Pass, NBA League Pass, and more."
+    q: "What channels are included?",
+    a: "All plans include identical content: 230,000+ live channels including all Sky Sports, TNT Sports, beIN Sports, BBC, ITV, Channel 4, UCL, UFC, F1, NBA, NFL, and 50+ country packages. No plan has fewer channels than another."
   },
   {
     q: "Is there a contract?",
-    a: "No contract. Cancel any time before your next billing date. No cancellation fees."
+    a: "No contract on any plan. Cancel at any time before your next billing date. No cancellation fees."
+  },
+  {
+    q: "What's the difference between the plans?",
+    a: "Only the duration and effective monthly price differ. The 1-month Starter is £12/mo. The 3-month Popular works out at £8/mo. The 6-month Standard is £6/mo. The 12-month Ultimate is £4.50/mo. Every plan has identical features."
   },
   {
     q: "What happens after the 24-hour trial?",
-    a: "Nothing happens automatically. We will contact you to confirm if you want to continue. You choose your plan and pay only when you're ready."
+    a: "Nothing automatic. We contact you to confirm if you'd like to continue. You choose your plan and pay only when you're satisfied."
   },
   {
-    q: "Which countries can I watch from?",
-    a: "Anywhere in the world. No regional restrictions or VPN needed."
+    q: "Which countries does this work in?",
+    a: "Everywhere. No regional restrictions, no VPN needed. UK, Morocco, France, UAE, USA — any country worldwide."
   },
   {
     q: "How do I get support?",
-    a: "WhatsApp support 7 days a week, 9am–11pm UK time. We typically respond within 30 minutes."
+    a: "WhatsApp support 7 days a week, 9am–11pm UK time. We typically respond within 5–10 minutes."
   }
 ]
 

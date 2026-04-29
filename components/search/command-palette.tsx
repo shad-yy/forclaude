@@ -11,14 +11,31 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
-import { Search, Tv, Trophy, Calendar, Heart, Settings, ArrowRight } from "lucide-react"
-import { channels } from "@/lib/data/channels"
+import { Search, Tv, Trophy, Calendar, Heart, Zap, BookOpen, DollarSign, FileText } from "lucide-react"
 
-const quickActions = [
-  { label: "Favorites", href: "/favorites", icon: Heart },
-  { label: "Fixtures", href: "/fixtures", icon: Calendar },
-  { label: "Leagues", href: "/leagues", icon: Trophy },
+const QUICK_LINKS = [
+  { label: "Premier League", href: "/watch/premier-league", icon: Trophy, category: "Sports" },
+  { label: "Champions League", href: "/watch/champions-league", icon: Trophy, category: "Sports" },
+  { label: "World Cup 2026", href: "/watch/world-cup-2026", icon: Trophy, category: "Sports" },
+  { label: "UFC", href: "/ufc", icon: Zap, category: "Sports" },
+  { label: "Formula 1", href: "/watch/formula-1", icon: Zap, category: "Sports" },
+  { label: "La Liga", href: "/watch/la-liga", icon: Trophy, category: "Sports" },
+  { label: "Bundesliga", href: "/watch/bundesliga", icon: Trophy, category: "Sports" },
+  { label: "Serie A", href: "/watch/serie-a", icon: Trophy, category: "Sports" },
+  { label: "Europa League", href: "/watch/europa-league", icon: Trophy, category: "Sports" },
+  { label: "Ligue 1", href: "/watch/ligue-1", icon: Trophy, category: "Sports" },
 ]
+
+const PAGE_LINKS = [
+  { label: "Free Trial", href: "/free-trial", icon: Zap, category: "Pages" },
+  { label: "Pricing", href: "/pricing", icon: DollarSign, category: "Pages" },
+  { label: "Blog", href: "/blog", icon: BookOpen, category: "Pages" },
+  { label: "Channels", href: "/channels", icon: Tv, category: "Pages" },
+  { label: "News", href: "/news", icon: FileText, category: "Pages" },
+  { label: "Contact Us", href: "/contact", icon: Heart, category: "Pages" },
+]
+
+const ALL_ITEMS = [...QUICK_LINKS, ...PAGE_LINKS]
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false)
@@ -68,47 +85,40 @@ export function CommandPalette() {
       </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search channels, pages, actions..." />
+        <CommandInput placeholder="Search sports, pages..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
 
-          <CommandGroup heading="Quick Actions">
-            {quickActions.map((action) => (
+          <CommandGroup heading="Sports">
+            {QUICK_LINKS.map((item) => (
               <CommandItem
-                key={action.href}
-                onSelect={() => navigate(action.href)}
+                key={item.href}
+                onSelect={() => navigate(item.href)}
                 className="flex items-center gap-3 cursor-pointer"
               >
-                <action.icon className="w-4 h-4 text-text-muted" />
-                <span>{action.label}</span>
-                <ArrowRight className="w-3 h-3 ml-auto text-text-muted" />
+                <item.icon className="w-4 h-4 text-text-muted" />
+                <span>{item.label}</span>
+                <span className="ml-auto text-[10px] bg-surface-elevated text-text-muted px-2 py-0.5 rounded-full font-medium">
+                  {item.category}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>
 
           <CommandSeparator />
 
-          <CommandGroup heading="Channels">
-            {channels.slice(0, 8).map((channel) => (
+          <CommandGroup heading="Pages">
+            {PAGE_LINKS.map((item) => (
               <CommandItem
-                key={channel.id}
-                onSelect={() => navigate("/channels")}
+                key={item.href}
+                onSelect={() => navigate(item.href)}
                 className="flex items-center gap-3 cursor-pointer"
               >
-                <div className="w-6 h-6 rounded bg-surface-elevated flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {channel.logo ? (
-                    <img src={channel.logo} alt="" className="w-4 h-4 object-contain" />
-                  ) : (
-                    <Tv className="w-3 h-3 text-text-muted" />
-                  )}
-                </div>
-                <span className="truncate">{channel.name}</span>
-                {channel.isLive && (
-                  <span className="ml-auto flex items-center gap-1 text-[10px] text-live-red font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-live-red animate-pulse" />
-                    LIVE
-                  </span>
-                )}
+                <item.icon className="w-4 h-4 text-text-muted" />
+                <span>{item.label}</span>
+                <span className="ml-auto text-[10px] bg-surface-elevated text-text-muted px-2 py-0.5 rounded-full font-medium">
+                  {item.category}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>

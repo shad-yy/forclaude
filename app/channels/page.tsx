@@ -4,11 +4,11 @@ import { ENV } from '@/lib/config/env'
 import ChannelLibrary from '@/components/channels/channel-library'
 
 export const metadata: Metadata = {
-  title: 'IPTV Channel List UK — 15,000+ Live Channels | Smart Live TV',
-  description: 'Browse 15,000+ live channels including UK, Arabic, French, German, Indian, US and more. Premier League, La Liga, UFC, Sky Sports, BT Sport & more. Free 24-hour trial, no card required.',
+  title: 'IPTV Channel List UK — 230,000+ Live Channels | Smart Live TV',
+  description: 'Browse 230,000+ live channels including UK, Arabic, French, German, Indian, US and more. Premier League, La Liga, UFC, Sky Sports, BT Sport & more. Free 24-hour trial, no card required.',
   alternates: { canonical: `${ENV.BASE_URL}/channels` },
   openGraph: {
-    title: 'IPTV Channel List UK — 15,000+ Channels',
+    title: 'IPTV Channel List UK — 230,000+ Channels',
     description: 'Every channel you want. No blackouts. Cancel anytime.',
     images: ['/og-default.png'],
   },
@@ -36,8 +36,8 @@ export default function ChannelsPage() {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "name": "Smart Live TV Channel List",
-    "description": "Complete list of 15,000+ channels available with Smart Live TV IPTV subscription",
-    "numberOfItems": 15000,
+    "description": "Complete list of 230,000+ channels available with Smart Live TV IPTV subscription",
+    "numberOfItems": 230000,
     "itemListElement": TOP_10_CHANNELS.map((ch, i) => ({
       "@type": "ListItem",
       "position": i + 1,
@@ -74,7 +74,7 @@ export default function ChannelsPage() {
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center justify-center">
               <span className="bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/20 px-4 py-1.5 rounded-full text-sm font-bold">
-                15,000+ Channels Included
+                230,000+ Channels Included
               </span>
             </div>
             

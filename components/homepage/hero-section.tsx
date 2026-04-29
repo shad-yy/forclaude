@@ -36,7 +36,7 @@ export function HeroSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-live-red opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-live-red"></span>
               </span>
-              <span className="text-text-primary">15,000+ Channels Streaming Now</span>
+              <span className="text-text-primary">230,000+ Channels Streaming Now</span>
             </motion.div>
 
             <motion.h1
@@ -82,7 +82,7 @@ export function HeroSection() {
               transition={{ duration: 0.6, delay: 0.45 }}
               className="pt-2 w-full flex flex-wrap items-center gap-x-4 gap-y-3 text-sm lg:text-base text-text-muted font-semibold"
             >
-              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> 15,000+ Channels</span>
+              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> 230,000+ Channels</span>
               <span className="hidden sm:inline text-border">|</span>
               <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> 4K Streaming</span>
               <span className="hidden sm:inline text-border">|</span>
@@ -113,7 +113,7 @@ export function HeroSection() {
 
               <div className="grid grid-cols-2 gap-3 mb-5">
                 <div className="bg-surface rounded-lg p-3 border border-border/50">
-                  <div className="text-2xl font-black text-accent-primary leading-none">15K+</div>
+                  <div className="text-2xl font-black text-accent-primary leading-none">230K+</div>
                   <div className="text-[11px] text-text-muted font-medium mt-0.5">Live Channels</div>
                 </div>
                 <div className="bg-surface rounded-lg p-3 border border-border/50">

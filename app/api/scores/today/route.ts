@@ -39,7 +39,11 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json(
       { matches, message: "Success" },
-      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+      { headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+      } }
     )
   } catch (error) {
     console.warn("[API] GET /api/scores/today error:", error)

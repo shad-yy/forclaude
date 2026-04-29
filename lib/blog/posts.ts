@@ -41,7 +41,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Amazon Firestick is the most popular choice — buy one from Amazon.eg or any electronics store and it works immediately. Android phones and Smart TVs also work out of the box.</p>
 
 <h2>How Much Does It Cost?</h2>
-<p>The Sports Fan plan at £9.99/mo gives you access to all 380 Premier League matches plus <a href="/watch/champions-league">Champions League</a>, La Liga, and 15,000+ other channels. That's less than one month of Sky Sports.</p>
+<p>The Sports Fan plan at £9.99/mo gives you access to all 380 Premier League matches plus <a href="/watch/champions-league">Champions League</a>, La Liga, and 230,000+ other channels. That's less than one month of Sky Sports.</p>
     `,
   },
   {
@@ -88,7 +88,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Sky Sports covers <a href="/watch/premier-league">Premier League</a>, but you need a separate TNT Sports subscription for <a href="/watch/champions-league">Champions League</a>. Formula 1 is on Sky but behind an additional F1 TV paywall. International leagues like La Liga and Serie A have limited coverage. And if you want to watch from abroad? Geo-blocked.</p>
 
 <h2>What Smart Live TV Includes for £9.99/mo</h2>
-<p>Every Premier League match. Every Champions League match. La Liga, Bundesliga, Serie A, Ligue 1. UFC and boxing PPV events included. NBA, NFL, cricket. Formula 1. All Sky Sports channels, TNT Sports, beIN Sports, ESPN, Eurosport — and 15,000+ other channels worldwide.</p>
+<p>Every Premier League match. Every Champions League match. La Liga, Bundesliga, Serie A, Ligue 1. UFC and boxing PPV events included. NBA, NFL, cricket. Formula 1. All Sky Sports channels, TNT Sports, beIN Sports, ESPN, Eurosport — and 230,000+ other channels worldwide.</p>
 
 <h2>The Verdict</h2>
 <p>Sky Sports is a premium product with excellent production quality and a reliable app. If you only watch Premier League and don't mind the price, it works. But if you watch multiple sports, follow international leagues, or want to watch from outside the UK, Smart Live TV delivers more for less — substantially less.</p>
@@ -162,7 +162,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Smart Live TV includes TNT Sports, Sky Sports, and every other broadcaster showing Champions League — all in one subscription from £5.99/mo. Every group stage match, every knockout round, and the final in 4K.</p>
 
 <h2>Cost Comparison</h2>
-<p>TNT Sports alone: £29.99/mo (£360/year). Smart Live TV Sports Fan: £9.99/mo (£120/year) — and you also get <a href="/watch/premier-league">Premier League</a>, La Liga, UFC, and 15,000 other channels.</p>
+<p>TNT Sports alone: £29.99/mo (£360/year). Smart Live TV Sports Fan: £9.99/mo (£120/year) — and you also get <a href="/watch/premier-league">Premier League</a>, La Liga, UFC, and 230,000 other channels.</p>
 
 <h2>Get Started Tonight</h2>
 <p>If there's a Champions League match tonight, you can watch it. Start your <a href="/pricing">free 24-hour trial</a> at smartlivetv.com/pricing — no card required, setup takes under 5 minutes.</p>

@@ -142,7 +142,7 @@ export default async function SetupDevicePage({ params }: Props) {
                         How to Watch Live Sports on {deviceParams.name}
                     </h1>
                     <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-                        Turn your {deviceParams.name} into the ultimate sports hub in under 5 minutes. Stream Premier League, UFC, and 15,000+ live channels instantly.
+                        Turn your {deviceParams.name} into the ultimate sports hub in under 5 minutes. Stream Premier League, UFC, and 230,000+ live channels instantly.
                     </p>
                 </div>
             </section>

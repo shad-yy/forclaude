@@ -15,7 +15,7 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: 'Smart Live TV — Watch 15,000+ Channels | Free 24H Trial',
+  title: 'Smart Live TV — Watch 230,000+ Channels | Free 24H Trial',
   description: 'Stream Premier League, La Liga, Champions League, UFC & more on any device. Get your free 24-hour trial today.',
   alternates: {
     canonical: ENV.BASE_URL,

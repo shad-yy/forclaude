@@ -8,7 +8,7 @@ import { TrialForm } from "@/components/trial/TrialForm"
 
 export const metadata: Metadata = {
   title: 'Get Your Free 24-Hour IPTV Trial | Smart Live TV',
-  description: 'Claim your free 24-hour trial. No credit card. All 15,000+ channels included. Set up in 5 minutes on any device.',
+  description: 'Claim your free 24-hour trial. No credit card. All 230,000+ channels included. Set up in 5 minutes on any device.',
   alternates: { canonical: `${ENV.BASE_URL}/free-trial` },
 }
 
@@ -27,7 +27,7 @@ export default function FreeTrialPage() {
         </h1>
 
         <p className="text-gray-400 text-lg mb-10">
-          Get instant access to 15,000+ live channels — every Sky Sports, 
+          Get instant access to 230,000+ live channels — every Sky Sports, 
           TNT Sports, beIN Sports, UFC and BBC channel included.
           We set up every trial personally to make sure it works 
           perfectly on your device.
@@ -37,7 +37,7 @@ export default function FreeTrialPage() {
           <div className="text-center">
             <div className="text-2xl mb-1">✅</div>
             <div className="text-sm font-bold text-white">Full Access</div>
-            <div className="text-xs text-gray-500">All 15,000+ channels</div>
+            <div className="text-xs text-gray-500">All 230,000+ channels</div>
           </div>
           <div className="text-center">
             <div className="text-2xl mb-1">⏱</div>
@@ -101,7 +101,7 @@ export default function FreeTrialPage() {
             </div>
             <div>
               <div className="font-bold text-white text-sm">Watch Everything Live for 24 Hours</div>
-              <div className="text-gray-500 text-sm">Full access to all 15,000+ channels. No restrictions. If you love it, choose a plan. No pressure.</div>
+              <div className="text-gray-500 text-sm">Full access to all 230,000+ channels. No restrictions. If you love it, choose a plan. No pressure.</div>
             </div>
           </div>
         </StaggerIn>
@@ -138,7 +138,7 @@ export default function FreeTrialPage() {
         </StaggerIn>
 
         <div className="text-center mt-8">
-          <span className="text-sm text-gray-500">Plus 15,000+ more channels across every category</span>
+          <span className="text-sm text-gray-500">Plus 230,000+ more channels across every category</span>
           <Link href="/channels" className="text-[#00e676] text-sm hover:underline ml-2">
             Browse full channel list →
           </Link>

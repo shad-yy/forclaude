@@ -7,15 +7,15 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: 'IPTV Pricing UK — From £5.99/mo | Smart Live TV',
+  title: 'IPTV Subscription UK — Plans from £12/mo | Smart Live TV',
   description:
-    'Stream Premier League, Champions League & 15,000+ channels from £5.99/mo. No contract. Start your free 24-hour trial today.',
+    'Simple IPTV pricing from £12/month. 230,000+ channels, 4K quality, no contract. Free 24-hour trial included.',
   alternates: {
     canonical: `${ENV.BASE_URL}/pricing`,
   },
   openGraph: {
-    title: 'IPTV Pricing UK — From £5.99/mo | Smart Live TV',
-    description: 'Flexible IPTV plans from £5.99/mo. No contracts, cancel anytime. Free 24-hour trial.',
+    title: 'IPTV Subscription UK — Plans from £12/mo | Smart Live TV',
+    description: 'Simple IPTV pricing from £12/month. 230,000+ channels, 4K quality, no contract. Free 24-hour trial included.',
     url: `${ENV.BASE_URL}/pricing`,
     siteName: 'Smart Live TV',
     images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],
@@ -24,36 +24,36 @@ export const metadata: Metadata = {
 
 const faqs = [
   {
-    q: "What plans does Smart Live TV offer?",
-    a: "Smart Live TV offers 4 subscription options: 1 month for £12, 3 months for £24, 6 months for £36, and 12 months for £54. All plans include 230,000+ channels, 4K quality, and a free 24-hour trial."
-  },
-  {
     q: "Do I need a credit card for the free trial?",
-    a: "No. Your 24-hour free trial requires no credit card or payment details. Just sign up and start watching immediately."
+    a: "No. Your 24-hour free trial requires zero payment details. Message us on WhatsApp and we activate your trial immediately."
   },
   {
-    q: "How long does setup take?",
-    a: "Most customers are watching live TV within 5 minutes. We provide step-by-step guides for every device."
+    q: "How many screens can I watch on simultaneously?",
+    a: "All plans support up to 2 simultaneous streams. If you need more, contact us — we can accommodate specific requirements."
   },
   {
-    q: "What sports channels are included?",
-    a: "All Sky Sports channels, TNT Sports 1-4, beIN Sports 1-7, Eurosport 1-2, Premier Sports, UFC Fight Pass, NFL Game Pass, NBA League Pass, and more."
+    q: "What channels are included?",
+    a: "All plans include identical content: 230,000+ live channels including all Sky Sports, TNT Sports, beIN Sports, BBC, ITV, Channel 4, UCL, UFC, F1, NBA, NFL, and 50+ country packages. No plan has fewer channels than another."
   },
   {
     q: "Is there a contract?",
-    a: "No contract. Cancel any time before your next billing date. No cancellation fees."
+    a: "No contract on any plan. Cancel at any time before your next billing date. No cancellation fees."
+  },
+  {
+    q: "What's the difference between the plans?",
+    a: "Only the duration and effective monthly price differ. The 1-month Starter is £12/mo. The 3-month Popular works out at £8/mo. The 6-month Standard is £6/mo. The 12-month Ultimate is £4.50/mo. Every plan has identical features."
   },
   {
     q: "What happens after the 24-hour trial?",
-    a: "Nothing happens automatically. We will contact you to confirm if you want to continue. You choose your plan and pay only when you're ready."
+    a: "Nothing automatic. We contact you to confirm if you'd like to continue. You choose your plan and pay only when you're satisfied."
   },
   {
-    q: "Which countries can I watch from?",
-    a: "Anywhere in the world. No regional restrictions or VPN needed."
+    q: "Which countries does this work in?",
+    a: "Everywhere. No regional restrictions, no VPN needed. UK, Morocco, France, UAE, USA — any country worldwide."
   },
   {
     q: "How do I get support?",
-    a: "WhatsApp support 7 days a week, 9am–11pm UK time. We typically respond within 30 minutes."
+    a: "WhatsApp support 7 days a week, 9am–11pm UK time. We typically respond within 5–10 minutes."
   }
 ]
 
@@ -178,15 +178,6 @@ export default function PricingPage() {
           Pick a plan. Get instant access. Watch everything live.
           Try free for 24 hours — no card needed.
         </p>
-        
-        <div className="flex items-center justify-center gap-2 mt-8">
-          <div className="bg-[#00e676] text-black font-bold px-6 py-2 rounded-lg text-sm cursor-default">
-            Monthly
-          </div>
-          <div className="bg-[#12121a] border border-[#2a2a3a] text-gray-400 px-6 py-2 rounded-lg text-sm cursor-default">
-            Annual — Save 20%
-          </div>
-        </div>
       </section>
       </FadeIn>
 

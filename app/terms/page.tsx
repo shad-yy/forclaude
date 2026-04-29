@@ -19,7 +19,7 @@ export default function TermsPage() {
         <div className="space-y-8 text-gray-300 leading-relaxed">
           <section>
             <h2 className="text-xl font-bold text-white mb-3">1. Service Description</h2>
-            <p>Smart Live TV provides access to a streaming service with 15,000+ 
+            <p>Smart Live TV provides access to a streaming service with 230,000+ 
             live channels. A free 24-hour trial is available with no credit card 
             required. Paid subscriptions begin after the trial period at the 
             rate of your chosen plan.</p>

@@ -88,7 +88,7 @@ export function WhyIPTV() {
 
                 <div className="mt-16 text-center">
                     <Link
-                        href="/pricing"
+                        href="/free-trial"
                         className="inline-flex items-center justify-center px-8 py-4 bg-green-500 hover:bg-green-400 text-black font-bold rounded-lg text-lg transition-transform transform hover:-translate-y-1 shadow-lg"
                     >
                         Try Free For 24 Hours — No Card Required

@@ -188,7 +188,7 @@ export default function ChannelLibrary({ storeUrl }: { storeUrl: string }) {
         ) : (
           <div className="text-center py-20 bg-[#12121a] rounded-2xl border border-[#2a2a3a] px-4">
             <h3 className="text-xl font-bold text-white mb-2">No channels match your filters.</h3>
-            <p className="text-gray-400">All 15,000+ channels are available in your subscription.</p>
+            <p className="text-gray-400">All 230,000+ channels are available in your subscription.</p>
             <button 
               onClick={() => {
                 setSearchQuery('')

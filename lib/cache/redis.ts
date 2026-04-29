@@ -50,3 +50,10 @@ export async function withCache<T>(
   cacheSet(key, fresh, ttlSeconds).catch(console.error)
   return fresh
 }
+
+export async function withShortCache<T>(
+  key: string,
+  fetcher: () => Promise<T>
+): Promise<T> {
+  return withCache(key, 300, fetcher) // 5 minute TTL
+}

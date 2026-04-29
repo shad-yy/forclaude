@@ -335,8 +335,8 @@ export const Header = memo(function Header() {
                 <Heart className="w-4 h-4" />
               </Link>
 
-              <Link href="/login" className="text-sm font-semibold text-text-muted hover:text-text-primary transition-colors">
-                Sign In
+              <Link href="/contact" className="text-sm font-semibold text-text-muted hover:text-text-primary transition-colors">
+                Support
               </Link>
               <ShimmerButton href="/free-trial" className="text-sm px-6 py-2.5">
                 Free Trial →
@@ -421,11 +421,11 @@ export const Header = memo(function Header() {
                 </ShimmerButton>
               </div>
               <Link
-                href="/login"
+                href="/contact"
                 className="w-full flex justify-center text-sm font-semibold text-text-secondary py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Already have an account? Sign In
+                Need help? Contact Support
               </Link>
             </div>
           </div>

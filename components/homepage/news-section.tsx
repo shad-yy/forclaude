@@ -35,25 +35,18 @@ function getCategoryBadge(categoryName: string): string {
 export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
   const allArticles = await getLatestSportsNews(undefined, maxArticles);
 
-  let rawArticles = allArticles;
-  const seen = new Set<string>()
-  const seenUrls = new Set<string>()
-  let uniqueArticles = rawArticles.filter(article => {
-    const url = article.link || (article as any).url
-    if (url && seenUrls.has(url)) return false
-    if (url) seenUrls.add(url)
-    
-    const key = (article.title || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 60)
-    
-    if (!key || seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
+  // FIX 2 — Aggressive deduplication at component level (safety net)
+  const uniqueArticles = allArticles.reduce((acc: any[], article: any) => {
+    const titleKey = (article.title || '')
+      .toLowerCase().replace(/[^a-z0-9]/g,'').slice(0, 50)
+    const isDuplicate = acc.some(a => 
+      (a.link && a.link === article.link) ||
+      ((a.title||'').toLowerCase().replace(/[^a-z0-9]/g,'')
+        .slice(0,50) === titleKey) ||
+      (article.image_url && a.image_url === article.image_url)
+    )
+    return isDuplicate ? acc : [...acc, article]
+  }, [])
 
   let articles = uniqueArticles.slice(0, maxArticles);
   while (articles.length > 0 && articles.length < maxArticles) {
@@ -102,7 +95,7 @@ export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
               className="animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
             >
-              <a href={article.link} target="_blank" rel="noopener noreferrer" className="block h-[450px] group">
+              <a href={article.link || article.url || '/news'} target="_blank" rel="noopener noreferrer" className="block h-[450px] group">
                 <Card className="bg-surface border-border hover:border-accent-primary transition-all duration-300 h-full flex flex-col overflow-hidden shadow-lg group-hover:shadow-[0_0_20px_rgba(0,230,118,0.15)]">
                   {/* Top 50%: Image */}
                   <div className="h-1/2 w-full overflow-hidden bg-surface-elevated relative">
@@ -143,7 +136,7 @@ export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
                     )}
 
                     <div className="flex items-center gap-2 text-sm font-bold text-accent-primary mt-auto pt-2 transition-colors">
-                      <span>Stream This Match</span>
+                      <span>Read Article →</span>
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />
                     </div>
                   </CardContent>
