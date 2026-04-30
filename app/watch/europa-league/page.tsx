@@ -153,6 +153,7 @@ export default async function EuropaLeaguePage() {
             <div className="flex items-center justify-center mb-6">
               <LeagueBadge
                 src="https://www.thesportsdb.com/images/media/league/badge/yvwvqu1432120355.png"
+                localSrc="/leagues/europa-league.png"
                 alt="UEFA Europa League"
                 size={64}
                 className="object-contain"

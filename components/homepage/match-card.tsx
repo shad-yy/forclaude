@@ -21,6 +21,7 @@ interface MatchData {
     strLeague: string
     strLeagueBadge?: string | null
     strStatus: string
+    isYesterday?: boolean
 }
 
 const LEAGUE_COLORS: Record<string, string> = {
@@ -77,7 +78,16 @@ function getBgColor(name: string) {
     return `hsl(${Math.abs(hash) % 360}, 60%, 20%)`
 }
 
-const LEAGUE_BADGES_BY_ID: Record<string, string> = {
+const LEAGUE_BADGES_LOCAL: Record<string, string> = {
+    "4328": "/leagues/premier-league.png",
+    "4335": "/leagues/la-liga.png",
+    "4331": "/leagues/bundesliga.png",
+    "4332": "/leagues/serie-a.png",
+    "4334": "/leagues/ligue-1.png",
+    "4480": "/leagues/champions-league.png",
+}
+
+const LEAGUE_BADGES_REMOTE: Record<string, string> = {
     "4328": "https://r2.thesportsdb.com/images/media/league/badge/gasy9d1737743125.png",
     "4335": "https://r2.thesportsdb.com/images/media/league/badge/qjwhxc1617300664.png",
     "4331": "https://r2.thesportsdb.com/images/media/league/badge/bpct641566986627.png",
@@ -88,15 +98,15 @@ const LEAGUE_BADGES_BY_ID: Record<string, string> = {
 
 function getLeagueBadgeUrl(match: MatchData): string | null {
     const id = match.idLeague ? String(match.idLeague) : ""
-    if (id && LEAGUE_BADGES_BY_ID[id]) return LEAGUE_BADGES_BY_ID[id]
+    if (id && LEAGUE_BADGES_LOCAL[id]) return LEAGUE_BADGES_LOCAL[id]
 
     const name = (match.strLeague || "").toLowerCase()
-    if (name.includes("premier")) return LEAGUE_BADGES_BY_ID["4328"]
-    if (name.includes("la liga")) return LEAGUE_BADGES_BY_ID["4335"]
-    if (name.includes("bundesliga")) return LEAGUE_BADGES_BY_ID["4331"]
-    if (name.includes("serie a")) return LEAGUE_BADGES_BY_ID["4332"]
-    if (name.includes("ligue 1") || name.includes("ligue1")) return LEAGUE_BADGES_BY_ID["4334"]
-    if (name.includes("champions")) return LEAGUE_BADGES_BY_ID["4480"]
+    if (name.includes("premier")) return LEAGUE_BADGES_LOCAL["4328"]
+    if (name.includes("la liga")) return LEAGUE_BADGES_LOCAL["4335"]
+    if (name.includes("bundesliga")) return LEAGUE_BADGES_LOCAL["4331"]
+    if (name.includes("serie a")) return LEAGUE_BADGES_LOCAL["4332"]
+    if (name.includes("ligue 1") || name.includes("ligue1")) return LEAGUE_BADGES_LOCAL["4334"]
+    if (name.includes("champions")) return LEAGUE_BADGES_LOCAL["4480"]
     return null
 }
 
@@ -167,7 +177,14 @@ export function MatchCard() {
                         ))}
                     </div>
                 ) : currentList.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <>
+                        {tab === "results" && currentList.some(m => m.isYesterday) && !currentList.some(m => !m.isYesterday) && (
+                            <p className="text-xs text-gray-500 mb-4 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 inline-block" />
+                                Yesterday's Results
+                            </p>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {currentList.map((match) => {
                             const isLive = ['Live', 'HT', '1H', '2H', 'IN PLAY', 'In Progress'].includes(match.strStatus)
                             const isFinished = ['match finished', 'ft', 'aet', 'pen', 'fulltime', 'full time', 'finished'].includes((match.strStatus || '').toLowerCase().trim())
@@ -302,6 +319,7 @@ export function MatchCard() {
                             )
                         })}
                     </div>
+                    </>
                 ) : (
                     <div className="text-center py-12 bg-surface rounded-2xl border border-border">
                         <p className="text-text-secondary text-lg">

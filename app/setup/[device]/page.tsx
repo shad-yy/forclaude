@@ -16,11 +16,11 @@ const DEVICES = {
 }
 
 const LEAGUES = [
-    { id: '4328', slug: 'premier-league', name: 'Premier League', logo: 'https://www.thesportsdb.com/images/media/league/badge/i6o0kz1546256242.png' },
-    { id: '4335', slug: 'la-liga', name: 'La Liga', logo: 'https://www.thesportsdb.com/images/media/league/badge/7onmyv1534768460.png' },
-    { id: '4331', slug: 'bundesliga', name: 'Bundesliga', logo: 'https://www.thesportsdb.com/images/media/league/badge/0j55yv1534764799.png' },
-    { id: '4332', slug: 'serie-a', name: 'Serie A', logo: 'https://www.thesportsdb.com/images/media/league/badge/1tdvt81723547167.png' },
-    { id: '4334', slug: 'ligue-1', name: 'Ligue 1', logo: 'https://www.thesportsdb.com/images/media/league/badge/fcdjks1718032766.png' },
+    { id: '4328', slug: 'premier-league', name: 'Premier League', logo: '/leagues/premier-league.png' },
+    { id: '4335', slug: 'la-liga', name: 'La Liga', logo: '/leagues/la-liga.png' },
+    { id: '4331', slug: 'bundesliga', name: 'Bundesliga', logo: '/leagues/bundesliga.png' },
+    { id: '4332', slug: 'serie-a', name: 'Serie A', logo: '/leagues/serie-a.png' },
+    { id: '4334', slug: 'ligue-1', name: 'Ligue 1', logo: '/leagues/ligue-1.png' },
 ]
 
 type Props = { params: { device: string } }
@@ -236,12 +236,15 @@ export default async function SetupDevicePage({ params }: Props) {
                     </div>
 
                     <div className="bg-gray-900 rounded-3xl border border-gray-800 p-8">
-                        <h3 className="text-xl font-bold text-white mb-6">Compatible Leagues</h3>
+                        <h3 className="text-xl font-bold text-white mb-2">Access 230,000+ Channels</h3>
+                        <p className="text-gray-400 text-sm mb-6">
+                            Your subscription includes every single channel and sports network worldwide, including these top leagues and much more:
+                        </p>
                         <div className="flex flex-col gap-3">
                             {LEAGUES.map(league => (
                                 <Link key={league.slug} href={`/watch/${league.slug}`} className="flex items-center gap-4 p-3 hover:bg-gray-800 rounded-xl transition-colors border border-transparent hover:border-gray-700">
                                     <img
-                                        src={league.logo ? `${league.logo}/small` : '/placeholder-logo.png'}
+                                        src={league.logo}
                                         alt={league.name}
                                         className="w-10 h-10 object-contain bg-white rounded-full p-1"
                                     />

@@ -6,11 +6,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { LEAGUES } from "@/lib/constants/leagues"
 
 const FEATURED_LEAGUES = [
-    { id: "4328", name: "Premier League", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4328")?.badgeUrl },
-    { id: "4335", name: "La Liga", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4335")?.badgeUrl },
-    { id: "4331", name: "Bundesliga", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4331")?.badgeUrl },
-    { id: "4332", name: "Serie A", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4332")?.badgeUrl },
-    { id: "4334", name: "Ligue 1", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4334")?.badgeUrl },
+    { id: "4328", name: "Premier League", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4328")?.badgeUrl, localBadge: Object.values(LEAGUES).find(l => l.id === "4328")?.localBadge },
+    { id: "4335", name: "La Liga", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4335")?.badgeUrl, localBadge: Object.values(LEAGUES).find(l => l.id === "4335")?.localBadge },
+    { id: "4331", name: "Bundesliga", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4331")?.badgeUrl, localBadge: Object.values(LEAGUES).find(l => l.id === "4331")?.localBadge },
+    { id: "4332", name: "Serie A", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4332")?.badgeUrl, localBadge: Object.values(LEAGUES).find(l => l.id === "4332")?.localBadge },
+    { id: "4334", name: "Ligue 1", badgeUrl: Object.values(LEAGUES).find(l => l.id === "4334")?.badgeUrl, localBadge: Object.values(LEAGUES).find(l => l.id === "4334")?.localBadge },
 ]
 
 // ── TeamBadge ──────────────────────────────────────────────────────────────
@@ -135,11 +135,16 @@ export function LeagueTables() {
                         >
                             <div className="flex items-center gap-2">
                                 <img 
-                                    src={league.badgeUrl}
+                                    src={league.localBadge || league.badgeUrl}
                                     alt={league.name}
                                     className="w-5 h-5 object-contain flex-shrink-0"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = 'none'
+                                        const t = e.target as HTMLImageElement
+                                        if (league.badgeUrl && t.src !== league.badgeUrl) {
+                                            t.src = league.badgeUrl
+                                        } else {
+                                            t.src = '/leagues/placeholder.svg'
+                                        }
                                     }}
                                 />
                                 <span>{league.name}</span>

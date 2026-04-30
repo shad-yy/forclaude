@@ -15,49 +15,57 @@ const WATCH_LINKS = {
     {
       name: "Premier League",
       href: "/watch/premier-league",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/i6o0kh1549879062.png",
+      badge: "/leagues/premier-league.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/i6o0kh1549879062.png",
       desc: "English top flight"
     },
     {
       name: "La Liga",
       href: "/watch/la-liga",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/qphamq1575285108.png",
+      badge: "/leagues/la-liga.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/qphamq1575285108.png",
       desc: "Spanish football"
     },
     {
       name: "Bundesliga",
       href: "/watch/bundesliga",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/0j9mq11549630092.png",
+      badge: "/leagues/bundesliga.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/0j9mq11549630092.png",
       desc: "German football"
     },
     {
       name: "Serie A",
       href: "/watch/serie-a",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/dupte51529670364.png",
+      badge: "/leagues/serie-a.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/dupte51529670364.png",
       desc: "Italian football"
     },
     {
       name: "Ligue 1",
       href: "/watch/ligue-1",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/mekpox1549629429.png",
+      badge: "/leagues/ligue-1.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/mekpox1549629429.png",
       desc: "French football"
     },
     {
       name: "Champions League",
       href: "/watch/champions-league",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/qywjqy1610461035.png",
+      badge: "/leagues/champions-league.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/qywjqy1610461035.png",
       desc: "Europe's elite cup"
     },
     {
       name: "Europa League",
       href: "/watch/europa-league",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/9pmsij1527785881.png",
+      badge: "/leagues/europa-league.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/9pmsij1527785881.png",
       desc: "UEFA second tier"
     },
     {
       name: "World Cup 2026",
       href: "/watch/world-cup-2026",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/bxh0ky1549630504.png",
+      badge: "/leagues/world-cup.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/bxh0ky1549630504.png",
       desc: "Live now • USA/CAN/MEX"
     },
   ],
@@ -65,13 +73,15 @@ const WATCH_LINKS = {
     {
       name: "Formula 1",
       href: "/watch/formula-1",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/7onmyv1587591215.png",
+      badge: "/leagues/formula-1.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/7onmyv1587591215.png",
       desc: "Every race live"
     },
     {
       name: "UFC / MMA",
       href: "/ufc",
-      badge: "https://www.thesportsdb.com/images/media/league/badge/ro2wo91683355307.png",
+      badge: "/leagues/ufc.png",
+      remoteBadge: "https://www.thesportsdb.com/images/media/league/badge/ro2wo91683355307.png",
       desc: "Fight nights live"
     },
   ]
@@ -232,7 +242,11 @@ export const Header = memo(function Header() {
                                     className="w-5 h-5 object-contain"
                                     onError={(e) => {
                                       const t = e.target as HTMLImageElement
-                                      t.style.display = 'none'
+                                      if (link.remoteBadge && t.src !== link.remoteBadge) {
+                                        t.src = link.remoteBadge
+                                      } else {
+                                        t.src = '/leagues/placeholder.svg'
+                                      }
                                     }}
                                   />
                                 </div>
@@ -279,7 +293,11 @@ export const Header = memo(function Header() {
                                   className="w-5 h-5 object-contain"
                                   onError={(e) => {
                                     const t = e.target as HTMLImageElement
-                                    t.style.display = 'none'
+                                    if (link.remoteBadge && t.src !== link.remoteBadge) {
+                                      t.src = link.remoteBadge
+                                    } else {
+                                      t.src = '/leagues/placeholder.svg'
+                                    }
                                   }}
                                 />
                               </div>
@@ -386,7 +404,11 @@ export const Header = memo(function Header() {
                           className="w-5 h-5 object-contain"
                           onError={(e) => {
                             const t = e.target as HTMLImageElement
-                            t.style.display = 'none'
+                            if (link.remoteBadge && t.src !== link.remoteBadge) {
+                              t.src = link.remoteBadge
+                            } else {
+                              t.src = '/leagues/placeholder.svg'
+                            }
                           }}
                         />
                       </div>

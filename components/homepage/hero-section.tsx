@@ -134,17 +134,17 @@ export function HeroSection() {
                 <div className="flex -space-x-2">
                   {[
                     {
-                      src: "https://www.thesportsdb.com/images/media/league/badge/i6o0kh1549879062.png/tiny",
+                      src: "/leagues/premier-league.png",
                       alt: "Premier League",
                       fallback: "🏴"
                     },
                     {
-                      src: "https://www.thesportsdb.com/images/media/league/badge/ro2wo91683355307.png/tiny",
+                      src: "/leagues/ufc.png",
                       alt: "UFC",
                       fallback: "🥊"
                     },
                     {
-                      src: "https://www.thesportsdb.com/images/media/league/badge/qywjqy1610461035.png/tiny",
+                      src: "/leagues/champions-league.png",
                       alt: "Champions League",
                       fallback: "🏆"
                     },
@@ -158,7 +158,8 @@ export function HeroSection() {
                         onError={(e) => {
                           const t = e.target as HTMLImageElement
                           t.style.display = 'none'
-                          t.parentElement!.querySelector('span.fallback')!.classList.remove('hidden')
+                          const fallbackEl = t.parentElement?.querySelector('.fallback')
+                          if (fallbackEl) fallbackEl.classList.remove('hidden')
                         }}
                       />
                       <span className="fallback hidden text-lg absolute">

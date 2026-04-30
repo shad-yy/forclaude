@@ -187,14 +187,23 @@ export default async function WatchLeaguePage({ params }: Props) {
                         <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
                             Tired of missing the biggest games because of expensive cable packages and restricted broadcasts? Get access to every single kick-off this season—crystal clear, on any device.
                         </p>
-                        <ShimmerButton
-                            href="/free-trial"
-                            variant="league"
-                            leagueColor={theme.secondary}
-                            className="px-8 py-4 text-lg rounded-lg"
-                        >
-                            Stream {theme.name} Free For 24 Hours
-                        </ShimmerButton>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                            <ShimmerButton
+                                href="/free-trial"
+                                variant="league"
+                                leagueColor={theme.secondary}
+                                className="px-8 py-4 text-lg rounded-lg w-full sm:w-auto"
+                            >
+                                Stream {theme.name} Free For 24 Hours
+                            </ShimmerButton>
+                            <a
+                                href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
+                                target="_blank" rel="noopener noreferrer"
+                                className="px-8 py-4 text-lg rounded-lg font-bold bg-white text-black hover:bg-gray-200 transition-colors w-full sm:w-auto text-center"
+                            >
+                                Buy Now
+                            </a>
+                        </div>
                     </div>
                 </section>
             </FadeIn>
@@ -211,7 +220,7 @@ export default async function WatchLeaguePage({ params }: Props) {
                                 Following {theme.name} has consistently become more frustrating for fans. Splitting subscriptions across multiple providers just to watch your team is expensive. Even when you pay, you&apos;re left settling for delayed highlights or radio broadcasts.
                             </p>
                             <p className="max-w-2xl">
-                                SmartLiveTV changes everything. Our IPTV solution bypasses the restrictions entirely, bringing every single {theme.name} fixture directly to you in HD at a fraction of the cost of standard cable. Best of all, our app works identically across devices — you can easily{' '}
+                                SmartLiveTV changes everything. Our IPTV solution bypasses the restrictions entirely, bringing every single {theme.name} fixture directly to you in HD & 4K at a fraction of the cost of standard cable. Best of all, our app works identically across devices — you can easily{' '}
                                 <Link href="/setup/firestick" className="text-blue-400 hover:text-blue-300">set it up on your Firestick</Link>,
                                 cast it to your Smart TV, or watch live while commuting on your mobile.
                             </p>
@@ -370,14 +379,23 @@ export default async function WatchLeaguePage({ params }: Props) {
                 <section className="py-16 md:py-20 text-center px-4 border-t" style={{ borderColor: theme.secondary, background: `linear-gradient(180deg, #0a0a0f 0%, ${theme.primary}33 100%)` }}>
                     <div className="container mx-auto max-w-3xl">
                         <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">Ready to ditch the cable?</h2>
-                        <ShimmerButton
-                            href="/free-trial"
-                            variant="league"
-                            leagueColor={theme.secondary}
-                            className="px-10 py-5 text-xl rounded-xl"
-                        >
-                            Start Watching {theme.name} Tonight — Free Trial
-                        </ShimmerButton>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+                            <ShimmerButton
+                                href="/free-trial"
+                                variant="league"
+                                leagueColor={theme.secondary}
+                                className="px-10 py-5 text-xl rounded-xl w-full sm:w-auto"
+                            >
+                                Start Watching {theme.name} Tonight — Free Trial
+                            </ShimmerButton>
+                            <a
+                                href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
+                                target="_blank" rel="noopener noreferrer"
+                                className="px-10 py-5 text-xl rounded-xl font-bold bg-white text-black hover:bg-gray-200 transition-colors w-full sm:w-auto text-center"
+                            >
+                                Buy Now
+                            </a>
+                        </div>
                     </div>
                 </section>
             </FadeIn>

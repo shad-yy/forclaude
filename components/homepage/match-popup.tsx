@@ -31,26 +31,26 @@ function safeBadge(url: string | null | undefined): string | null {
     return `${url}/tiny`
 }
 
-const LEAGUE_BADGES_BY_ID: Record<string, string> = {
-    "4328": "https://r2.thesportsdb.com/images/media/league/badge/gasy9d1737743125.png",
-    "4335": "https://r2.thesportsdb.com/images/media/league/badge/qjwhxc1617300664.png",
-    "4331": "https://r2.thesportsdb.com/images/media/league/badge/bpct641566986627.png",
-    "4332": "https://r2.thesportsdb.com/images/media/league/badge/wrjgpz1576432802.png",
-    "4334": "https://r2.thesportsdb.com/images/media/league/badge/ligue1badge.png",
-    "4480": "https://r2.thesportsdb.com/images/media/league/badge/ucl.png",
+const LEAGUE_BADGES_LOCAL: Record<string, string> = {
+    "4328": "/leagues/premier-league.png",
+    "4335": "/leagues/la-liga.png",
+    "4331": "/leagues/bundesliga.png",
+    "4332": "/leagues/serie-a.png",
+    "4334": "/leagues/ligue-1.png",
+    "4480": "/leagues/champions-league.png",
 }
 
 function getLeagueBadgeUrl(match: MatchData): string | null {
     const id = match.idLeague ? String(match.idLeague) : ""
-    if (id && LEAGUE_BADGES_BY_ID[id]) return LEAGUE_BADGES_BY_ID[id]
+    if (id && LEAGUE_BADGES_LOCAL[id]) return LEAGUE_BADGES_LOCAL[id]
 
     const name = (match.strLeague || "").toLowerCase()
-    if (name.includes("premier")) return LEAGUE_BADGES_BY_ID["4328"]
-    if (name.includes("la liga")) return LEAGUE_BADGES_BY_ID["4335"]
-    if (name.includes("bundesliga")) return LEAGUE_BADGES_BY_ID["4331"]
-    if (name.includes("serie a")) return LEAGUE_BADGES_BY_ID["4332"]
-    if (name.includes("ligue 1") || name.includes("ligue1")) return LEAGUE_BADGES_BY_ID["4334"]
-    if (name.includes("champions")) return LEAGUE_BADGES_BY_ID["4480"]
+    if (name.includes("premier")) return LEAGUE_BADGES_LOCAL["4328"]
+    if (name.includes("la liga")) return LEAGUE_BADGES_LOCAL["4335"]
+    if (name.includes("bundesliga")) return LEAGUE_BADGES_LOCAL["4331"]
+    if (name.includes("serie a")) return LEAGUE_BADGES_LOCAL["4332"]
+    if (name.includes("ligue 1") || name.includes("ligue1")) return LEAGUE_BADGES_LOCAL["4334"]
+    if (name.includes("champions")) return LEAGUE_BADGES_LOCAL["4480"]
     return null
 }
 

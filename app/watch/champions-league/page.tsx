@@ -153,6 +153,7 @@ export default async function ChampionsLeaguePage() {
             <div className="flex items-center justify-center mb-6">
               <LeagueBadge
                 src="https://r2.thesportsdb.com/images/media/league/badge/ucl.png"
+                localSrc="/leagues/champions-league.png"
                 alt="UEFA Champions League"
                 size={64}
                 className="object-contain"

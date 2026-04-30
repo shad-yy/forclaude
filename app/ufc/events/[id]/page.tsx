@@ -1,336 +1,170 @@
-import { notFound } from "next/navigation"
-import { Metadata } from "next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { OptimizedImage } from "@/components/ui/optimized-image"
-import { Calendar, MapPin, Clock, Users, Trophy, Star, Zap } from "lucide-react"
-import Link from "next/link"
-import { getApiBaseUrl } from "@/lib/utils/url"
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { ENV } from '@/lib/config/env'
+import { ArrowLeft, Calendar, MapPin, Trophy } from 'lucide-react'
 
-async function fetchUfcEvent(id: string) {
-  const res = await fetch(`${getApiBaseUrl()}/api/ufc/events/${id}`, { cache: "no-store" })
-  const json = await res.json()
-  return json?.data ?? null
+export const metadata: Metadata = {
+  title: 'UFC Event | Smart Live TV',
+  robots: { index: false, follow: true },
 }
 
-interface UFCEventPageProps {
-  params: { id: string }
-}
-
-export async function generateMetadata({ params }: UFCEventPageProps): Promise<Metadata> {
-  const { id } = params
-  const event = await fetchUfcEvent(id)
-
-  if (!event) {
-    return {
-      title: "Event Not Found | UFC",
-      description: "The requested UFC event could not be found.",
+async function getUFCEvent(id: string) {
+  try {
+    // Try ESPN first
+    const res = await fetch(
+      `https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/${id}`,
+      { next: { revalidate: 1800 } }
+    )
+    if (res.ok) return await res.json()
+    
+    // Try TheSportsDB as fallback
+    const res2 = await fetch(
+      `https://www.thesportsdb.com/api/v1/json/123/lookupevent.php?id=${id}`,
+      { next: { revalidate: 1800 } }
+    )
+    if (res2.ok) {
+      const data = await res2.json()
+      return data?.events?.[0] || null
     }
-  }
-
-  return {
-    title: `${event.name} | UFC Event`,
-    description: `${event.name} taking place on ${new Date(event.date).toLocaleDateString()} at ${event.location}. ${event.mainEvent ? `Main Event: ${event.mainEvent}` : ''}`,
-    keywords: [`UFC`, `MMA`, event.name, `UFC Event`, event.location, event.mainEvent].filter((k): k is string => typeof k === 'string'),
-    openGraph: {
-      title: event.name,
-      description: `UFC Event at ${event.location}`,
-      images: [{ url: event.image || '/ufc-default.jpg' }],
-      type: "article",
-    },
+    return null
+  } catch {
+    return null
   }
 }
 
-export default async function UFCEventPage({ params }: UFCEventPageProps) {
-  const { id } = params
-  const event = await fetchUfcEvent(id)
-
-  if (!event) {
-    notFound()
-  }
-
-  const eventDate = new Date(event.date)
-  const isUpcoming = eventDate > new Date()
-  const isLive = event.status === "Live"
-
-  // Mock fight card data (in real implementation, this would come from the API)
-  const mockFightCard = [
-    {
-      segment: "Main Card",
-      fights: [
-        {
-          id: "main-event",
-          fighter1: "Alex Pereira",
-          fighter2: "Jamahal Hill",
-          weightClass: "Light Heavyweight Championship",
-          isMainEvent: true,
-          result: isUpcoming ? null : "Pereira wins by KO (Round 1, 2:47)"
-        },
-        {
-          id: "co-main",
-          fighter1: "Zhang Weili",
-          fighter2: "Yan Xiaonan",
-          weightClass: "Women's Strawweight",
-          isMainEvent: false,
-          result: isUpcoming ? null : "Zhang wins by Decision"
-        },
-        {
-          id: "main-3",
-          fighter1: "Max Holloway",
-          fighter2: "Justin Gaethje",
-          weightClass: "Lightweight",
-          isMainEvent: false,
-          result: isUpcoming ? null : "Holloway wins by KO (Round 5, 4:48)"
-        }
-      ]
-    },
-    {
-      segment: "Preliminary Card",
-      fights: [
-        {
-          id: "prelim-1",
-          fighter1: "Jiri Prochazka",
-          fighter2: "Aleksandar Rakic",
-          weightClass: "Light Heavyweight",
-          isMainEvent: false,
-          result: isUpcoming ? null : "Prochazka wins by TKO (Round 2, 1:32)"
-        },
-        {
-          id: "prelim-2",
-          fighter1: "Kayla Harrison",
-          fighter2: "Holly Holm",
-          weightClass: "Women's Bantamweight",
-          isMainEvent: false,
-          result: isUpcoming ? null : "Harrison wins by Submission (Round 2, 3:15)"
-        }
-      ]
-    },
-    {
-      segment: "Early Preliminary Card",
-      fights: [
-        {
-          id: "early-1",
-          fighter1: "Bobby Green",
-          fighter2: "Jim Miller",
-          weightClass: "Lightweight",
-          isMainEvent: false,
-          result: isUpcoming ? null : "Green wins by Decision"
-        },
-        {
-          id: "early-2",
-          fighter1: "Cody Garbrandt",
-          fighter2: "Deiveson Figueiredo",
-          weightClass: "Bantamweight",
-          isMainEvent: false,
-          result: isUpcoming ? null : "Figueiredo wins by Submission (Round 1, 4:12)"
-        }
-      ]
-    }
-  ]
+export default async function UFCEventPage({ 
+  params 
+}: { 
+  params: { id: string } 
+}) {
+  const event = await getUFCEvent(params.id)
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8 bg-gray-950 min-h-screen">
-      {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-sm text-gray-400">
-        <Link href="/ufc" className="hover:text-white transition-colors">UFC</Link>
-        <span>/</span>
-        <Link href="/ufc" className="hover:text-white transition-colors">Events</Link>
-        <span>/</span>
-        <span className="text-white">{event.name}</span>
-      </nav>
+    <div className="min-h-screen bg-[#0a0a0f] text-gray-100 
+      pt-28 pb-20 px-4">
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Back link */}
+        <Link href="/ufc"
+          className="inline-flex items-center gap-2 text-gray-500 
+            hover:text-white text-sm mb-8 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+          Back to UFC
+        </Link>
 
-      {/* Event Header */}
-      <div className="relative">
-        <Card className="bg-gradient-to-r from-red-900/20 via-gray-900/50 to-red-900/20 border-red-500/30 overflow-hidden">
-          <div className="absolute inset-0">
-            <OptimizedImage
-              src={event.image || '/ufc-default.jpg'}
-              alt={event.name}
-              width={1200}
-              height={400}
-              className="w-full h-full object-cover opacity-20"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/80" />
-          </div>
-          
-          <CardContent className="relative p-8">
-            <div className="flex flex-col md:flex-row items-start justify-between gap-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <Badge 
-                    className={
-                      isLive 
-                        ? "bg-red-500 text-white animate-pulse" 
-                        : isUpcoming 
-                        ? "bg-blue-500 text-white" 
-                        : "bg-green-500 text-white"
-                    }
-                  >
-                    {isLive ? "🔴 LIVE" : event.status}
-                  </Badge>
-                  {event.mainEvent && (
-                    <Badge variant="outline" className="border-yellow-500 text-yellow-400">
-                      <Star className="w-3 h-3 mr-1" />
-                      Main Event
-                    </Badge>
-                  )}
+        {event ? (
+          <>
+            <h1 className="text-3xl md:text-4xl font-extrabold 
+              text-white mb-4">
+              {event.name || event.strEvent || 'UFC Event'}
+            </h1>
+            
+            <div className="flex flex-wrap gap-4 mb-8 text-sm 
+              text-gray-400">
+              {(event.date || event.dateEvent) && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {new Date(event.date || event.dateEvent)
+                    .toLocaleDateString('en-GB', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
                 </div>
-
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  {event.name}
-                </h1>
-
-                {event.mainEvent && (
-                  <p className="text-xl text-red-400 mb-6 font-semibold">
-                    {event.mainEvent}
-                  </p>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-white">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-blue-400" />
-                    <div>
-                      <div className="font-semibold">{eventDate.toLocaleDateString()}</div>
-                      <div className="text-sm text-gray-400">Event Date</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-green-400" />
-                    <div>
-                      <div className="font-semibold">{event.location}</div>
-                      <div className="text-sm text-gray-400">Venue</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-purple-400" />
-                    <div>
-                      <div className="font-semibold">
-                        {isUpcoming ? "Upcoming" : isLive ? "Live Now" : "Completed"}
-                      </div>
-                      <div className="text-sm text-gray-400">Status</div>
-                    </div>
-                  </div>
+              )}
+              {(event.location || event.strVenue) && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {event.location || event.strVenue}
                 </div>
-              </div>
-
-              {/* Event Poster */}
-              <div className="flex-shrink-0">
-                <OptimizedImage
-                  src={event.image || '/ufc-default.jpg'}
-                  alt={event.name}
-                  width={300}
-                  height={400}
-                  className="w-64 h-80 object-cover rounded-lg border-2 border-red-500/50"
-                />
-              </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Fight Card */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Users className="w-6 h-6 text-red-500" />
-          <h2 className="text-3xl font-bold text-white">Fight Card</h2>
-        </div>
-
-        {mockFightCard.map((segment) => (
-          <Card key={segment.segment} className="bg-gray-900/50 border-gray-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {segment.segment === "Main Card" && <Trophy className="w-5 h-5 text-yellow-500" />}
-                {segment.segment === "Preliminary Card" && <Zap className="w-5 h-5 text-blue-500" />}
-                {segment.segment === "Early Preliminary Card" && <Clock className="w-5 h-5 text-gray-500" />}
-                {segment.segment}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {segment.fights.map((fight) => (
-                  <div 
-                    key={fight.id} 
-                    className={`p-4 rounded-lg border transition-all ${
-                      fight.isMainEvent 
-                        ? "border-red-500/50 bg-red-900/10" 
-                        : "border-gray-700 hover:border-gray-600"
-                    }`}
-                  >
-                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          {fight.isMainEvent && (
-                            <Badge className="bg-red-500 text-white">
-                              <Star className="w-3 h-3 mr-1" />
-                              Main Event
-                            </Badge>
+            {/* Fight card if available */}
+            {event.competitions && event.competitions.length > 0 && (
+              <div className="space-y-4 mb-12">
+                <h2 className="text-xl font-bold text-white mb-6">
+                  Fight Card
+                </h2>
+                {event.competitions.map((comp: any, i: number) => (
+                  <div key={i} 
+                    className="bg-[#12121a] border border-[#2a2a3a] 
+                      rounded-2xl p-5">
+                    <div className="flex items-center 
+                      justify-between gap-4">
+                      {comp.competitors?.map((c: any, j: number) => (
+                        <div key={j} 
+                          className="flex-1 text-center">
+                          <p className="font-bold text-white text-sm">
+                            {c.displayName || c.athlete?.displayName || 
+                             'TBA'}
+                          </p>
+                          {c.score && (
+                            <p className="text-[#00e676] font-extrabold 
+                              text-xl mt-1">
+                              {c.score}
+                            </p>
                           )}
-                          <Badge variant="outline" className="border-gray-600">
-                            {fight.weightClass}
-                          </Badge>
                         </div>
-                        
-                        <div className="text-lg font-semibold text-white mb-1">
-                          {fight.fighter1} vs {fight.fighter2}
-                        </div>
-                        
-                        {fight.result && (
-                          <div className="text-green-400 font-medium">
-                            {fight.result}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {isLive && !fight.result && (
-                          <Badge className="bg-red-500 text-white animate-pulse">
-                            LIVE
-                          </Badge>
-                        )}
-                        {isUpcoming && (
-                          <Badge className="bg-blue-500 text-white">
-                            Scheduled
-                          </Badge>
-                        )}
-                        {fight.result && (
-                          <Badge className="bg-green-500 text-white">
-                            Completed
-                          </Badge>
-                        )}
-                      </div>
+                      ))}
                     </div>
+                    {comp.notes?.[0]?.headline && (
+                      <p className="text-xs text-gray-500 text-center 
+                        mt-3">
+                        {comp.notes[0].headline}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Quick Actions */}
-      <Card className="bg-gray-900/50 border-gray-800">
-        <CardContent className="p-6">
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link 
-              href="/ufc" 
-              className="bg-red-500 hover:bg-red-600 text-white py-2 px-6 rounded-lg transition-colors"
-            >
-              Back to UFC
-            </Link>
-            <Link 
-              href="/ufc#events" 
-              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg transition-colors"
-            >
-              View All Events
-            </Link>
-            {isUpcoming && (
-              <button className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg transition-colors">
-                Set Reminder
-              </button>
             )}
+          </>
+        ) : (
+          /* Graceful fallback — NEVER show 404 */
+          <div className="text-center py-20">
+            <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-6" />
+            <h1 className="text-2xl font-extrabold text-white mb-3">
+              UFC Event
+            </h1>
+            <p className="text-gray-400 mb-8 max-w-md mx-auto">
+              Detailed fight card information is loading. 
+              Check back closer to the event date, or 
+              browse all upcoming UFC events below.
+            </p>
+            <Link href="/ufc"
+              className="inline-flex items-center gap-2 
+                bg-[#00e676] text-black font-bold px-8 py-3.5 
+                rounded-xl text-sm">
+              View All UFC Events →
+            </Link>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* CTA */}
+        <div className="bg-[#12121a] border border-[#2a2a3a] 
+          rounded-2xl p-6 text-center mt-8">
+          <h3 className="font-bold text-white mb-2">
+            Watch This Event Live in 4K
+          </h3>
+          <p className="text-gray-400 text-sm mb-4">
+            Every UFC event included — no PPV extra charges.
+            Free 24-hour trial, no card needed.
+          </p>
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Link href="/free-trial"
+              className="bg-[#00e676] text-black font-bold 
+                px-6 py-3 rounded-xl text-sm">
+              Try Free for 24H →
+            </Link>
+            <Link href="/pricing"
+              className="border border-[#2a2a3a] hover:border-[#00e676]/30 
+                text-gray-300 font-bold px-6 py-3 rounded-xl text-sm">
+              View Pricing
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

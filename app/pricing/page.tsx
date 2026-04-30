@@ -224,6 +224,9 @@ export default function PricingPage() {
             >
               Claim Free Trial →
             </Link>
+            <p className="text-center text-xs text-gray-500 mt-3">
+              or <a href={storeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-gray-400">buy directly →</a>
+            </p>
           </div>
 
           {/* CARD 2 — 3 MONTHS (RECOMMENDED) */}
@@ -262,11 +265,17 @@ export default function PricingPage() {
               ))}
             </ul>
             
-            <Link 
-              href="/free-trial"
+            <a 
+              href={storeUrl} target="_blank" rel="noopener noreferrer"
               className="block text-center w-full mt-8 py-4 rounded-xl font-bold text-sm bg-[#00e676] hover:bg-[#00ff87] text-black shadow-[0_0_20px_rgba(0,230,118,0.3)] transition-all"
             >
-              Claim Free Trial →
+              Buy Now →
+            </a>
+            <Link 
+              href="/free-trial"
+              className="block text-center w-full mt-3 py-3 rounded-xl font-bold text-xs border border-transparent text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+            >
+              Try Free First
             </Link>
           </div>
 
@@ -308,6 +317,9 @@ export default function PricingPage() {
             >
               Claim Free Trial →
             </Link>
+            <p className="text-center text-xs text-gray-500 mt-3">
+              or <a href={storeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-gray-400">buy directly →</a>
+            </p>
           </div>
 
           {/* CARD 4 — 12 MONTHS */}
@@ -348,6 +360,9 @@ export default function PricingPage() {
             >
               Claim Free Trial →
             </Link>
+            <p className="text-center text-xs text-gray-500 mt-3">
+              or <a href={storeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-gray-400">buy directly →</a>
+            </p>
           </div>
 
         </StaggerIn>
@@ -481,28 +496,24 @@ export default function PricingPage() {
           Start your free 24-hour trial. No card. No contract. Cancel anytime.
         </p>
 
-        <div className="flex flex-col md:flex-row items-center justify-center gap-4 flex-wrap mt-10 max-w-2xl mx-auto">
-          <Link 
-            href="/free-trial"
-            className="w-full md:w-auto px-8 py-4 bg-[#00e676] text-black font-bold rounded-xl hover:bg-[#00ff87] transition-colors shadow-[0_0_15px_rgba(0,230,118,0.3)] whitespace-nowrap"
-          >
-            Get My Free Trial →
-          </Link>
-          <a 
-            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10 flex-wrap">
+          <a
+            href={process.env.NEXT_PUBLIC_STORE_URL || '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full md:w-auto px-8 py-4 bg-[#25D366] text-black font-bold rounded-xl hover:brightness-110 transition-colors whitespace-nowrap"
+            className="bg-[#00e676] hover:bg-[#00ff87] text-black font-extrabold px-10 py-4 rounded-xl text-base shadow-[0_0_20px_rgba(0,230,118,0.3)] transition-all touch-manipulation"
           >
-            💬 Ask on WhatsApp
+            Buy Now — Get Instant Access →
           </a>
-          <Link 
-            href="/channels"
-            className="w-full md:w-auto px-8 py-4 border border-[#2a2a3a] text-white font-bold rounded-xl hover:border-[#00e676] transition-colors whitespace-nowrap"
-          >
-            Browse Channels →
+          <Link href="/free-trial"
+            className="border border-[#2a2a3a] hover:border-[#00e676] text-gray-300 hover:text-white font-bold px-10 py-4 rounded-xl text-base transition-all">
+            Not sure? Try Free for 24H
           </Link>
         </div>
+        <p className="text-xs text-gray-600 text-center mt-4">
+          Instant activation after payment · 
+          Or <Link href="/free-trial" className="text-[#00e676]">start with a free trial</Link> — no card needed
+        </p>
       </section>
       </FadeIn>
 

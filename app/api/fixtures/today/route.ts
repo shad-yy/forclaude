@@ -91,14 +91,24 @@ export async function GET() {
         const finalMatches = uniqueMatches.slice(0, 10).map(mapEvent)
 
         // Step 5 — Fetch today's results (non-blocking)
-        let resultsData: ReturnType<typeof mapEvent>[] = []
+        let resultsData: any[] = []
         try {
-            const tRes = await fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${today}&s=Soccer`, { next: { revalidate: 300 } })
-            const tRaw = await tRes.json()
-            const tMatches: any[] = (tRaw.events || [])
-                .filter((e: any) => LEAGUE_IDS.includes(parseInt(e.idLeague)))
+            const [tRes, yRes] = await Promise.all([
+                fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${today}&s=Soccer`, { next: { revalidate: 300 } }),
+                fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${yesterdayStr}&s=Soccer`, { next: { revalidate: 300 } })
+            ]);
+            
+            const [tRaw, yRaw] = await Promise.all([tRes.json(), yRes.json()]);
+            
+            const allEvents = [
+                ...(tRaw.events || []),
+                ...(yRaw.events || [])
+            ].filter((e: any) => LEAGUE_IDS.includes(parseInt(e.idLeague)));
+
+            // Get both today and yesterday matches
+            const allRecentMatches = allEvents
                 .filter((e: any) => {
-                    const d = e.dateEvent || e.strDate || ''
+                    const d = e.dateEvent || ''
                     return d === today || d === yesterdayStr
                 })
                 .filter((e: any) => {
@@ -107,18 +117,21 @@ export async function GET() {
                         e.intHomeScore !== undefined &&
                         e.intHomeScore !== '' &&
                         e.intAwayScore !== null &&
-                        e.intAwayScore !== undefined &&
-                        e.intAwayScore !== ''
-                    const isFinished = status.includes('finished') ||
-                        status === 'ft' ||
-                        status === 'aet' ||
-                        status === 'pen' ||
-                        status === 'fulltime' ||
-                        status === 'full time'
-                    return isFinished || hasScore
+                        e.intAwayScore !== undefined
+                    return status.includes('finished') ||
+                        status === 'ft' || status === 'aet' ||
+                        status === 'pen' || hasScore
                 })
-            const uniqueToday: any[] = Array.from(new Map(tMatches.map((e: any) => [e.idEvent, e])).values())
-            resultsData = uniqueToday.slice(0, 8).map(mapEvent)
+
+            const uniqueMatches: any[] = Array.from(new Map(allRecentMatches.map((e: any) => [e.idEvent, e])).values())
+
+            // Label yesterday's results appropriately
+            const resultsWithLabel = uniqueMatches.map((e: any) => ({
+                ...mapEvent(e),
+                isYesterday: (e.dateEvent || '') === yesterdayStr
+            }))
+
+            resultsData = resultsWithLabel.slice(0, 8)
         } catch {
             // Non-critical — show empty results if this fails
         }

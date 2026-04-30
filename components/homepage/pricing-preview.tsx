@@ -35,12 +35,19 @@ const PRICING_PLANS = [
   }
 ]
 
-const FEATURES = [
-  "230,000+ Live Channels",
-  "4K Ultra HD Quality",
-  "All Live Sports & PPV",
-  "Anti-Buffer Technology",
-  "Works on All Devices"
+const PLAN_FEATURES = [
+  '230,000+ Live Channels & VOD',
+  '4K / Ultra HD Quality',
+  'Anti-Buffer Technology',
+  'Electronic Program Guide (EPG)',
+  'VPN Privacy Protection Built-in',
+  'Works on ALL Devices',
+  'Firestick, Smart TV, Android, iPhone, PC, Mac',
+  'Dedicated 24/7 Customer Support',
+  'Free 24-Hour Trial Before You Pay',
+  '7-Day Money Back Guarantee',
+  'No Contract — Cancel Anytime',
+  'Instant Activation After Payment',
 ]
 
 export function PricingPreview() {
@@ -93,7 +100,7 @@ export function PricingPreview() {
 
               <div className="flex-grow">
                 <ul className="space-y-3 mb-6">
-                  {FEATURES.map((feature, idx) => (
+                  {PLAN_FEATURES.slice(0, 8).map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-3 text-sm text-gray-300">
                       <div className="mt-0.5 w-4 h-4 rounded-full bg-[#00e676]/10 flex items-center justify-center shrink-0">
                         <Check className="w-3 h-3 text-[#00e676]" />
@@ -101,19 +108,44 @@ export function PricingPreview() {
                       <span className="leading-tight">{feature}</span>
                     </li>
                   ))}
+                  <li className="text-xs text-gray-500 pt-1">
+                    + 4 more features on{' '}
+                    <Link href="/pricing" 
+                      className="text-[#00e676] hover:underline">
+                      full pricing page
+                    </Link>
+                  </li>
                 </ul>
               </div>
 
-              <Link 
-                href="/free-trial"
-                className={`w-full py-3 rounded-xl text-sm font-bold transition-all text-center mt-auto
-                  ${plan.color === 'highlighted'
-                    ? 'bg-[#00e676] text-black hover:bg-[#00ff87] shadow-[0_0_15px_rgba(0,230,118,0.3)]'
-                    : 'bg-[#1a1a24] text-white hover:bg-[#2a2a3a] border border-[#2a2a3a]'
-                  }`}
-              >
-                Start Free Trial
-              </Link>
+              {plan.color === 'highlighted' ? (
+                <>
+                  <a 
+                    href={process.env.NEXT_PUBLIC_STORE_URL || '#'} target="_blank" rel="noopener noreferrer"
+                    className="w-full py-3 rounded-xl text-sm font-bold transition-all text-center mt-auto bg-[#00e676] text-black hover:bg-[#00ff87] shadow-[0_0_15px_rgba(0,230,118,0.3)] block"
+                  >
+                    Buy Now →
+                  </a>
+                  <Link 
+                    href="/free-trial"
+                    className="w-full py-2 mt-2 rounded-xl text-xs font-bold transition-all text-center border border-transparent text-gray-400 hover:text-white hover:bg-white/5 block"
+                  >
+                    Try Free First
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    href="/free-trial"
+                    className="w-full py-3 rounded-xl text-sm font-bold transition-all text-center mt-auto bg-[#1a1a24] text-white hover:bg-[#2a2a3a] border border-[#2a2a3a] block"
+                  >
+                    Claim Free Trial →
+                  </Link>
+                  <p className="text-center text-xs text-gray-500 mt-2">
+                    or <a href={process.env.NEXT_PUBLIC_STORE_URL || '#'} target="_blank" rel="noopener noreferrer" className="hover:underline text-gray-400">buy directly →</a>
+                  </p>
+                </>
+              )}
             </motion.div>
           ))}
         </div>

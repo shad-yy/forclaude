@@ -65,6 +65,16 @@ export default function FreeTrialPage() {
             to WhatsApp within 5 minutes.
           </p>
         </div>
+        <div className="text-center mb-6">
+          <p className="text-gray-500 text-sm">
+            Already know what you want?{' '}
+            <a href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
+              target="_blank" rel="noopener noreferrer"
+              className="text-[#00e676] hover:underline font-semibold">
+              Skip the trial and buy now →
+            </a>
+          </p>
+        </div>
         <TrialForm />
       </div>
       </FadeIn>
