@@ -1,3 +1,7 @@
+if (typeof self === 'undefined') {
+  global.self = global;
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
