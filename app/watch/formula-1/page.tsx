@@ -6,22 +6,25 @@ import { ENV } from '@/lib/config/env'
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
-import { getF1Schedule, getF1News } from '@/lib/api/espn'
+import { getF1Schedule, getF1News, getF1FullSchedule } from '@/lib/api/espn'
+import type { F1Race } from '@/lib/api/espn'
 
 export const metadata: Metadata = {
-  title: 'Watch Formula 1 Live 2026 | Stream Every F1 Race | Smart Live TV',
+  title: 'Watch Formula 1 Live 2026 | Stream Every F1 Race',
   description: 'Stream every Formula 1 race live in 4K with no ad breaks. Sky Sports F1 included. Free 24-hour trial. Works on any device.',
   alternates: { canonical: `${ENV.BASE_URL}/watch/formula-1` },
 }
 
 export default async function Formula1Page() {
-  const [schedule, news] = await Promise.allSettled([
+  const [schedule, news, fullSchedule] = await Promise.allSettled([
     getF1Schedule(),
     getF1News(),
+    getF1FullSchedule(),
   ])
 
   const races = schedule.status === 'fulfilled' ? schedule.value : []
   const articles = news.status === 'fulfilled' ? news.value : []
+  const allRaces: F1Race[] = fullSchedule.status === 'fulfilled' ? fullSchedule.value : []
 
   // Next race
   const nextRace = races.find(r => !r.status?.type?.completed) || races[0] || null
@@ -162,6 +165,60 @@ export default async function Formula1Page() {
                     )
                   })}
                 </StaggerIn>
+              </section>
+            </FadeIn>
+          )}
+
+          {/* FULL 2026 SEASON CALENDAR */}
+          {allRaces.length > 0 && (
+            <FadeIn direction="up">
+              <section className="pb-16 md:pb-20 border-t border-[#2a2a3a] pt-16 md:pt-20">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-8">
+                  2026 F1 Season Calendar
+                </h2>
+                <div className="space-y-3">
+                  {allRaces.map((race, i) => (
+                    <div key={race.id}
+                      className={`flex items-center justify-between 
+                        bg-[#12121a] border rounded-xl px-5 py-4
+                        ${race.completed 
+                          ? 'border-[#2a2a3a] opacity-70' 
+                          : 'border-[#2a2a3a] hover:border-[#e10600]/30'
+                        }`}>
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs font-bold text-gray-600 w-6">
+                          {i + 1}
+                        </span>
+                        <div>
+                          <p className="font-bold text-white text-sm">
+                            {race.shortName || race.name}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {race.circuit || race.location}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-400">
+                          {new Date(race.date).toLocaleDateString('en-GB', {
+                            day: 'numeric', month: 'short'
+                          })}
+                        </p>
+                        {race.completed && race.winner && (
+                          <p className="text-xs text-[#00e676] mt-0.5 font-semibold">
+                            🏆 {race.winner}
+                          </p>
+                        )}
+                        {!race.completed && (
+                          <span className="text-xs bg-[#e10600]/10 text-[#e10600] 
+                            border border-[#e10600]/20 px-2 py-0.5 rounded-full">
+                            Upcoming
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </section>
             </FadeIn>
           )}

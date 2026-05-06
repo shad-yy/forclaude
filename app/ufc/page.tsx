@@ -12,7 +12,7 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: "UFC - Ultimate Fighting Championship | Smart Live TV",
+  title: "UFC — Live Events, Fighter Rankings & Coverage",
   description:
     "Latest UFC events, fighter rankings, and mixed martial arts coverage. Stay updated with upcoming fights and champion rankings.",
   keywords: ["UFC", "MMA", "Mixed Martial Arts", "Fighter Rankings", "UFC Events", "Combat Sports"],
@@ -254,14 +254,43 @@ export default function UFCPage() {
       />
       {/* Header */}
       <FadeIn>
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-          <span className="text-white">UFC</span>
-          <span className="text-red-500 ml-2">OCTAGON</span>
+      <div className="text-center mb-12 pt-8">
+        <div className="flex items-center justify-center mb-6">
+          <img
+            src="/leagues/ufc.png"
+            alt="UFC"
+            width={72}
+            height={72}
+            className="object-contain"
+          />
+        </div>
+        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+          UFC — Fight Night Coverage
         </h1>
-        <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-          The Ultimate Fighting Championship - Where champions are made and legends are born
+        <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-8">
+          Every UFC event live in 4K. Prelims, main card, and PPV — 
+          all included with your subscription. No extra charges.
         </p>
+        <div className="flex gap-4 justify-center flex-wrap">
+          <a
+            href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-[#00e676] text-black font-bold px-8 py-3.5 
+              rounded-xl text-sm hover:bg-[#00ff87] transition-all
+              touch-manipulation"
+          >
+            Buy Now — Watch UFC Live →
+          </a>
+          <Link
+            href="/free-trial"
+            className="border border-[#2a2a3a] hover:border-[#00e676]/40 
+              text-gray-300 font-bold px-8 py-3.5 rounded-xl text-sm
+              transition-all"
+          >
+            Try Free for 24H
+          </Link>
+        </div>
       </div>
       </FadeIn>
 

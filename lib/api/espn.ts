@@ -59,6 +59,8 @@ export interface ESPNEvent {
     competitors: Array<{
       id: string
       displayName: string
+      athlete?: { displayName: string }
+      team?: { displayName: string }
       score?: string
     }>
     venue?: {
@@ -67,7 +69,7 @@ export interface ESPNEvent {
     }
     notes?: Array<{ headline: string }>
   }>
-  links?: Array<{ href: string; text: string }>
+  links?: Array<{ href: string; text: string; rel?: string[] }>
 }
 
 export interface ESPNScoreboard {
@@ -75,24 +77,47 @@ export interface ESPNScoreboard {
   season?: { year: number; type: number }
 }
 
-export async function getUFCEvents(): Promise<ESPNEvent[]> {
+export async function getUFCEvents(): Promise<{
+  upcoming: ESPNEvent[]
+  recent: ESPNEvent[]
+}> {
   const data = await espnFetch<ESPNScoreboard>(
-    `${ESPN_BASE}/mma/ufc/scoreboard`,
-    'espn:ufc:scoreboard'
+    'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard',
+    'espn:ufc:scoreboard',
+    900 // 15 minute cache — events change daily
   )
-  return data?.events || []
+
+  const events = data?.events || []
+  const upcoming = events.filter(e => !e.status?.type?.completed)
+  const recent = events.filter(e => e.status?.type?.completed)
+
+  return { upcoming, recent }
 }
 
-export async function getUFCNews(): Promise<Array<{
-  headline: string
-  description: string
-  published: string
-  links: { web: { href: string } }
-  images?: Array<{ url: string; name: string }>
-}>> {
+export async function getUFCEventSummary(eventId: string): Promise<any> {
+  // Use summary endpoint — returns human-readable fight card
+  return espnFetch(
+    `https://site.api.espn.com/apis/site/v2/sports/mma/ufc/summary?event=${eventId}`,
+    `espn:ufc:event:${eventId}`,
+    3600
+  )
+}
+
+export async function getUFCFighters(): Promise<any[]> {
+  // Core API returns paginated fighter list
+  const data = await espnFetch<{ items: any[]; count: number }>(
+    'https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/athletes?limit=50&active=true',
+    'espn:ufc:fighters',
+    86400 // 24hr cache — fighters don't change often
+  )
+  return data?.items || []
+}
+
+export async function getUFCNews(): Promise<any[]> {
   const data = await espnFetch<{ articles: any[] }>(
-    `${ESPN_BASE}/mma/ufc/news?limit=10`,
-    'espn:ufc:news'
+    'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/news?limit=8',
+    'espn:ufc:news',
+    1800
   )
   return data?.articles || []
 }
@@ -100,6 +125,19 @@ export async function getUFCNews(): Promise<Array<{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // F1 FUNCTIONS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export interface F1Race {
+  id: string
+  name: string
+  shortName?: string
+  date: string
+  completed: boolean
+  location: string
+  country: string
+  circuit?: string
+  winner?: string
+  winnerTime?: string
+}
 
 export async function getF1Schedule(): Promise<ESPNEvent[]> {
   const data = await espnFetch<ESPNScoreboard>(
@@ -115,6 +153,44 @@ export async function getF1News(): Promise<any[]> {
     'espn:f1:news'
   )
   return data?.articles || []
+}
+
+function mapF1Race(e: ESPNEvent): F1Race {
+  const comp = e.competitions?.[0]
+  const winner = comp?.competitors?.find((c: any) => c.order === 1)
+  return {
+    id: e.id,
+    name: e.name || e.shortName || 'F1 Race',
+    shortName: e.shortName,
+    date: e.date,
+    completed: e.status?.type?.completed || false,
+    location: comp?.venue?.address?.city || 
+              comp?.venue?.fullName || 'TBA',
+    country: comp?.venue?.address?.country || '',
+    circuit: comp?.venue?.fullName,
+    winner: winner?.athlete?.displayName || 
+            winner?.team?.displayName || undefined,
+  }
+}
+
+export async function getF1FullSchedule(): Promise<F1Race[]> {
+  // Scoreboard returns full event objects with all details
+  const board = await espnFetch<ESPNScoreboard>(
+    'https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard',
+    'espn:f1:scoreboard:full',
+    900
+  )
+  return (board?.events || []).map(mapF1Race)
+}
+
+export async function getF1DriverStandings(): Promise<any[]> {
+  // Driver list from core API
+  const data = await espnFetch<any>(
+    'https://sports.core.api.espn.com/v2/sports/racing/leagues/f1/athletes?limit=30&active=true',
+    'espn:f1:drivers',
+    86400
+  )
+  return data?.items || []
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

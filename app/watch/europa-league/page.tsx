@@ -9,20 +9,20 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: 'Watch UEFA Europa League Live | Free Trial | Smart Live TV',
+  title: 'Watch UEFA Europa League Live | Free Trial',
   description:
     'Stream every UEFA Europa League match in 4K. Watch from anywhere with a free 24-hour trial.',
   alternates: {
     canonical: `${ENV.BASE_URL}/watch/europa-league`,
   },
   openGraph: {
-    title: 'Watch UEFA Europa League Live | Free Trial | Smart Live TV',
+    title: 'Watch UEFA Europa League Live | Free Trial',
     description: 'Stream every UEFA Europa League match in 4K. Watch from anywhere with a free 24-hour trial.',
     images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Watch UEFA Europa League Live | Free Trial | Smart Live TV',
+    title: 'Watch UEFA Europa League Live | Free Trial',
     images: ['/og-default.png'],
   },
 }

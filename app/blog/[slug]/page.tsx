@@ -20,13 +20,13 @@ export function generateMetadata({ params }: BlogPostPageProps): Metadata {
 
   if (!post) {
     return {
-      title: "Article Not Found | Smart Live TV Blog",
+      title: "Article Not Found | Blog",
       description: "The requested article could not be found.",
     }
   }
 
   return {
-    title: `${post.title} | Smart Live TV Blog`,
+    title: `${post.title} | Blog`,
     description: post.description,
     alternates: {
       canonical: `${ENV.BASE_URL}/blog/${post.slug}`,

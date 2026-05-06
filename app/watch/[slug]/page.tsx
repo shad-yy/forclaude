@@ -43,12 +43,12 @@ function formatMatchDate(dateStr: string | null | undefined): string {
 
 // Exact titles per spec — all verified under 60 chars
 const LEAGUE_TITLES: Record<string, string> = {
-    'premier-league': 'Watch Premier League Live Streaming | Free Trial | Smart Live TV',
-    'la-liga':        'Watch La Liga Live Streaming | Free Trial | Smart Live TV',
-    'bundesliga':     'Watch Bundesliga Live Streaming | Free Trial | Smart Live TV',
-    'serie-a':        'Watch Serie A Live Streaming | Free Trial | Smart Live TV',
-    'ligue-1':        'Watch Ligue 1 Live Streaming | Free Trial | Smart Live TV',
-    'champions-league': 'Watch Champions League Live | Stream UCL Free Trial | Smart Live TV',
+    'premier-league': 'Watch Premier League Live Streaming | Free Trial',
+    'la-liga':        'Watch La Liga Live Streaming | Free Trial',
+    'bundesliga':     'Watch Bundesliga Live Streaming | Free Trial',
+    'serie-a':        'Watch Serie A Live Streaming | Free Trial',
+    'ligue-1':        'Watch Ligue 1 Live Streaming | Free Trial',
+    'champions-league': 'Watch Champions League Live | Stream UCL Free Trial',
 }
 
 // Force static building for the top SEO pages
@@ -60,7 +60,7 @@ export function generateMetadata({ params }: Props): Metadata {
     const league = LEAGUES[params.slug as LeagueSlug]
     if (!league) return { title: 'League Not Found' }
 
-    const title = LEAGUE_TITLES[params.slug] ?? `Watch ${league.name} Live Streaming | Free Trial | Smart Live TV`
+    const title = LEAGUE_TITLES[params.slug] ?? `Watch ${league.name} Live Streaming | Free Trial`
     const description = `Stream every ${league.name} match live in HD. No blackouts, all devices. Start your free 24-hour trial today.`
 
     return {
@@ -412,7 +412,7 @@ export default async function WatchLeaguePage({ params }: Props) {
             Get Free Trial
           </a>
           <a
-            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
+            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#25D366] text-black font-bold text-base py-4 rounded-2xl text-center touch-manipulation active:scale-95 transition-transform cta-button"

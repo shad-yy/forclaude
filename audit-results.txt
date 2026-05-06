@@ -80,7 +80,7 @@
 - Title: Watch Premier League Live Streaming | Free Trial | Smart Live TV | Smart Live TV
 - Meta Description: Stream every Premier League match live in HD. No blackouts, all devices. Start your free 24-hour trial today.
 - H1: NONE
-- Broken Links Found: 0 ()
+- Broken Links Found: 1 (#)
 ### /watch/la-liga
 - Status: OK
 - Title: Watch La Liga Live Streaming | Free Trial | Smart Live TV | Smart Live TV
@@ -109,7 +109,7 @@
 - Status: OK
 - Title: Watch Champions League Live | Stream UCL Free Trial | Smart Live TV | Smart Live TV
 - Meta Description: Stream every UEFA Champions League match in 4K. No BT Sport needed. Watch from anywhere with a free 24-hour trial.
-- H1: The Greatest Club Competition on Earth
+- H1: NONE
 - Broken Links Found: 0 ()
 ### /watch/europa-league
 - Status: OK
@@ -127,7 +127,7 @@
 - Status: OK
 - Title: Watch Formula 1 Live 2026 | Stream Every F1 Race | Smart Live TV | Smart Live TV
 - Meta Description: Stream every Formula 1 race live in 4K with no ad breaks. Sky Sports F1 included. Free 24-hour trial. Works on any device.
-- H1: Every F1 Race. Zero Ad Breaks.
+- H1: NONE
 - Broken Links Found: 0 ()
 ### /ufc
 - Status: OK

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Sign In | Smart Live TV',
+  title: 'Sign In',
   robots: { index: false, follow: false },
 }
 
@@ -20,7 +20,7 @@ export default function LoginPage() {
           or manage your subscription.
         </p>
         <div className="space-y-3">
-          <a href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
+          <a href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
             target="_blank" rel="noopener noreferrer"
             className="flex items-center justify-center gap-3 
               w-full bg-[#25D366] text-black font-bold 

@@ -4,7 +4,7 @@ import { ENV } from '@/lib/config/env'
 import ChannelLibrary from '@/components/channels/channel-library'
 
 export const metadata: Metadata = {
-  title: 'IPTV Channel List UK — 230,000+ Live Channels | Smart Live TV',
+  title: 'IPTV Channel List UK — 230,000+ Live Channels',
   description: 'Browse 230,000+ live channels including UK, Arabic, French, German, Indian, US and more. Premier League, La Liga, UFC, Sky Sports, BT Sport & more. Free 24-hour trial, no card required.',
   alternates: { canonical: `${ENV.BASE_URL}/channels` },
   openGraph: {

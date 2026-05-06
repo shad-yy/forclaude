@@ -127,7 +127,7 @@ const MOCK_NEWS: NewsArticle[] = [
     pubDate: new Date(Date.now() - 10800000).toISOString(),
     source_name: 'UEFA.com',
     source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=800&q=80',
+    image_url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80',
     category: ['international'],
     language: 'english',
     country: ['europe'],
@@ -141,7 +141,7 @@ const MOCK_NEWS: NewsArticle[] = [
     pubDate: new Date(Date.now() - 14400000).toISOString(),
     source_name: 'Mirror Sport',
     source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&q=80',
+    image_url: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&q=80',
     category: ['champions league'],
     language: 'english',
     country: ['united kingdom'],
@@ -155,7 +155,7 @@ const MOCK_NEWS: NewsArticle[] = [
     pubDate: new Date(Date.now() - 18000000).toISOString(),
     source_name: 'Sky Sports',
     source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1508098682722-e99c643e7485?w=800&q=80',
+    image_url: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&q=80',
     category: ['premier league'],
     language: 'english',
     country: ['united kingdom'],
@@ -178,7 +178,7 @@ export async function getLatestSportsNews(
 
   // Free plan: size must be 1-10
   const safeSize = Math.min(Math.max(1, size), 10)
-  const cacheKey = `news:sports:${safeSize}`
+  const cacheKey = `news:sports:v2:${safeSize}`
 
   // Check module-level cache first (6 hour TTL)
   const cached = newsCache.get(cacheKey)
@@ -253,12 +253,39 @@ export async function getLatestSportsNews(
 
 import { NewsArticle as SharedNewsArticle, NewsResponse } from "@/lib/api/types"
 
+/**
+ * Nuclear dedup — catches duplicates by URL, normalized title,
+ * image URL (sans query-string), and description content hash.
+ */
+function nuclearDedup(articles: any[]): any[] {
+  if (!articles?.length) return []
+  const seen = new Map<string, boolean>()
+  return articles.filter(article => {
+    if (!article) return false
+    const url = (article.link || article.url || '').trim()
+    const title = (article.title || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40)
+    const img = (article.image_url || article.urlToImage || '').split('?')[0].trim()
+    const desc = (article.description || article.content || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60)
+    const keys = [
+      url && `url:${url}`,
+      title && title.length > 10 && `title:${title}`,
+      img && `img:${img}`,
+      desc && desc.length > 20 && `desc:${desc}`,
+    ].filter(Boolean) as string[]
+    const isDuplicate = keys.some(k => seen.has(k))
+    if (isDuplicate) return false
+    keys.forEach(k => seen.set(k, true))
+    return true
+  })
+}
+
 export const newsAPI = {
   searchNews: async (params: any = {}): Promise<NewsResponse> => {
     const raw = await getLatestSportsNews(params.q, params.pageSize);
+    const deduped = nuclearDedup(raw);
     return {
-      totalResults: raw.length,
-      articles: raw.map(a => ({
+      totalResults: deduped.length,
+      articles: deduped.map(a => ({
         id: a.article_id,
         title: a.title || "",
         url: a.link,
@@ -274,7 +301,8 @@ export const newsAPI = {
   },
   getTrendingSportsNews: async (): Promise<SharedNewsArticle[]> => {
     const raw = await getLatestSportsNews();
-    return raw.map(a => ({
+    const deduped = nuclearDedup(raw);
+    return deduped.map(a => ({
       id: a.article_id,
       title: a.title || "",
       url: a.link,

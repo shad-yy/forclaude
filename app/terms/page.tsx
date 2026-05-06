@@ -3,7 +3,7 @@ import { ENV } from '@/lib/config/env'
 import { FadeIn } from "@/components/ui/fade-in"
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Smart Live TV',
+  title: 'Terms of Service',
   description: 'Smart Live TV terms of service — your rights and responsibilities as a subscriber.',
   alternates: { canonical: `${ENV.BASE_URL}/terms` },
 }

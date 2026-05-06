@@ -7,14 +7,14 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: 'IPTV Subscription UK — Plans from £12/mo | Smart Live TV',
+  title: 'IPTV Subscription UK — Plans from £12/mo',
   description:
     'Simple IPTV pricing from £12/month. 230,000+ channels, 4K quality, no contract. Free 24-hour trial included.',
   alternates: {
     canonical: `${ENV.BASE_URL}/pricing`,
   },
   openGraph: {
-    title: 'IPTV Subscription UK — Plans from £12/mo | Smart Live TV',
+    title: 'IPTV Subscription UK — Plans from £12/mo',
     description: 'Simple IPTV pricing from £12/month. 230,000+ channels, 4K quality, no contract. Free 24-hour trial included.',
     url: `${ENV.BASE_URL}/pricing`,
     siteName: 'Smart Live TV',
@@ -58,7 +58,7 @@ const faqs = [
 ]
 
 export default function PricingPage() {
-  const storeUrl = process.env.NEXT_PUBLIC_STORE_URL || '#'
+  const storeUrl = process.env.NEXT_PUBLIC_STORE_URL || '/pricing'
 
   const faqSchema = {
     '@context': 'https://schema.org',
@@ -498,7 +498,7 @@ export default function PricingPage() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10 flex-wrap">
           <a
-            href={process.env.NEXT_PUBLIC_STORE_URL || '#'}
+            href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#00e676] hover:bg-[#00ff87] text-black font-extrabold px-10 py-4 rounded-xl text-base shadow-[0_0_20px_rgba(0,230,118,0.3)] transition-all touch-manipulation"
@@ -529,7 +529,7 @@ export default function PricingPage() {
             Get Free Trial
           </a>
           <a
-            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
+            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#25D366] text-black font-bold text-sm py-3.5 rounded-xl text-center"

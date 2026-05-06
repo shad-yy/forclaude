@@ -16,10 +16,14 @@ import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
   title: 'Smart Live TV — Watch 230,000+ Channels | Free 24H Trial',
-  description: 'Stream Premier League, La Liga, Champions League, UFC & more on any device. Get your free 24-hour trial today.',
+  description: 'Stream Premier League, Champions League, UFC & more in 4K on any device. 230,000+ channels. No contract. Free 24-hour trial.',
   alternates: {
     canonical: ENV.BASE_URL,
   },
+  openGraph: {
+    title: 'Smart Live TV — Watch 230,000+ Channels | Free 24H Trial',
+    description: 'Stream Premier League, Champions League, UFC & more in 4K on any device. 230,000+ channels. No contract. Free 24-hour trial.',
+  }
 }
 
 function NewsSkeleton() {

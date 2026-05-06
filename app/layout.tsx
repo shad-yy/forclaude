@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(ENV.BASE_URL),
   title: {
     default: "Smart Live TV",
-    template: "%s | Smart Live TV",
+    template: "%s",
   },
   description:
     "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",

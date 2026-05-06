@@ -4,7 +4,7 @@ import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
-  title: 'Watch FIFA World Cup 2026 Live | Stream Every Match | Smart Live TV',
+  title: 'Watch FIFA World Cup 2026 Live | Stream Every Match',
   description: 'Stream every FIFA World Cup 2026 match live in 4K. No blackouts. Works on Firestick, Smart TV, Android and iPhone. Free 24-hour trial.',
   alternates: {
     canonical: `${ENV.BASE_URL}/watch/world-cup-2026`,

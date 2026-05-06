@@ -35,23 +35,17 @@ function getCategoryBadge(categoryName: string): string {
 export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
   const allArticles = await getLatestSportsNews(undefined, maxArticles);
 
-  // FIX 2 — Aggressive deduplication at component level (safety net)
-  const uniqueArticles = allArticles.reduce((acc: any[], article: any) => {
-    const titleKey = (article.title || '')
-      .toLowerCase().replace(/[^a-z0-9]/g,'').slice(0, 50)
-    const isDuplicate = acc.some(a => 
-      (a.link && a.link === article.link) ||
-      ((a.title||'').toLowerCase().replace(/[^a-z0-9]/g,'')
-        .slice(0,50) === titleKey) ||
-      (article.image_url && a.image_url === article.image_url)
-    )
-    return isDuplicate ? acc : [...acc, article]
-  }, [])
+  // Nuclear dedup at component level — final safety net
+  const seen = new Set<string>()
+  const uniqueArticles = (allArticles || []).filter((a: any) => {
+    const key = (a.title || '').toLowerCase()
+      .replace(/[^a-z0-9]/g, '').slice(0, 40)
+    if (!key || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 
-  let articles = uniqueArticles.slice(0, maxArticles);
-  while (articles.length > 0 && articles.length < maxArticles) {
-    articles = [...articles, ...articles].slice(0, maxArticles);
-  }
+  const articles = uniqueArticles.slice(0, maxArticles);
 
   if (!articles || articles.length === 0) {
     return (
@@ -95,7 +89,7 @@ export async function NewsSection({ maxArticles = 6 }: NewsSectionProps) {
               className="animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
             >
-              <a href={article.link || article.url || '/news'} target="_blank" rel="noopener noreferrer" className="block h-[450px] group">
+              <a href={article.link || '/news'} target="_blank" rel="noopener noreferrer" className="block h-[450px] group">
                 <Card className="bg-surface border-border hover:border-accent-primary transition-all duration-300 h-full flex flex-col overflow-hidden shadow-lg group-hover:shadow-[0_0_20px_rgba(0,230,118,0.15)]">
                   {/* Top 50%: Image */}
                   <div className="h-1/2 w-full overflow-hidden bg-surface-elevated relative">

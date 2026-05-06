@@ -4,7 +4,7 @@ import { getLatestSportsNews } from "@/lib/api/news"
 import { NewsPageClient } from "./client"
 
 export const metadata: Metadata = {
-  title: "Sports News | Latest Football & MMA | Smart Live TV",
+  title: "Sports News | Latest Football & MMA",
   description:
     "Latest Premier League, Champions League and UFC news updated daily.",
   alternates: { canonical: `${ENV.BASE_URL}/news` },

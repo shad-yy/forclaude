@@ -7,7 +7,7 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: "Sports Streaming Blog | Guides & Tips | Smart Live TV",
+  title: "Sports Streaming Blog | Guides & Tips",
   description:
     "How to watch Premier League abroad, beat geo-blocks, compare streaming services and more. Expert guides from Smart Live TV.",
   alternates: { canonical: `${ENV.BASE_URL}/blog` },

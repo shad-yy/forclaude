@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Heart } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Favourites | Smart Live TV',
+  title: 'Favourites',
   description: 'Save your favourite sports and leagues.',
   robots: { index: false, follow: false },
 }

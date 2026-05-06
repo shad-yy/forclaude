@@ -133,38 +133,19 @@ export function HeroSection() {
               <div className="flex items-center gap-4 border-t border-border pt-4">
                 <div className="flex -space-x-2">
                   {[
-                    {
-                      src: "/leagues/premier-league.png",
-                      alt: "Premier League",
-                      fallback: "🏴"
-                    },
-                    {
-                      src: "/leagues/ufc.png",
-                      alt: "UFC",
-                      fallback: "🥊"
-                    },
-                    {
-                      src: "/leagues/champions-league.png",
-                      alt: "Champions League",
-                      fallback: "🏆"
-                    },
+                    { src: '/leagues/premier-league.png', alt: 'Premier League' },
+                    { src: '/leagues/ufc.png', alt: 'UFC' },
+                    { src: '/leagues/champions-league.png', alt: 'Champions League' },
                   ].map((league, i) => (
-                    <div key={i} className="w-10 h-10 rounded-full bg-surface border-2 border-surface-elevated flex items-center justify-center p-1 relative">
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#ff1744] rounded-full z-10" />
+                    <div key={i} className="w-10 h-10 rounded-full bg-surface border-2 border-surface-elevated flex items-center justify-center p-1.5 relative flex-shrink-0">
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#ff1744] rounded-full border-2 border-[#0a0a0f] z-10" />
                       <img
                         src={league.src}
                         alt={league.alt}
+                        width={28}
+                        height={28}
                         className="w-full h-full object-contain"
-                        onError={(e) => {
-                          const t = e.target as HTMLImageElement
-                          t.style.display = 'none'
-                          const fallbackEl = t.parentElement?.querySelector('.fallback')
-                          if (fallbackEl) fallbackEl.classList.remove('hidden')
-                        }}
                       />
-                      <span className="fallback hidden text-lg absolute">
-                        {league.fallback}
-                      </span>
                     </div>
                   ))}
                 </div>

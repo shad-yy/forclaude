@@ -259,13 +259,24 @@ export default function NewsClientPage({
           )}
 
           {/* Articles Grid */}
-          {!loading && !error && articles.length > 0 && (
+          {!loading && !error && articles.length > 0 && (() => {
+            // Final dedup safety net at render level
+            const seen = new Set<string>()
+            const uniqueArticles = articles.filter((a) => {
+              const key = (a.title || '').toLowerCase()
+                .replace(/[^a-z0-9]/g, '').slice(0, 40)
+              if (!key || seen.has(key)) return false
+              seen.add(key)
+              return true
+            })
+            return (
             <div className="space-y-6">
-              {articles.map((article, index) => (
+              {uniqueArticles.map((article, index) => (
                 <NewsCard key={`${article.url}-${index}`} article={article} />
               ))}
             </div>
-          )}
+            )
+          })()}
 
           {/* No Results */}
           {!loading && !error && articles.length === 0 && (

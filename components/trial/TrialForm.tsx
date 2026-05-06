@@ -269,7 +269,7 @@ export function TrialForm() {
           Prefer to message directly?
         </p>
         <a
-          href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
+          href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-sm font-semibold

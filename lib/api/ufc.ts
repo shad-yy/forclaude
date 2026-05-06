@@ -3,7 +3,7 @@ import type { UFCEvent, UFCFighter } from "@/lib/types"
 // Current realistic UFC data (updated as of 2024)
 const mockUpcomingEvents: UFCEvent[] = [
   {
-    id: "ufc-310",
+    id: "401716927",
     name: "UFC 310: Pantoja vs Asakura",
     date: "2024-12-07",
     location: "T-Mobile Arena, Las Vegas, NV",
@@ -39,7 +39,7 @@ const mockUpcomingEvents: UFCEvent[] = [
     ],
   },
   {
-    id: "ufc-311",
+    id: "401716928",
     name: "UFC 311: Makhachev vs Moicano",
     date: "2025-01-18",
     location: "Intuit Dome, Los Angeles, CA",
@@ -70,7 +70,7 @@ const mockUpcomingEvents: UFCEvent[] = [
 
 const mockPastEvents: UFCEvent[] = [
   {
-    id: "ufc-309",
+    id: "401716926",
     name: "UFC 309: Jones vs Miocic",
     date: "2024-11-16",
     location: "Madison Square Garden, New York, NY",
@@ -98,7 +98,7 @@ const mockPastEvents: UFCEvent[] = [
     ],
   },
   {
-    id: "ufc-308",
+    id: "401716925",
     name: "UFC 308: Topuria vs Holloway",
     date: "2024-10-26",
     location: "Etihad Arena, Abu Dhabi, UAE",
@@ -371,51 +371,25 @@ function setCachedData<T>(key: string, data: T): void {
 export async function getUpcomingEvents(): Promise<UFCEvent[]> {
   try {
     const { getUFCEvents } = await import('./espn')
-    const events = await getUFCEvents()
-    
-    if (!events || events.length === 0) {
-      throw new Error('No ESPN UFC data')
+    const { upcoming } = await getUFCEvents()
+
+    if (upcoming.length > 0) {
+      return upcoming.map(e => ({
+        id: e.id,
+        name: e.name || e.shortName || 'UFC Event',
+        date: e.date,
+        location: e.competitions?.[0]?.venue?.fullName 
+          || e.competitions?.[0]?.venue?.address?.city 
+          || 'TBA',
+        status: 'Upcoming',
+        image: e.links?.find((l: any) => l.rel?.includes('desktop'))?.href
+          || '/leagues/ufc.png',
+        mainEvent: e.competitions?.[0]?.notes?.[0]?.headline || e.name,
+        fights: [],
+      }))
     }
-    
-    // Filter to upcoming/scheduled events
-    const upcoming = events
-      .filter(e => !e.status?.type?.completed)
-      .map(e => {
-        const competition = e.competitions?.[0]
-        const venue = competition?.venue
-        const mainFight = competition?.notes?.[0]?.headline || e.name
-        
-        return {
-          id: e.id,
-          name: e.name || e.shortName || 'UFC Event',
-          date: e.date,
-          location: venue 
-            ? `${venue.fullName}${venue.address?.city ? ', ' + venue.address.city : ''}`
-            : 'TBA',
-          status: 'Upcoming',
-          image: '/placeholder-logo.png',
-          mainEvent: mainFight,
-          fights: [],
-        } as UFCEvent
-      })
-      .slice(0, 6)
-    
-    if (upcoming.length > 0) return upcoming
-    
-    // No upcoming — return soonest events regardless
-    return events.slice(0, 3).map(e => ({
-      id: e.id,
-      name: e.name || 'UFC Event',
-      date: e.date,
-      location: e.competitions?.[0]?.venue?.fullName || 'TBA',
-      status: 'Upcoming',
-      image: '/placeholder-logo.png',
-      mainEvent: e.name,
-      fights: [],
-    } as UFCEvent))
-    
-  } catch (err) {
-    console.warn('[UFC] Falling back to mock data:', err)
+    return mockUpcomingEvents
+  } catch {
     return mockUpcomingEvents
   }
 }
@@ -423,36 +397,22 @@ export async function getUpcomingEvents(): Promise<UFCEvent[]> {
 export async function getPastEvents(): Promise<UFCEvent[]> {
   try {
     const { getUFCEvents } = await import('./espn')
-    const events = await getUFCEvents()
-    
-    if (!events || events.length === 0) {
-      throw new Error('No ESPN UFC data')
+    const { recent } = await getUFCEvents()
+
+    if (recent.length > 0) {
+      return recent.slice(0, 6).map(e => ({
+        id: e.id,
+        name: e.name || 'UFC Event',
+        date: e.date,
+        location: e.competitions?.[0]?.venue?.fullName || 'TBA',
+        status: 'Past',
+        image: '/leagues/ufc.png',
+        mainEvent: e.competitions?.[0]?.notes?.[0]?.headline || e.name,
+        fights: [],
+      }))
     }
-    
-    const past = events
-      .filter(e => e.status?.type?.completed)
-      .map(e => {
-        const competition = e.competitions?.[0]
-        const venue = competition?.venue
-        
-        return {
-          id: e.id,
-          name: e.name || 'UFC Event',
-          date: e.date,
-          location: venue?.fullName || 'TBA',
-          status: 'Past',
-          image: '/placeholder-logo.png',
-          mainEvent: competition?.notes?.[0]?.headline || e.name,
-          fights: [],
-        } as UFCEvent
-      })
-      .slice(0, 6)
-    
-    if (past.length > 0) return past
-    throw new Error('No past events from ESPN')
-    
-  } catch (err) {
-    console.warn('[UFC] Past events falling back to mock:', err)
+    return mockPastEvents
+  } catch {
     return mockPastEvents
   }
 }

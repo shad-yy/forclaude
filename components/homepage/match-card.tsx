@@ -306,13 +306,21 @@ export function MatchCard() {
                                             </div>
 
                                             {/* Row 2 (mobile): button full width */}
-                                            <Link
-                                                href="/pricing"
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="w-full md:w-auto shrink-0 bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap text-center"
-                                            >
-                                                {isFinished ? "Highlights →" : "Watch →"}
-                                            </Link>
+                                            <div className="flex flex-col gap-2 w-full md:w-auto mt-2 md:mt-0">
+                                                <Link
+                                                    href="/pricing"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="w-full shrink-0 bg-green-500 hover:bg-green-400 text-black text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap text-center"
+                                                >
+                                                    {isFinished ? "Highlights →" : "Watch →"}
+                                                </Link>
+                                                <Link href={`/match/${match.idEvent}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="text-xs text-gray-500 hover:text-[#00e676] transition-colors block text-center"
+                                                >
+                                                    Match preview & how to watch
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
                                 </button>

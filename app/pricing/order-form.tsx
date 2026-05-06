@@ -99,7 +99,7 @@ export function OrderForm() {
 
       <div className="flex justify-center mt-8">
         <a
-          href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
+          href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
           className="flex items-center gap-2 bg-[#25D366] hover:bg-[#20c55e] text-white font-bold px-6 py-3 rounded-xl w-fit mx-auto mb-8"
         >
           💬 Message Us on WhatsApp Instead
