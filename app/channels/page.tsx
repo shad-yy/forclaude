@@ -4,12 +4,12 @@ import { ENV } from '@/lib/config/env'
 import ChannelLibrary from '@/components/channels/channel-library'
 
 export const metadata: Metadata = {
-  title: 'IPTV Channel List UK — 230,000+ Live Channels',
-  description: 'Browse 230,000+ live channels including UK, Arabic, French, German, Indian, US and more. Premier League, La Liga, UFC, Sky Sports, BT Sport & more. Free 24-hour trial, no card required.',
+  title: 'Netflix, Sky Sports & 230,000+ Channels | Smart Live TV',
+  description: 'Browse our full channel library. Netflix, Disney+, Amazon Prime, Sky Sports, TNT Sports and 230,000+ channels all included from £12/month.',
   alternates: { canonical: `${ENV.BASE_URL}/channels` },
   openGraph: {
-    title: 'IPTV Channel List UK — 230,000+ Channels',
-    description: 'Every channel you want. No blackouts. Cancel anytime.',
+    title: 'Netflix, Sky Sports & 230,000+ Channels | Smart Live TV',
+    description: 'Browse our full channel library. Netflix, Disney+, Amazon Prime, Sky Sports, TNT Sports and 230,000+ channels all included from £12/month.',
     images: ['/og-default.png'],
   },
 }
@@ -79,12 +79,12 @@ export default function ChannelsPage() {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
-              Every Channel You Love. <br className="hidden sm:block" />
+              Every Channel, Every Streaming Service. <br className="hidden sm:block" />
               One Subscription.
             </h1>
             
             <p className="text-gray-400 text-lg max-w-2xl mx-auto mt-4">
-              Browse our full channel library below. Every channel shown is included in your Smart Live TV subscription — no extras, no hidden fees. Available on Firestick, Smart TV, Android and iPhone.
+              Netflix, Disney+, Amazon Prime, Hulu, Shahid and 230,000+ live channels, movies and series — all included from £12/month. Browse a sample of what&apos;s available below.
             </p>
             
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-8">
@@ -149,12 +149,12 @@ export default function ChannelsPage() {
           <div className="bg-[#00e676]/5 border border-[#00e676]/20 rounded-2xl p-5 mb-4 max-w-4xl mx-auto text-center">
             <p className="text-sm text-gray-300 leading-relaxed">
               <span className="font-bold text-[#00e676]">ℹ Note:</span>{' '}
-              This page shows a representative sample of available channels. 
-              Your full subscription includes{' '}
-              <span className="font-bold text-white">230,000+ live channels, 
-              movies, series, and VOD content</span>{' '}
-              not all listed here — including exclusive PPV events, 
-              regional packages, and continuously updated on-demand titles.
+              This page shows a sample of available live TV channels.
+              Your subscription also includes{' '}
+              <span className="font-bold text-white">Netflix, Disney+,
+              Amazon Prime, Hulu, Apple TV+, Shahid, and every major
+              streaming platform</span>{' '}
+              — plus 40,000+ on-demand movies and series not shown here.
               What you see here is just a preview.
             </p>
           </div>

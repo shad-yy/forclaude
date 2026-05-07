@@ -15,14 +15,14 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: 'Smart Live TV — Watch 230,000+ Channels | Free 24H Trial',
-  description: 'Stream Premier League, Champions League, UFC & more in 4K on any device. 230,000+ channels. No contract. Free 24-hour trial.',
+  title: 'Smart Live TV — Netflix, Sky Sports & Disney+ for £12/mo',
+  description: 'Replace Netflix, Disney+, Amazon Prime and Sky Sports with one Smart Live TV subscription from £12/month. 230,000+ channels. 4K quality. Free 24-hour trial.',
   alternates: {
     canonical: ENV.BASE_URL,
   },
   openGraph: {
-    title: 'Smart Live TV — Watch 230,000+ Channels | Free 24H Trial',
-    description: 'Stream Premier League, Champions League, UFC & more in 4K on any device. 230,000+ channels. No contract. Free 24-hour trial.',
+    title: 'Smart Live TV — Netflix, Sky Sports & Disney+ for £12/mo',
+    description: 'Replace Netflix, Disney+, Amazon Prime and Sky Sports with one Smart Live TV subscription from £12/month. 230,000+ channels. 4K quality. Free 24-hour trial.',
   }
 }
 

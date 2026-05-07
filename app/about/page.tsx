@@ -16,23 +16,16 @@ export default function AboutPage() {
         <div className="container mx-auto max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 md:mb-6">About Smart Live TV</h1>
           <p className="text-gray-300 text-lg leading-relaxed mb-4">
-            Smart Live TV is a premium IPTV streaming service built for sports fans
-            who are tired of expensive cable packages, regional blackouts, and
-            missing the matches that matter.
-          </p>
-          <p className="text-gray-300 text-lg leading-relaxed mb-4">
-            We provide access to over 230,000 live channels — including every Premier
-            League, La Liga, Champions League, Bundesliga, Serie A, and Ligue 1
-            fixture — streamed in crystal-clear 4K on any device.
+            Smart Live TV gives UK sports fans and TV viewers the ability to watch everything they love — Premier League, Champions League, UFC, Formula 1, and all their favourite shows on Netflix, Disney+, Amazon Prime and Shahid — for a single monthly subscription that costs less than Sky Sports alone.
           </p>
           <p className="text-gray-300 text-lg leading-relaxed mb-8">
-            No contracts. No credit card required for your free trial. Cancel any time.
+            We believe the era of paying separately for 8 different streaming services is over. Our subscribers cancel Netflix, Disney+, Sky Sports, and TNT Sports and replace everything with one service at a fraction of the cost.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {[
-              { stat: '230,000+', label: 'Live Channels' },
-              { stat: '4K', label: 'Streaming Quality' },
-              { stat: '24h', label: 'Free Trial' },
+              { stat: '£109', label: 'Average monthly saving vs Sky + Netflix combined' },
+              { stat: '4K', label: 'Ultra HD streaming quality' },
+              { stat: '24H', label: 'Free trial — no card required' },
             ].map(item => (
               <div key={item.stat} className="bg-gray-900 rounded-2xl border border-gray-800 p-6 text-center">
                 <div className="text-3xl font-extrabold text-[#00e676] mb-2">{item.stat}</div>
@@ -42,8 +35,8 @@ export default function AboutPage() {
           </div>
           <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
           <p className="text-gray-300 leading-relaxed mb-8">
-            We believe sport should be accessible. Our mission is simple: give every
-            fan the ability to watch their team, on any device, from anywhere in the
+            We believe sport and entertainment should be accessible. Our mission is simple: give every
+            fan the ability to watch their team and their favourite shows, on any device, from anywhere in the
             world — without paying a fortune or signing a long-term contract.
           </p>
           <Link href="/pricing" className="inline-flex items-center px-8 py-4 bg-[#00e676] text-black font-bold rounded-lg hover:bg-[#00ff87] transition-colors">

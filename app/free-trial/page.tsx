@@ -27,10 +27,7 @@ export default function FreeTrialPage() {
         </h1>
 
         <p className="text-gray-400 text-lg mb-10">
-          Get instant access to 230,000+ live channels — every Sky Sports, 
-          TNT Sports, beIN Sports, UFC and BBC channel included.
-          We set up every trial personally to make sure it works 
-          perfectly on your device.
+          Get full access to Netflix, Disney+, Sky Sports, Champions League, UFC, and every streaming service you pay for separately — all in one place, for one price.
         </p>
 
         <div className="flex gap-6 justify-center flex-wrap mb-10">
@@ -127,18 +124,18 @@ export default function FreeTrialPage() {
 
         <StaggerIn className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
+            "Netflix (included — no extra charge)",
+            "Disney+ (included — no extra charge)",
+            "Amazon Prime Video (included — no extra charge)",
+            "Shahid & Arabic streaming platforms",
             "Sky Sports Premier League (live matches)",
             "TNT Sports (Champions League)",
             "Sky Sports F1 (no ad breaks)",
-            "beIN Sports 1-7 (La Liga, more)",
             "UFC Fight Pass",
-            "BBC One, Two, Three, Four",
-            "ITV, Channel 4, Channel 5",
-            "Sky Atlantic & Sky Max",
-            "Sky Cinema (all 10 channels)",
-            "NBA League Pass & NFL Game Pass",
-            "40,000+ on-demand movies & shows",
-            "Arabic, French, German & 50+ country packs"
+            "BBC, ITV, Channel 4, Channel 5",
+            "Sky Atlantic, Sky Max & Sky Cinema",
+            "40,000+ on-demand movies & series",
+            "230,000+ total channels from 50+ countries"
           ].map((item, i) => (
             <div key={i} className="bg-[#12121a] border border-[#2a2a3a] rounded-xl px-4 py-3 flex items-center gap-3">
               <span className="text-[#00e676]">✓</span>

@@ -7,15 +7,15 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: 'IPTV Subscription UK — Plans from £12/mo',
+  title: 'IPTV Pricing — Replaces Netflix + Sky Sports from £12/mo',
   description:
-    'Simple IPTV pricing from £12/month. 230,000+ channels, 4K quality, no contract. Free 24-hour trial included.',
+    'One subscription replaces Netflix (£18), Disney+ (£5), Sky Sports (£43) and TNT Sports (£31). Smart Live TV from £12/month. No contract. Free trial.',
   alternates: {
     canonical: `${ENV.BASE_URL}/pricing`,
   },
   openGraph: {
-    title: 'IPTV Subscription UK — Plans from £12/mo',
-    description: 'Simple IPTV pricing from £12/month. 230,000+ channels, 4K quality, no contract. Free 24-hour trial included.',
+    title: 'IPTV Pricing — Replaces Netflix + Sky Sports from £12/mo',
+    description: 'One subscription replaces Netflix (£18), Disney+ (£5), Sky Sports (£43) and TNT Sports (£31). Smart Live TV from £12/month. No contract. Free trial.',
     url: `${ENV.BASE_URL}/pricing`,
     siteName: 'Smart Live TV',
     images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],
@@ -49,7 +49,7 @@ const faqs = [
   },
   {
     q: "Which countries does this work in?",
-    a: "Everywhere. No regional restrictions, no VPN needed. UK, Morocco, France, UAE, USA — any country worldwide."
+    a: "Everywhere. No regional restrictions, no VPN needed. UK, France, UAE, USA — or anywhere worldwide."
   },
   {
     q: "How do I get support?",
@@ -198,15 +198,18 @@ export default function PricingPage() {
             
             <ul className="space-y-3 flex-grow">
               {[
-                "230,000+ Live Channels & VOD",
-                "4K / Ultra HD Quality",
+                "230,000+ Channels, Movies & Series",
+                "Netflix, Disney+, Amazon Prime Included",
+                "Hulu, Apple TV+, Paramount+, Shahid Included",
+                "All Sky Sports Channels in 4K",
+                "TNT Sports — Champions League Included",
+                "UFC, F1, NBA, NFL — All Sports Live",
                 "Anti-Buffer Technology",
                 "Electronic Program Guide (EPG)",
-                "VPN Privacy Protection Built-in",
+                "Catch-Up TV — Watch Last 7 Days",
                 "Works on ALL Devices",
-                "Firestick, Smart TV, Android, iPhone, PC, Mac",
-                "Dedicated 24/7 Customer Support",
-                "Free 24-Hour Trial Before You Pay",
+                "24/7 Customer Support",
+                "Free 24-Hour Trial — No Card Needed",
                 "7-Day Money Back Guarantee",
                 "No Contract — Cancel Anytime",
                 "Instant Activation After Payment"
@@ -245,15 +248,18 @@ export default function PricingPage() {
             
             <ul className="space-y-3 flex-grow">
               {[
-                "230,000+ Live Channels & VOD",
-                "4K / Ultra HD Quality",
+                "230,000+ Channels, Movies & Series",
+                "Netflix, Disney+, Amazon Prime Included",
+                "Hulu, Apple TV+, Paramount+, Shahid Included",
+                "All Sky Sports Channels in 4K",
+                "TNT Sports — Champions League Included",
+                "UFC, F1, NBA, NFL — All Sports Live",
                 "Anti-Buffer Technology",
                 "Electronic Program Guide (EPG)",
-                "VPN Privacy Protection Built-in",
+                "Catch-Up TV — Watch Last 7 Days",
                 "Works on ALL Devices",
-                "Firestick, Smart TV, Android, iPhone, PC, Mac",
-                "Dedicated 24/7 Customer Support",
-                "Free 24-Hour Trial Before You Pay",
+                "24/7 Customer Support",
+                "Free 24-Hour Trial — No Card Needed",
                 "7-Day Money Back Guarantee",
                 "No Contract — Cancel Anytime",
                 "Instant Activation After Payment"
@@ -291,15 +297,18 @@ export default function PricingPage() {
             
             <ul className="space-y-3 flex-grow">
               {[
-                "230,000+ Live Channels & VOD",
-                "4K / Ultra HD Quality",
+                "230,000+ Channels, Movies & Series",
+                "Netflix, Disney+, Amazon Prime Included",
+                "Hulu, Apple TV+, Paramount+, Shahid Included",
+                "All Sky Sports Channels in 4K",
+                "TNT Sports — Champions League Included",
+                "UFC, F1, NBA, NFL — All Sports Live",
                 "Anti-Buffer Technology",
                 "Electronic Program Guide (EPG)",
-                "VPN Privacy Protection Built-in",
+                "Catch-Up TV — Watch Last 7 Days",
                 "Works on ALL Devices",
-                "Firestick, Smart TV, Android, iPhone, PC, Mac",
-                "Dedicated 24/7 Customer Support",
-                "Free 24-Hour Trial Before You Pay",
+                "24/7 Customer Support",
+                "Free 24-Hour Trial — No Card Needed",
                 "7-Day Money Back Guarantee",
                 "No Contract — Cancel Anytime",
                 "Instant Activation After Payment"
@@ -334,15 +343,18 @@ export default function PricingPage() {
             
             <ul className="space-y-3 flex-grow">
               {[
-                "230,000+ Live Channels & VOD",
-                "4K / Ultra HD Quality",
+                "230,000+ Channels, Movies & Series",
+                "Netflix, Disney+, Amazon Prime Included",
+                "Hulu, Apple TV+, Paramount+, Shahid Included",
+                "All Sky Sports Channels in 4K",
+                "TNT Sports — Champions League Included",
+                "UFC, F1, NBA, NFL — All Sports Live",
                 "Anti-Buffer Technology",
                 "Electronic Program Guide (EPG)",
-                "VPN Privacy Protection Built-in",
+                "Catch-Up TV — Watch Last 7 Days",
                 "Works on ALL Devices",
-                "Firestick, Smart TV, Android, iPhone, PC, Mac",
-                "Dedicated 24/7 Customer Support",
-                "Free 24-Hour Trial Before You Pay",
+                "24/7 Customer Support",
+                "Free 24-Hour Trial — No Card Needed",
                 "7-Day Money Back Guarantee",
                 "No Contract — Cancel Anytime",
                 "Instant Activation After Payment"
@@ -366,6 +378,22 @@ export default function PricingPage() {
           </div>
 
         </StaggerIn>
+        
+        <div className="text-center mt-6 mb-4">
+          <p className="text-xs text-gray-600">
+            Prices shown in GBP. Customers outside the UK —
+            equivalent pricing available.{' '}
+            <a 
+              href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#25D366] hover:underline"
+            >
+              Message us on WhatsApp
+            </a>
+            {' '}for local currency options.
+          </p>
+        </div>
         
         <p className="text-center text-gray-500 text-sm mt-8">
           All plans include the full channel package. 
@@ -404,34 +432,34 @@ export default function PricingPage() {
 
         <StaggerIn className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-[#2a2a3a]">
+            <div className="text-3xl mb-4">🎬</div>
+            <div className="font-bold text-white text-sm mb-2">Netflix, Disney+ & More</div>
+            <div className="text-xs text-gray-500">Every major streaming platform included — Netflix, Disney+, Amazon Prime, Hulu, Apple TV+, Paramount+, Shahid and more.</div>
+          </div>
+          <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-[#2a2a3a]">
             <div className="text-3xl mb-4">⚽</div>
-            <div className="font-bold text-white text-sm mb-2">All UK Sport</div>
-            <div className="text-xs text-gray-500">Sky Sports, TNT, Premier Sports, Eurosport</div>
+            <div className="font-bold text-white text-sm mb-2">All UK Sports</div>
+            <div className="text-xs text-gray-500">Sky Sports (all channels), TNT Sports 1-4, Premier Sports, beIN Sports, Eurosport — every match live.</div>
           </div>
           <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-[#2a2a3a]">
             <div className="text-3xl mb-4">🏆</div>
-            <div className="font-bold text-white text-sm mb-2">Champions League</div>
-            <div className="text-xs text-gray-500">Every UCL & Europa League match live</div>
+            <div className="font-bold text-white text-sm mb-2">Champions League & UCL</div>
+            <div className="text-xs text-gray-500">Every UEFA Champions League and Europa League match live — no BT Sport subscription needed.</div>
           </div>
           <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-[#2a2a3a]">
             <div className="text-3xl mb-4">🥊</div>
             <div className="font-bold text-white text-sm mb-2">UFC & Boxing</div>
-            <div className="text-xs text-gray-500">Every UFC event + major boxing PPV</div>
+            <div className="text-xs text-gray-500">Every UFC event live — prelims, main card, and PPV. Major boxing events included.</div>
           </div>
           <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-[#2a2a3a]">
             <div className="text-3xl mb-4">📺</div>
-            <div className="font-bold text-white text-sm mb-2">UK TV Channels</div>
-            <div className="text-xs text-gray-500">BBC, ITV, Channel 4, Sky Atlantic and more</div>
-          </div>
-          <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-[#2a2a3a]">
-            <div className="text-3xl mb-4">🎬</div>
-            <div className="font-bold text-white text-sm mb-2">Movies & Series</div>
-            <div className="text-xs text-gray-500">40,000+ on-demand titles in HD & 4K</div>
+            <div className="font-bold text-white text-sm mb-2">All UK & International TV</div>
+            <div className="text-xs text-gray-500">BBC, ITV, Channel 4, Channel 5, Sky Atlantic, Sky Max and complete international packages.</div>
           </div>
           <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-[#2a2a3a]">
             <div className="text-3xl mb-4">🌍</div>
-            <div className="font-bold text-white text-sm mb-2">50+ Countries</div>
-            <div className="text-xs text-gray-500">Arabic, French, Indian, US and more</div>
+            <div className="font-bold text-white text-sm mb-2">50+ Country Packages</div>
+            <div className="text-xs text-gray-500">Arabic (beIN, MBC, OSN), French, German, Indian, US channels and more — all included.</div>
           </div>
         </StaggerIn>
       </section>

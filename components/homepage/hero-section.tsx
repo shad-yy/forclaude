@@ -36,7 +36,7 @@ export function HeroSection() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-live-red opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-live-red"></span>
               </span>
-              <span className="text-text-primary">230,000+ Channels Streaming Now</span>
+              <span className="text-text-primary">Replaces £120+/month in streaming subscriptions</span>
             </motion.div>
 
             <motion.h1
@@ -45,8 +45,8 @@ export function HeroSection() {
               transition={{ duration: 0.6, delay: 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
               className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1]"
             >
-              Watch Every Match Live <br />
-              <span className="text-accent-primary">— No Blackouts, No Cable</span>
+              Replace Netflix, Sky Sports & Disney+ <br />
+              <span className="text-accent-primary">With One £12 Subscription</span>
             </motion.h1>
 
             <motion.p
@@ -55,8 +55,7 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-text-secondary max-w-xl font-normal leading-relaxed"
             >
-              Stream Premier League, La Liga, Champions League, UFC & more in 4K
-              on any device. No contracts. Cancel anytime.
+              Watch every Premier League match, Champions League, UFC, Formula 1, NBA — plus Netflix, Disney+, Amazon Prime, Hulu, Shahid and every streaming service. One subscription. All devices. Cancel anytime.
             </motion.p>
 
             <motion.div
@@ -82,15 +81,15 @@ export function HeroSection() {
               transition={{ duration: 0.6, delay: 0.45 }}
               className="pt-2 w-full flex flex-wrap items-center gap-x-4 gap-y-3 text-sm lg:text-base text-text-muted font-semibold"
             >
-              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> 230,000+ Channels</span>
+              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> Sky Sports Included</span>
               <span className="hidden sm:inline text-border">|</span>
-              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> 4K Streaming</span>
+              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> Netflix & Disney+ Included</span>
               <span className="hidden sm:inline text-border">|</span>
-              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> All Devices</span>
+              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> 4K Quality</span>
               <span className="hidden lg:inline text-border">|</span>
-              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> Cancel Anytime</span>
+              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> All Devices</span>
               <span className="hidden sm:inline text-border">|</span>
-              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> 24hr Free Trial</span>
+              <span className="flex items-center gap-1.5 text-text-secondary"><Check className="w-4 h-4 text-accent-primary" strokeWidth={3} /> Cancel Anytime</span>
             </motion.div>
           </div>
 
@@ -112,22 +111,17 @@ export function HeroSection() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="bg-surface rounded-lg p-3 border border-border/50">
-                  <div className="text-2xl font-black text-accent-primary leading-none">230K+</div>
-                  <div className="text-[11px] text-text-muted font-medium mt-0.5">Live Channels</div>
-                </div>
-                <div className="bg-surface rounded-lg p-3 border border-border/50">
-                  <div className="text-2xl font-black text-accent-primary leading-none">4K</div>
-                  <div className="text-[11px] text-text-muted font-medium mt-0.5">Stream Quality</div>
-                </div>
-                <div className="bg-surface rounded-lg p-3 border border-border/50">
-                  <div className="text-2xl font-black text-accent-primary leading-none">99.9%</div>
-                  <div className="text-[11px] text-text-muted font-medium mt-0.5">Uptime</div>
-                </div>
-                <div className="bg-surface rounded-lg p-3 border border-border/50">
-                  <div className="text-2xl font-black text-text-primary leading-none">Free</div>
-                  <div className="text-[11px] text-text-muted font-medium mt-0.5">24hr Trial</div>
-                </div>
+                {[
+                  { value: '£109', label: 'Monthly Saving vs Sky + Netflix' },
+                  { value: '4K', label: 'Ultra HD Quality' },
+                  { value: '∞', label: 'Netflix, Disney+, Shahid & more' },
+                  { value: '24H', label: 'Free Trial — No Card' },
+                ].map(stat => (
+                  <div key={stat.value} className="bg-surface rounded-lg p-3 border border-border/50">
+                    <div className="text-2xl font-black text-accent-primary leading-none">{stat.value}</div>
+                    <div className="text-[11px] text-text-muted font-medium mt-0.5">{stat.label}</div>
+                  </div>
+                ))}
               </div>
 
               <div className="flex items-center gap-4 border-t border-border pt-4">
@@ -149,15 +143,17 @@ export function HeroSection() {
                     </div>
                   ))}
                 </div>
-                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Top Events Ongoing</span>
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                  Live on Smart Live TV
+                </span>
               </div>
             </motion.div>
 
-            <div className="mt-8 flex items-center gap-2 text-text-secondary bg-surface/50 border border-border/50 px-4 py-2 rounded-full backdrop-blur-sm">
-              <div className="flex text-yellow-400">
-                ★★★★★
-              </div>
-              <span className="text-sm font-medium">Used by sports fans across the UK & Europe</span>
+            <div className="mt-8 flex items-center gap-3 bg-surface/50 border border-border/50 px-4 py-2 rounded-full backdrop-blur-sm text-sm text-text-secondary">
+              <span className="w-2 h-2 rounded-full bg-[#00e676] animate-pulse" />
+              <span>
+                Free 24H Trial · No Card · Works Worldwide
+              </span>
             </div>
           </div>
         </div>

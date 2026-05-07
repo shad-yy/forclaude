@@ -1,27 +1,27 @@
 import Link from "next/link"
-import { Check, Shield, MonitorSmartphone, Zap, Ban } from "lucide-react"
+
 import { StaggerChildren } from "@/components/ui/stagger-children"
 
 const features = [
     {
-        title: "No More Blackouts",
-        description: "Watch every single 3pm Saturday game, local restrictions bypassed automatically.",
-        icon: <Ban className="w-8 h-8 text-green-500" />,
+        title: "Replaces Every Streaming Service",
+        description: "Netflix, Disney+, Amazon Prime, Hulu, Apple TV+, Paramount+, Shahid — all included. Cancel every other subscription.",
+        emoji: '📺',
     },
     {
-        title: "Works On Every Device",
-        description: "Stream anywhere on Firestick, Smart TVs, Apple TV, iPhone, Android, and PC.",
-        icon: <MonitorSmartphone className="w-8 h-8 text-green-500" />,
+        title: "All Live Sports Included",
+        description: "Sky Sports, TNT Sports, beIN Sports, Premier Sports, Eurosport — every Premier League, Champions League, UFC, and F1 match live in 4K.",
+        emoji: '⚽',
     },
     {
-        title: "Crystal Clear HD Quality",
-        description: "Smooth 60FPS streams in 1080p and 4K. Anti-freeze technology ensures zero buffering.",
-        icon: <Zap className="w-8 h-8 text-green-500" />,
+        title: "Works on Every Device",
+        description: "Firestick, Smart TV, Android, iPhone, iPad, PC and Mac. Watch on up to 2 screens simultaneously.",
+        emoji: '📱',
     },
     {
-        title: "Cancel Anytime",
-        description: "No long-term contracts. No hidden fees. Complete control over your subscription.",
-        icon: <Shield className="w-8 h-8 text-green-500" />,
+        title: "Save £100+ Every Month",
+        description: "Sky Sports alone costs £43/month. Netflix is £18. Disney+ is £5. We include everything from £12/month total.",
+        emoji: '💰',
     },
 ]
 
@@ -30,17 +30,17 @@ export function WhyIPTV() {
         <section className="py-20 md:py-32 bg-gray-900 border-y border-gray-800">
             <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Why Switch To Smart Live TV?</h2>
+                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Cancel Every Subscription You Have</h2>
                     <p className="text-lg text-gray-400">
-                        Stop paying hundreds for missing channels and blackout restrictions. Get the ultimate sports passing experience.
+                        Sky Sports, Netflix, Disney+, Amazon Prime, Shahid — all replaced by one subscription at a fraction of the cost.
                     </p>
                 </div>
 
                 <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" staggerDelay={0.12}>
                     {features.map((feature, i) => (
                         <div key={i} className="bg-gray-950 p-8 rounded-2xl border border-gray-800 hover:border-gray-700 transition-colors flex flex-col items-start gap-4">
-                            <div className="p-3 bg-gray-900 rounded-xl border border-gray-800">
-                                {feature.icon}
+                            <div className="p-3 bg-gray-900 rounded-xl border border-gray-800 text-3xl">
+                                {feature.emoji}
                             </div>
                             <h3 className="text-xl font-bold text-white mt-2">{feature.title}</h3>
                             <p className="text-gray-400 leading-relaxed">

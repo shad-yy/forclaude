@@ -54,50 +54,39 @@ export const Footer = memo(function Footer() {
               Stream all sports on any device with our premium IPTV service. No blackouts, no cable required.
             </p>
             <div className="flex space-x-4">
-              {process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK && (
-                <motion.a
-                  href={process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              {[
+                { 
+                  Icon: Facebook, 
+                  href: process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK,
+                  label: 'Facebook'
+                },
+                { 
+                  Icon: Twitter, 
+                  href: process.env.NEXT_PUBLIC_SOCIAL_TWITTER,
+                  label: 'Twitter / X'
+                },
+                { 
+                  Icon: Instagram, 
+                  href: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM,
+                  label: 'Instagram'
+                },
+                { 
+                  Icon: Youtube, 
+                  href: process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE,
+                  label: 'YouTube'
+                },
+              ].filter(s => s.href).map(({ Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
                   className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-[#00e676] hover:bg-surface border border-border transition-colors"
                 >
-                  <Facebook className="w-4 h-4" />
-                </motion.a>
-              )}
-              {process.env.NEXT_PUBLIC_SOCIAL_TWITTER && (
-                <motion.a
-                  href={process.env.NEXT_PUBLIC_SOCIAL_TWITTER}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-[#00e676] hover:bg-surface border border-border transition-colors"
-                >
-                  <Twitter className="w-4 h-4" />
-                </motion.a>
-              )}
-              {process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM && (
-                <motion.a
-                  href={process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-[#00e676] hover:bg-surface border border-border transition-colors"
-                >
-                  <Instagram className="w-4 h-4" />
-                </motion.a>
-              )}
-              {process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE && (
-                <motion.a
-                  href={process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-[#00e676] hover:bg-surface border border-border transition-colors"
-                >
-                  <Youtube className="w-4 h-4" />
-                </motion.a>
-              )}
+                  <Icon className="w-4 h-4" />
+                </a>
+              ))}
             </div>
           </div>
 

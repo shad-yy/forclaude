@@ -36,15 +36,17 @@ const PRICING_PLANS = [
 ]
 
 const PLAN_FEATURES = [
-  '230,000+ Live Channels & VOD',
-  '4K / Ultra HD Quality',
+  '230,000+ Channels, Movies & Series',
+  'Netflix, Disney+, Amazon Prime Included',
+  'Hulu, Apple TV+, Paramount+, Shahid Included',
+  'All Sky Sports Channels in 4K',
+  'TNT Sports — Champions League Included',
+  'UFC, F1, NBA, NFL — All Sports Live',
   'Anti-Buffer Technology',
   'Electronic Program Guide (EPG)',
-  'VPN Privacy Protection Built-in',
   'Works on ALL Devices',
-  'Firestick, Smart TV, Android, iPhone, PC, Mac',
-  'Dedicated 24/7 Customer Support',
-  'Free 24-Hour Trial Before You Pay',
+  '24/7 Customer Support',
+  'Free 24-Hour Trial — No Card Needed',
   '7-Day Money Back Guarantee',
   'No Contract — Cancel Anytime',
   'Instant Activation After Payment',
@@ -56,11 +58,42 @@ export function PricingPreview() {
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
-            Choose Your Plan
+            One Price. Everything Included.
           </h2>
           <p className="text-lg text-gray-400">
-            All plans include 230,000+ channels, 4K quality and a free 24-hour trial.
+            Compare what you pay now vs what you&apos;d pay with Smart Live TV.
           </p>
+        </div>
+
+        <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-5 mb-8 max-w-2xl mx-auto">
+          <h3 className="text-center text-sm font-bold text-gray-400 uppercase tracking-wide mb-4">
+            What You&apos;re Paying Now
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            {[
+              { name: 'Sky Sports', price: '£43' },
+              { name: 'Netflix', price: '£18' },
+              { name: 'Disney+', price: '£5' },
+              { name: 'TNT Sports', price: '£31' },
+            ].map(s => (
+              <div key={s.name} className="text-center bg-[#0a0a0f] rounded-xl p-3 border border-red-500/10">
+                <div className="text-red-400 font-extrabold text-lg">{s.price}</div>
+                <div className="text-gray-600 text-xs mt-0.5">{s.name}</div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <span className="text-red-400 font-bold text-sm">Total: £97+/month</span>
+            <span className="text-gray-600 text-xs ml-2">(and rising)</span>
+          </div>
+        </div>
+
+        <div className="text-center mb-6 text-2xl text-gray-600">↓</div>
+
+        <div className="bg-[#00e676]/5 border border-[#00e676]/20 rounded-2xl p-4 mb-8 max-w-xs mx-auto text-center">
+          <div className="text-[#00e676] font-extrabold text-4xl">£12</div>
+          <div className="text-white text-sm font-semibold mt-1">Smart Live TV — Everything Above Included</div>
+          <div className="text-gray-500 text-xs mt-1">+ Netflix, Disney+, Shahid, Hulu & more</div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
