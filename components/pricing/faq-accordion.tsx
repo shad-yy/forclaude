@@ -35,7 +35,7 @@ const faqs: FaqItem[] = [
   },
   {
     q: "Which countries does this work in?",
-    a: "Everywhere. No regional restrictions, no VPN needed. UK, Morocco, France, UAE, USA — any country worldwide."
+    a: "Everywhere. No regional restrictions, no VPN needed. Works in the UK, Europe, the Middle East, USA — any country worldwide."
   },
   {
     q: "How do I get support?",

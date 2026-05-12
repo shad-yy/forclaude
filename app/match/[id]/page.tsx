@@ -113,7 +113,7 @@ export default async function MatchPage(
         name: `Can I watch ${homeTeam} vs ${awayTeam} from abroad?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `Yes. Smart Live TV works from any country with no VPN needed, including Morocco, France, UAE, and worldwide.`,
+          text: `Yes. Smart Live TV works from any country with no VPN needed — stream from anywhere in the world.`,
         },
       },
     ],
@@ -173,8 +173,7 @@ export default async function MatchPage(
               {league}
             </Link>
             {' '}fixture — Sky Sports, TNT Sports, beIN Sports — all in 
-            HD and 4K. No VPN needed if you're watching from Morocco, 
-            France, or anywhere outside the UK.
+            HD and 4K. No VPN needed — works from anywhere in the world.
           </p>
         </div>
 

@@ -1,11 +1,9 @@
 import type { Metadata } from "next"
-import Link from "next/link"
 import { notFound } from "next/navigation"
 import { SchemaMarkup } from "@/components/SchemaMarkup"
 import { BLOG_POSTS } from "@/lib/blog/posts"
 import { ENV } from "@/lib/config/env"
-import { FadeIn } from "@/components/ui/fade-in"
-import { ShimmerButton } from "@/components/ui/shimmer-button"
+import { BlogPostLayout } from "@/components/blog/BlogPostLayout"
 
 type BlogPostPageProps = {
   params: { slug: string }
@@ -26,7 +24,7 @@ export function generateMetadata({ params }: BlogPostPageProps): Metadata {
   }
 
   return {
-    title: `${post.title} | Blog`,
+    title: `${post.title} | Smart Live TV Blog`,
     description: post.description,
     alternates: {
       canonical: `${ENV.BASE_URL}/blog/${post.slug}`,
@@ -45,14 +43,6 @@ export function generateMetadata({ params }: BlogPostPageProps): Metadata {
     },
   }
 }
-
-const categoryClasses: Record<string, string> = {
-  "how-to": "bg-green-500/20 text-green-300 border border-green-500/30",
-  guides: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
-  news: "bg-orange-500/20 text-orange-300 border border-orange-500/30",
-  comparison: "bg-purple-500/20 text-purple-300 border border-purple-500/30",
-}
-
 
 export default function BlogPostPage({ params }: BlogPostPageProps) {
   const post = BLOG_POSTS.find((item) => item.slug === params.slug)
@@ -84,93 +74,39 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', 
-        item: `${ENV.BASE_URL}/` },
-      { '@type': 'ListItem', position: 2, name: 'Blog', 
-        item: `${ENV.BASE_URL}/blog` },
-      { '@type': 'ListItem', position: 3, name: post.title, 
-        item: `${ENV.BASE_URL}/blog/${post.slug}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${ENV.BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${ENV.BASE_URL}/blog` },
+      { '@type': 'ListItem', position: 3, name: post.title, item: `${ENV.BASE_URL}/blog/${post.slug}` },
     ],
   }
 
-  const lastUpdated = new Date(dateModified).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  // Derive tags from category for sidebar display
+  const categoryTagMap: Record<string, string[]> = {
+    'how-to': ['Streaming Guide', 'Sports TV', 'IPTV'],
+    'guides': ['IPTV Guide', 'Sports Streaming', 'Setup'],
+    'news': ['Sports News', 'Streaming', 'UK TV'],
+    'comparison': ['Price Comparison', 'IPTV vs Sky', 'Streaming Value'],
+  }
 
   return (
-    <main className="min-h-screen bg-background pt-28 md:pt-36 pb-16 md:pb-20">
+    <>
       <SchemaMarkup schema={articleSchema} />
       <SchemaMarkup schema={breadcrumbSchema} />
 
-      <FadeIn>
-      <section className="pb-8">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <nav className="text-sm text-gray-400">
-            <Link href="/" className="hover:text-white">
-              Home
-            </Link>{" "}
-            <span className="mx-2">→</span>
-            <Link href="/blog" className="hover:text-white">
-              Blog
-            </Link>{" "}
-            <span className="mx-2">→</span>
-            <span className="text-gray-200">{post.title}</span>
-          </nav>
-        </div>
-      </section>
-      </FadeIn>
-
-      <FadeIn direction="up">
-      <section className="pb-16 md:pb-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <header className="max-w-4xl space-y-4">
-            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400">
-              <span
-                className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${categoryClasses[post.category]}`}
-              >
-                {post.category}
-              </span>
-              <span>{post.readTime} min read</span>
-              <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight text-white">{post.title}</h1>
-            <p className="text-xl text-gray-400">{post.description}</p>
-            {/* Last updated badge — required by spec */}
-            <p className="text-sm text-gray-400 mb-4">Last updated: {lastUpdated}</p>
-            <div className="h-px w-full bg-white/10" />
-          </header>
-        </div>
-      </section>
-      </FadeIn>
-
-      <FadeIn direction="up">
-      <section className="pb-16 md:pb-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="max-w-4xl">
-            <article
-              className="prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-a:text-green-400 prose-table:text-sm"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-          </div>
-        </div>
-      </section>
-      </FadeIn>
-
-      <FadeIn direction="up">
-      <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-          <div className="max-w-4xl bg-[#12121a] border border-green-500/30 rounded-2xl p-8 text-center">
-            <div className="space-y-4">
-              <h2 className="text-2xl md:text-3xl font-bold text-white">Ready to watch? Start your free 24-hour trial</h2>
-              <ShimmerButton
-                href="/pricing"
-                className="px-8 py-4 font-bold rounded-xl text-lg text-black bg-green-500 mx-auto"
-              >
-                View Pricing
-              </ShimmerButton>
-            </div>
-          </div>
-        </div>
-      </section>
-      </FadeIn>
-    </main>
+      <BlogPostLayout
+        title={post.title}
+        description={post.description}
+        author="James Harper"
+        authorTitle="Sports Streaming Journalist"
+        date={post.publishedAt}
+        lastModified={dateModified.slice(0, 10)}
+        readingTime={`${post.readTime} min read`}
+        category={post.category}
+        tags={categoryTagMap[post.category] ?? []}
+      >
+        {/* Article HTML rendered inside prose-blog styles from the layout */}
+        <div dangerouslySetInnerHTML={{ __html: post.content }} />
+      </BlogPostLayout>
+    </>
   )
 }

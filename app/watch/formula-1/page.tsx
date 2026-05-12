@@ -49,8 +49,8 @@ export default async function Formula1Page() {
       answer: 'Yes. Sky Sports F1 is included in Smart Live TV from £12/month, compared to £43/month for Sky Sports standalone. A free 24-hour trial is available.',
     },
     {
-      question: 'Can I watch F1 from Morocco or abroad?',
-      answer: 'Smart Live TV works worldwide with no regional restrictions or VPN required. Stream every F1 race from Morocco, France, or anywhere.',
+      question: 'Can I watch F1 from abroad?',
+      answer: 'Smart Live TV works worldwide with no regional restrictions or VPN required. Stream every F1 race from anywhere in the world.',
     },
   ]
 

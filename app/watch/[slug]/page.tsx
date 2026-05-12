@@ -6,6 +6,7 @@ import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { generateFAQSchema } from '@/lib/schema'
 import { LEAGUES, LeagueSlug } from '@/lib/constants/leagues'
 import { LeagueBadge } from '@/components/league/league-badge'
+import { DynamicSEOContent } from '@/components/league/DynamicSEOContent'
 import { ENV } from '@/lib/config/env'
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { FadeIn } from "@/components/ui/fade-in"
@@ -130,26 +131,7 @@ export default async function WatchLeaguePage({ params }: Props) {
         return ''
     }
 
-    const faqs = [
-        {
-            question: `Is it legal to use IPTV for ${theme.name}?`,
-            answer: `Yes, using a streaming service to watch ${theme.name} is completely legal. SmartLiveTV provides a secure and reliable platform for accessing your favorite sports content without restrictions.`
-        },
-        {
-            question: `Can I watch ${theme.name} on my Firestick?`,
-            answer: `Absolutely! SmartLiveTV is fully compatible with Amazon Firestick. We also support Smart TVs, Android devices, iPhones, and desktop computers.`
-        },
-        {
-            question: `How much does it cost to watch ${theme.name} online?`,
-            answer: `We offer a free 24-hour trial to test the service. After that, our Sports Fan package is just £9.99/month, covering all ${theme.name} matches along with other major sports.`
-        },
-        {
-            question: `Can I watch ${theme.name} games abroad?`,
-            answer: `Yes, you can stream ${theme.name} matches from anywhere in the world using our service. No VPN is required, and there are no regional restrictions.`
-        }
-    ]
 
-    const faqSchema = generateFAQSchema(faqs)
 
     const sportsOrgSchema = {
         '@context': 'https://schema.org',
@@ -165,7 +147,6 @@ export default async function WatchLeaguePage({ params }: Props) {
 
     return (
         <div className="min-h-screen bg-gray-950 text-gray-100">
-            <SchemaMarkup schema={faqSchema} />
             <SchemaMarkup schema={sportsOrgSchema} />
 
             {/* Hero Section */}
@@ -298,20 +279,28 @@ export default async function WatchLeaguePage({ params }: Props) {
                         )}
                     </section>
 
-                    {/* FAQ Sections */}
-                    <FadeIn direction="up">
-                        <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
-                            <h2 className="text-3xl font-bold text-white mb-8 md:mb-12">Frequently Asked Questions</h2>
-                            <StaggerIn className="space-y-6">
-                                {faqs.map((faq, i) => (
-                                    <div key={i} className="p-6 bg-gray-900 rounded-2xl border border-gray-800">
-                                        <h3 className="text-xl font-bold text-white mb-3">{faq.question}</h3>
-                                        <p className="text-gray-400">{faq.answer}</p>
-                                    </div>
-                                ))}
-                            </StaggerIn>
-                        </section>
-                    </FadeIn>
+                    <DynamicSEOContent
+                        leagueName={theme.name}
+                        leagueSlug={slug}
+                        fixtures={fixtures.map((f: any) => ({
+                            id: f.id || String(f.idEvent),
+                            homeTeam: f.homeTeam || f.strHomeTeam,
+                            awayTeam: f.awayTeam || f.strAwayTeam,
+                            date: f.date || f.dateEvent,
+                            venue: f.venue || f.strVenue,
+                            status: f.status || f.strStatus,
+                        }))}
+                        standings={standings.map((s: any) => ({
+                            position: s.position,
+                            team: s.team,
+                            played: s.played,
+                            won: s.won,
+                            drawn: s.drawn,
+                            lost: s.lost,
+                            points: s.points,
+                            form: s.form,
+                        }))}
+                    />
 
                 </div>
 

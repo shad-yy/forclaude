@@ -1,129 +1,322 @@
 "use client"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import Link from "next/link"
+import { Search, X, ExternalLink } from "lucide-react"
+import { BLOG_POSTS } from "@/lib/blog/posts"
 
-import { useEffect, useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command"
-import { Search, Tv, Trophy, Calendar, Heart, Zap, BookOpen, DollarSign, FileText } from "lucide-react"
+interface SearchResult {
+  type: 'league' | 'page' | 'blog' | 'sport'
+  title: string
+  subtitle?: string
+  href: string
+  icon?: string
+  badge?: string
+  external?: boolean
+}
 
-const QUICK_LINKS = [
-  { label: "Premier League", href: "/watch/premier-league", icon: Trophy, category: "Sports" },
-  { label: "Champions League", href: "/watch/champions-league", icon: Trophy, category: "Sports" },
-  { label: "World Cup 2026", href: "/watch/world-cup-2026", icon: Trophy, category: "Sports" },
-  { label: "UFC", href: "/ufc", icon: Zap, category: "Sports" },
-  { label: "Formula 1", href: "/watch/formula-1", icon: Zap, category: "Sports" },
-  { label: "La Liga", href: "/watch/la-liga", icon: Trophy, category: "Sports" },
-  { label: "Bundesliga", href: "/watch/bundesliga", icon: Trophy, category: "Sports" },
-  { label: "Serie A", href: "/watch/serie-a", icon: Trophy, category: "Sports" },
-  { label: "Europa League", href: "/watch/europa-league", icon: Trophy, category: "Sports" },
-  { label: "Ligue 1", href: "/watch/ligue-1", icon: Trophy, category: "Sports" },
+const STATIC_RESULTS: SearchResult[] = [
+  // Leagues
+  { type: 'league', title: 'Premier League', subtitle: 'Watch live in 4K', href: '/watch/premier-league', icon: '/leagues/premier-league.png', badge: 'Live' },
+  { type: 'league', title: 'Champions League', subtitle: 'UEFA UCL live', href: '/watch/champions-league', icon: '/leagues/champions-league.png' },
+  { type: 'league', title: 'La Liga', subtitle: 'Spanish football', href: '/watch/la-liga', icon: '/leagues/la-liga.png' },
+  { type: 'league', title: 'Bundesliga', subtitle: 'German football', href: '/watch/bundesliga', icon: '/leagues/bundesliga.png' },
+  { type: 'league', title: 'Serie A', subtitle: 'Italian football', href: '/watch/serie-a', icon: '/leagues/serie-a.png' },
+  { type: 'league', title: 'Ligue 1', subtitle: 'French football', href: '/watch/ligue-1', icon: '/leagues/ligue-1.png' },
+  { type: 'league', title: 'Europa League', subtitle: 'UEFA UEL live', href: '/watch/europa-league', icon: '/leagues/europa-league.png' },
+  { type: 'league', title: 'World Cup 2026', subtitle: 'Live now — USA/CAN/MEX', href: '/watch/world-cup-2026', icon: '/leagues/world-cup.png', badge: 'Live' },
+  { type: 'sport', title: 'Formula 1', subtitle: 'Every race live', href: '/watch/formula-1', icon: '/leagues/formula-1.png' },
+  { type: 'sport', title: 'UFC / MMA', subtitle: 'Fight nights', href: '/ufc', icon: '/leagues/ufc.png' },
+  // Pages
+  { type: 'page', title: 'Free Trial', subtitle: 'Start watching in 5 minutes', href: '/free-trial', icon: '🎁', badge: 'No Card' },
+  { type: 'page', title: 'Pricing', subtitle: 'Plans from £12/month', href: '/pricing', icon: '💳' },
+  { type: 'page', title: 'Channel List', subtitle: '230,000+ channels', href: '/channels', icon: '📺' },
+  { type: 'page', title: 'News', subtitle: 'Latest sports headlines', href: '/news', icon: '📰' },
+  { type: 'page', title: 'Blog', subtitle: 'Guides & tips', href: '/blog', icon: '✍️' },
+  { type: 'page', title: 'Setup Guides', subtitle: 'Firestick, Smart TV, Android, iPhone', href: '/setup/firestick', icon: '⚙️' },
+  { type: 'page', title: 'Contact Support', subtitle: 'We reply in 5 minutes', href: '/contact', icon: '💬' },
 ]
 
-const PAGE_LINKS = [
-  { label: "Free Trial", href: "/free-trial", icon: Zap, category: "Pages" },
-  { label: "Pricing", href: "/pricing", icon: DollarSign, category: "Pages" },
-  { label: "Blog", href: "/blog", icon: BookOpen, category: "Pages" },
-  { label: "Channels", href: "/channels", icon: Tv, category: "Pages" },
-  { label: "News", href: "/news", icon: FileText, category: "Pages" },
-  { label: "Contact Us", href: "/contact", icon: Heart, category: "Pages" },
-]
+function getBlogResults(): SearchResult[] {
+  return BLOG_POSTS.map(p => ({
+    type: 'blog' as const,
+    title: p.title,
+    subtitle: p.description?.slice(0, 60) + '...',
+    href: `/blog/${p.slug}`,
+    icon: '📖',
+  }))
+}
 
-const ALL_ITEMS = [...QUICK_LINKS, ...PAGE_LINKS]
+const TYPE_LABELS: Record<string, string> = {
+  league: 'Leagues',
+  sport: 'Sports',
+  page: 'Pages',
+  blog: 'Blog Posts',
+}
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false)
-  const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [activeIdx, setActiveIdx] = useState(0)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault()
-        setOpen((o) => !o)
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
+  const allResults = [...STATIC_RESULTS, ...getBlogResults()]
+
+  const filtered = query.trim()
+    ? allResults.filter(r =>
+        r.title.toLowerCase().includes(query.toLowerCase()) ||
+        r.subtitle?.toLowerCase().includes(query.toLowerCase())
+      )
+    : STATIC_RESULTS.slice(0, 8)
+
+  // Group by type
+  const grouped = filtered.reduce((acc, r) => {
+    if (!acc[r.type]) acc[r.type] = []
+    acc[r.type].push(r)
+    return acc
+  }, {} as Record<string, SearchResult[]>)
+
+  const flatResults = Object.values(grouped).flat()
+
+  const openPalette = useCallback(() => {
+    setOpen(true)
+    setQuery('')
+    setActiveIdx(0)
+    setTimeout(() => inputRef.current?.focus(), 50)
   }, [])
 
-  const navigate = useCallback(
-    (href: string) => {
-      setOpen(false)
-      router.push(href)
-    },
-    [router]
-  )
+  const closePalette = useCallback(() => {
+    setOpen(false)
+    setQuery('')
+  }, [])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        open ? closePalette() : openPalette()
+      }
+      if (e.key === 'Escape') closePalette()
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open, openPalette, closePalette])
+
+  // Arrow key navigation
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setActiveIdx(i => Math.min(i + 1, flatResults.length - 1))
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setActiveIdx(i => Math.max(i - 1, 0))
+      }
+      if (e.key === 'Enter' && flatResults[activeIdx]) {
+        const result = flatResults[activeIdx]
+        closePalette()
+        if (result.external) {
+          window.open(result.href, '_blank')
+        } else {
+          window.location.href = result.href
+        }
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open, activeIdx, flatResults, closePalette])
+
+  // Prevent body scroll when open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
+
+  const ResultItem = ({ result, idx }: { result: SearchResult; idx: number }) => {
+    const isActive = idx === activeIdx
+    const isImg = result.icon?.startsWith('/')
+
+    return (
+      <Link
+        href={result.href}
+        onClick={closePalette}
+        target={result.external ? '_blank' : undefined}
+        rel={result.external ? 'noopener noreferrer' : undefined}
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl 
+          transition-colors cursor-pointer group
+          ${isActive ? 'bg-[#00e676]/10' : 'hover:bg-white/[0.04]'}`}
+        onMouseEnter={() => setActiveIdx(idx)}
+      >
+        {/* Icon */}
+        <div className={`w-8 h-8 rounded-lg flex items-center 
+          justify-center flex-shrink-0 overflow-hidden
+          ${isImg ? 'bg-[#12121a] border border-[#2a2a3a] p-1.5' : ''}`}>
+          {isImg ? (
+            <img src={result.icon} alt="" 
+              className="w-full h-full object-contain" />
+          ) : (
+            <span className="text-base">{result.icon}</span>
+          )}
+        </div>
+
+        {/* Text */}
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm font-semibold truncate
+            ${isActive ? 'text-white' : 'text-gray-200'}`}>
+            {result.title}
+          </p>
+          {result.subtitle && (
+            <p className="text-xs text-gray-500 truncate mt-0.5">
+              {result.subtitle}
+            </p>
+          )}
+        </div>
+
+        {/* Badge */}
+        {result.badge && (
+          <span className="text-[10px] font-bold bg-[#00e676]/10 
+            text-[#00e676] border border-[#00e676]/20 px-2 py-0.5 
+            rounded-full flex-shrink-0">
+            {result.badge}
+          </span>
+        )}
+
+        {result.external && (
+          <ExternalLink className="w-3 h-3 text-gray-600 flex-shrink-0" />
+        )}
+      </Link>
+    )
+  }
+
+  let flatIdx = 0
 
   return (
     <>
-      {/* Trigger button for navbar */}
+      {/* Search trigger in header */}
       <button
-        onClick={() => setOpen(true)}
-        className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-sm hover:border-accent-primary/40 transition-colors group"
-        aria-label="Open search (Ctrl+K)"
+        onClick={openPalette}
+        className="flex items-center gap-2 bg-[#12121a] border 
+          border-[#2a2a3a] hover:border-[#00e676]/30 rounded-lg 
+          px-3 py-2 text-sm text-gray-500 hover:text-gray-300 
+          transition-all min-w-[140px] md:min-w-[180px]"
+        aria-label="Search"
       >
-        <Search className="w-3.5 h-3.5" />
-        <span className="text-text-muted group-hover:text-text-secondary transition-colors">Search...</span>
-        <kbd className="ml-4 hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-background border border-border text-[10px] font-mono text-text-muted">
+        <Search className="w-4 h-4 flex-shrink-0" />
+        <span className="flex-1 text-left text-xs">Search...</span>
+        <kbd className="hidden sm:inline-flex items-center gap-1 
+          bg-[#0a0a0f] border border-[#2a2a3a] rounded px-1.5 
+          py-0.5 text-[10px] text-gray-600 font-mono">
           ⌘K
         </kbd>
       </button>
 
-      {/* Mobile trigger — icon only */}
-      <button
-        onClick={() => setOpen(true)}
-        className="sm:hidden p-2 rounded-lg text-text-muted hover:text-text-primary transition-colors"
-        aria-label="Open search"
-      >
-        <Search className="w-5 h-5" />
-      </button>
+      {/* Overlay + Modal */}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm 
+                z-[90]"
+              onClick={closePalette}
+            />
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search sports, pages..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: -10 }}
+              transition={{ duration: 0.15, ease: [0.21, 0.47, 0.32, 0.98] }}
+              className="fixed top-[15vh] left-1/2 -translate-x-1/2 
+                z-[100] w-full max-w-lg px-4"
+              style={{ willChange: 'transform, opacity' }}
+            >
+              <div className="bg-[#0d0d14] border border-[#2a2a3a] 
+                rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.7)] 
+                overflow-hidden">
 
-          <CommandGroup heading="Sports">
-            {QUICK_LINKS.map((item) => (
-              <CommandItem
-                key={item.href}
-                onSelect={() => navigate(item.href)}
-                className="flex items-center gap-3 cursor-pointer"
-              >
-                <item.icon className="w-4 h-4 text-text-muted" />
-                <span>{item.label}</span>
-                <span className="ml-auto text-[10px] bg-surface-elevated text-text-muted px-2 py-0.5 rounded-full font-medium">
-                  {item.category}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+                {/* Input */}
+                <div className="flex items-center gap-3 px-4 py-4 
+                  border-b border-[#2a2a3a]">
+                  <Search className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Search leagues, channels, guides..."
+                    value={query}
+                    onChange={e => {
+                      setQuery(e.target.value)
+                      setActiveIdx(0)
+                    }}
+                    className="flex-1 bg-transparent text-white text-sm 
+                      outline-none placeholder:text-gray-600"
+                  />
+                  {query && (
+                    <button onClick={() => setQuery('')}
+                      className="text-gray-600 hover:text-gray-400">
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button onClick={closePalette}
+                    className="text-gray-600 hover:text-gray-400 
+                      border border-[#2a2a3a] rounded px-2 py-1 
+                      text-[10px] font-mono ml-1">
+                    Esc
+                  </button>
+                </div>
 
-          <CommandSeparator />
+                {/* Results */}
+                <div
+                  ref={listRef}
+                  className="overflow-y-auto max-h-[60vh] p-2"
+                >
+                  {flatResults.length === 0 ? (
+                    <div className="py-12 text-center text-gray-600 text-sm">
+                      No results for "{query}"
+                    </div>
+                  ) : (
+                    Object.entries(grouped).map(([type, results]) => (
+                      <div key={type} className="mb-2">
+                        {/* Group label */}
+                        <p className="text-[10px] font-bold text-gray-600 
+                          uppercase tracking-widest px-4 py-2">
+                          {TYPE_LABELS[type] || type}
+                        </p>
+                        {results.map(result => {
+                          const currentIdx = flatIdx++
+                          return (
+                            <ResultItem
+                              key={result.href}
+                              result={result}
+                              idx={currentIdx}
+                            />
+                          )
+                        })}
+                      </div>
+                    ))
+                  )}
+                </div>
 
-          <CommandGroup heading="Pages">
-            {PAGE_LINKS.map((item) => (
-              <CommandItem
-                key={item.href}
-                onSelect={() => navigate(item.href)}
-                className="flex items-center gap-3 cursor-pointer"
-              >
-                <item.icon className="w-4 h-4 text-text-muted" />
-                <span>{item.label}</span>
-                <span className="ml-auto text-[10px] bg-surface-elevated text-text-muted px-2 py-0.5 rounded-full font-medium">
-                  {item.category}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+                {/* Footer hint */}
+                <div className="border-t border-[#2a2a3a] px-4 py-2.5 
+                  flex items-center gap-4 text-[10px] text-gray-600">
+                  <span>↑↓ Navigate</span>
+                  <span>↵ Select</span>
+                  <span>Esc Close</span>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   )
 }

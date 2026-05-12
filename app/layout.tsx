@@ -48,11 +48,11 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    site: "@smartlivetv",
-    title: "Smart Live TV - Watch Sports Live",
-    description: "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
-    images: ["/og-default.png"],
+    card: 'summary_large_image',
+    site: '@smartlivetv',
+    title: 'Smart Live TV — Netflix, Sky Sports & Disney+ for £12/mo',
+    description: 'Replace Netflix, Disney+, Amazon Prime and Sky Sports with one subscription from £12/month. 230,000+ channels. Free 24-hour trial.',
+    images: ['/og-default.png'],
   },
   alternates: {
     canonical: ENV.BASE_URL,

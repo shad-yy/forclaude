@@ -106,11 +106,11 @@ export default function HomePage() {
       </ScrollReveal>
 
       <ScrollReveal>
-        <section className="py-16 md:py-20 bg-background border-t border-[#2a2a3a] relative">
+        <section className="py-16 md:py-20 bg-[#0a0a0f] border-t border-[#2a2a3a] relative">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
             <Suspense fallback={<NewsSkeleton />}>
-              <NewsSection maxArticles={6} />
+              <NewsSection maxArticles={12} />
             </Suspense>
           </div>
         </section>

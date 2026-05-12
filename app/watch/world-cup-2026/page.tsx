@@ -38,10 +38,10 @@ const faqSchema = {
     },
     {
       '@type': 'Question',
-      name: 'Can I watch the World Cup 2026 from Morocco?',
+      name: 'Can I watch the World Cup 2026 from abroad?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Smart Live TV works worldwide with no regional restrictions or VPN required. Stream every World Cup match from Morocco or anywhere else.',
+        text: 'Yes. Smart Live TV works worldwide with no regional restrictions or VPN required. Stream every World Cup match from anywhere in the world.',
       },
     },
     {
@@ -118,7 +118,7 @@ export default function WorldCup2026Page() {
           </div>
           <div className="flex gap-6 justify-center mt-8 flex-wrap text-sm text-gray-400">
             <span>✓ No VPN needed</span>
-            <span>✓ Works from Morocco, UK, France & worldwide</span>
+            <span>✓ Works anywhere worldwide</span>
             <span>✓ 4K quality</span>
             <span>✓ No card for trial</span>
           </div>
@@ -162,11 +162,11 @@ export default function WorldCup2026Page() {
         {/* HOW TO WATCH FROM ANYWHERE */}
         <section className="border-t border-[#2a2a3a] pt-20">
           <h2 className="text-3xl font-bold text-white mb-8">
-            How to Watch World Cup 2026 from Morocco & Worldwide
+            How to Watch World Cup 2026 from Anywhere Worldwide
           </h2>
           <p className="text-gray-400 mb-8 max-w-3xl">
             Smart Live TV works in every country with no VPN required. 
-            Whether you're in Morocco, France, the UAE, or anywhere 
+            Whether you're in the UK, Europe, the Middle East, or anywhere 
             else — simply install the app on your device and all 
             World Cup matches are available in full HD and 4K.
           </p>
