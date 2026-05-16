@@ -7,6 +7,7 @@ import { ENV } from '@/lib/config/env'
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
+import { getUEFAMatches, getUEFAResults, UEFA_COMPETITIONS } from '@/lib/api/football-data'
 
 export const metadata: Metadata = {
   title: 'Watch UEFA Europa League Live | Free Trial',
@@ -54,6 +55,7 @@ function safeParseSportsDBDate(date: string, time?: string): Date | null {
   const parts = date.split('-').map(Number)
   if (parts.length !== 3 || parts.some(isNaN)) return null
   const [year, month, day] = parts
+  if (year < 2020 || year > 2030) return null
   if (time) {
     const t = time.split('+')[0].split('-')[0]
     const [h, m] = t.split(':').map(Number)
@@ -93,6 +95,13 @@ const renderForm = (formStr?: string) => {
 }
 
 export default async function EuropaLeaguePage() {
+  const [upcoming, results] = await Promise.allSettled([
+    getUEFAMatches(UEFA_COMPETITIONS.UEL, 8),
+    getUEFAResults(UEFA_COMPETITIONS.UEL, 4),
+  ])
+  const upcomingMatches = upcoming.status === 'fulfilled' ? upcoming.value : []
+  const recentResults = results.status === 'fulfilled' ? results.value : []
+
   const [nextEvent, standings, pastEvents] = await Promise.allSettled([
     fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventsnextleague.php?id=4735'),
     fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/lookuptable.php?l=4735&s=2025-2026'),
@@ -168,7 +177,7 @@ export default async function EuropaLeaguePage() {
                 </span>{' '}
                 —{' '}
                 <span className="text-gray-300">
-                  {nextFixture.dateEvent ? safeParseSportsDBDate(nextFixture.dateEvent)?.toLocaleDateString() : 'TBA'}
+                  {nextFixture.dateEvent ? safeParseSportsDBDate(nextFixture.dateEvent)?.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : 'TBA'}
                 </span>
               </p>
             ) : (
@@ -188,6 +197,104 @@ export default async function EuropaLeaguePage() {
 
       <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12 max-w-7xl">
         <div className="lg:col-span-2 space-y-0">
+          {/* UPCOMING MATCHES */}
+          {upcomingMatches.length > 0 && (
+            <section className="pb-16 md:pb-20">
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Upcoming Matches
+              </h2>
+              <div className="space-y-3">
+                {upcomingMatches.map(match => (
+                  <div key={match.id}
+                    className="bg-[#12121a] border border-[#2a2a3a] 
+                      rounded-xl p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="flex items-center gap-2 flex-1 
+                        justify-end">
+                        <span className="text-white font-semibold text-sm 
+                          text-right truncate max-w-[120px]">
+                          {match.homeTeam.name}
+                        </span>
+                        <img src={match.homeTeam.crest} 
+                          alt={match.homeTeam.name}
+                          className="w-6 h-6 object-contain" />
+                      </div>
+                      <div className="text-center px-3 flex-shrink-0">
+                        <span className="font-extrabold text-white text-lg">
+                          v
+                        </span>
+                        <p className="text-[10px] text-gray-600 mt-0.5">
+                          {new Date(match.utcDate).toLocaleDateString('en-GB', {
+                            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-1">
+                        <img src={match.awayTeam.crest}
+                          alt={match.awayTeam.name}
+                          className="w-6 h-6 object-contain" />
+                        <span className="text-white font-semibold text-sm 
+                          truncate max-w-[120px]">
+                          {match.awayTeam.name}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* RECENT RESULTS (football-data) */}
+          {recentResults.length > 0 && (
+            <section className="pb-16 md:pb-20">
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Recent Results
+              </h2>
+              <div className="space-y-3">
+                {recentResults.map(match => (
+                  <div key={match.id}
+                    className="bg-[#12121a] border border-[#2a2a3a] 
+                      rounded-xl p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="flex items-center gap-2 flex-1 
+                        justify-end">
+                        <span className="text-white font-semibold text-sm 
+                          text-right truncate max-w-[120px]">
+                          {match.homeTeam.name}
+                        </span>
+                        <img src={match.homeTeam.crest} 
+                          alt={match.homeTeam.name}
+                          className="w-6 h-6 object-contain" />
+                      </div>
+                      <div className="text-center px-3 flex-shrink-0">
+                        <span className="font-extrabold text-white text-lg">
+                          {match.score.fullTime.home ?? '-'}
+                          {' — '}
+                          {match.score.fullTime.away ?? '-'}
+                        </span>
+                        <p className="text-[10px] text-gray-600 mt-0.5">
+                          {new Date(match.utcDate).toLocaleDateString('en-GB', {
+                            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-1">
+                        <img src={match.awayTeam.crest}
+                          alt={match.awayTeam.name}
+                          className="w-6 h-6 object-contain" />
+                        <span className="text-white font-semibold text-sm 
+                          truncate max-w-[120px]">
+                          {match.awayTeam.name}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* STANDINGS */}
           {tableRows.length > 0 ? (
             <FadeIn direction="up">
@@ -286,37 +393,6 @@ export default async function EuropaLeaguePage() {
             </FadeIn>
           )}
 
-          {/* RECENT RESULTS */}
-          <FadeIn direction="up">
-            <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
-              <h2 className="text-2xl md:text-3xl font-bold mb-6">Recent Results</h2>
-              <StaggerIn className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {recent.length > 0 ? (
-                recent.map((e: any, i: number) => (
-                  <div
-                    key={`${e.idEvent || i}`}
-                    className="bg-gray-950/60 rounded-2xl border border-gray-800 overflow-hidden"
-                  >
-                    <div className="h-1" style={{ backgroundColor: '#f97316' }} />
-                    <div className="p-5">
-                      <div className="text-sm font-bold text-white mb-2 line-clamp-2">
-                        {e.strHomeTeam} vs {e.strAwayTeam}
-                      </div>
-                      <div className="text-2xl font-extrabold text-white mb-2">
-                        {e.intHomeScore ?? '-'} - {e.intAwayScore ?? '-'}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {e.dateEvent ? safeParseSportsDBDate(e.dateEvent)?.toLocaleDateString() : 'TBA'}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-gray-500">No recent results available.</div>
-              )}
-              </StaggerIn>
-            </section>
-          </FadeIn>
 
           {/* EUROPA LEAGUE GREATEST MOMENTS */}
           <FadeIn direction="up">

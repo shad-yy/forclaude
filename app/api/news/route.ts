@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { getLatestSportsNews } from "@/lib/api/news"
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * Nuclear dedup — catches duplicates by URL, normalized title,
  * image URL (sans query-string), and description content hash.
@@ -61,6 +64,11 @@ export async function GET(request: Request) {
       status: "success",
       articles: deduped.slice(0, 10),
       totalResults: deduped.length,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      },
     })
   } catch (error) {
     return NextResponse.json(

@@ -58,8 +58,6 @@ const faqs = [
 ]
 
 export default function PricingPage() {
-  const storeUrl = process.env.NEXT_PUBLIC_STORE_URL || '/pricing'
-
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -228,7 +226,7 @@ export default function PricingPage() {
               Claim Free Trial →
             </Link>
             <p className="text-center text-xs text-gray-500 mt-3">
-              or <a href={storeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-gray-400">buy directly →</a>
+              or <Link href="/free-trial" className="hover:underline text-gray-400">get instant access →</Link>
             </p>
           </div>
 
@@ -271,12 +269,12 @@ export default function PricingPage() {
               ))}
             </ul>
             
-            <a 
-              href={storeUrl} target="_blank" rel="noopener noreferrer"
+            <Link 
+              href="/free-trial"
               className="block text-center w-full mt-8 py-4 rounded-xl font-bold text-sm bg-[#00e676] hover:bg-[#00ff87] text-black shadow-[0_0_20px_rgba(0,230,118,0.3)] transition-all"
             >
-              Buy Now →
-            </a>
+              Get Instant Access →
+            </Link>
             <Link 
               href="/free-trial"
               className="block text-center w-full mt-3 py-3 rounded-xl font-bold text-xs border border-transparent text-gray-400 hover:text-white hover:bg-white/5 transition-all"
@@ -327,7 +325,7 @@ export default function PricingPage() {
               Claim Free Trial →
             </Link>
             <p className="text-center text-xs text-gray-500 mt-3">
-              or <a href={storeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-gray-400">buy directly →</a>
+              or <Link href="/free-trial" className="hover:underline text-gray-400">get instant access →</Link>
             </p>
           </div>
 
@@ -373,7 +371,7 @@ export default function PricingPage() {
               Claim Free Trial →
             </Link>
             <p className="text-center text-xs text-gray-500 mt-3">
-              or <a href={storeUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-gray-400">buy directly →</a>
+              or <Link href="/free-trial" className="hover:underline text-gray-400">get instant access →</Link>
             </p>
           </div>
 
@@ -525,14 +523,12 @@ export default function PricingPage() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10 flex-wrap">
-          <a
-            href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/free-trial"
             className="bg-[#00e676] hover:bg-[#00ff87] text-black font-extrabold px-10 py-4 rounded-xl text-base shadow-[0_0_20px_rgba(0,230,118,0.3)] transition-all touch-manipulation"
           >
-            Buy Now — Get Instant Access →
-          </a>
+            Get Instant Access →
+          </Link>
           <Link href="/free-trial"
             className="border border-[#2a2a3a] hover:border-[#00e676] text-gray-300 hover:text-white font-bold px-10 py-4 rounded-xl text-base transition-all">
             Not sure? Try Free for 24H
@@ -548,14 +544,12 @@ export default function PricingPage() {
       {/* MOBILE STICKY BAR */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0f]/95 backdrop-blur-md border-t border-[#2a2a3a] p-4">
         <div className="grid grid-cols-2 gap-3">
-          <a
-            href={storeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/free-trial"
             className="bg-[#00e676] text-black font-bold text-sm py-3.5 rounded-xl text-center"
           >
             Get Free Trial
-          </a>
+          </Link>
           <a
             href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
             target="_blank"

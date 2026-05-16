@@ -31,4 +31,11 @@ export const ENV = {
   get BASE_URL() {
     return process.env.NEXT_PUBLIC_APP_URL || "https://smartlivetv.com"
   },
+  get RAPIDAPI_MMA_KEY() {
+    return process.env.RAPIDAPI_MMA_KEY || 
+      'e0d3bf230amsha7e9bcaa7a18fe2p1fb71cjsn8076650ec333'
+  },
+  get FOOTBALL_DATA_KEY() {
+    return process.env.FOOTBALL_DATA_API_KEY || ''
+  },
 } as const

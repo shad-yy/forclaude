@@ -272,16 +272,14 @@ export default function UFCPage() {
           all included with your subscription. No extra charges.
         </p>
         <div className="flex gap-4 justify-center flex-wrap">
-          <a
-            href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/free-trial"
             className="bg-[#00e676] text-black font-bold px-8 py-3.5 
               rounded-xl text-sm hover:bg-[#00ff87] transition-all
               touch-manipulation"
           >
-            Buy Now — Watch UFC Live →
-          </a>
+            Start Watching Now →
+          </Link>
           <Link
             href="/free-trial"
             className="border border-[#2a2a3a] hover:border-[#00e676]/40 

@@ -29,7 +29,7 @@ const TOP_10_CHANNELS = [
 ]
 
 export default function ChannelsPage() {
-  const storeUrl = ENV.STORE_URL
+
   const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'
 
   const schema = {
@@ -161,7 +161,7 @@ export default function ChannelsPage() {
         </div>
 
         {/* SECTION 3 — CHANNEL LIBRARY (Client Component) */}
-        <ChannelLibrary storeUrl={storeUrl} />
+        <ChannelLibrary />
 
         {/* SECTION 4 — REAL STATS BAND */}
         <section className="bg-[#12121a] border-y border-[#2a2a3a] py-12 text-center">
@@ -226,14 +226,12 @@ export default function ChannelsPage() {
 
         {/* STICKY BOTTOM BAR (Mobile only) */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0f]/95 backdrop-blur border-t border-[#2a2a3a] p-4 pb-safe flex gap-3">
-          <a
-            href={storeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/free-trial"
             className="bg-[#00e676] text-black font-bold flex-1 py-3 text-center rounded-xl text-sm whitespace-nowrap overflow-hidden text-ellipsis px-2"
           >
             Get Free Trial
-          </a>
+          </Link>
           <a
             href={whatsappUrl}
             target="_blank"

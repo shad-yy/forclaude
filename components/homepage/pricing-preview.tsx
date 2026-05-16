@@ -153,12 +153,12 @@ export function PricingPreview() {
 
               {plan.color === 'highlighted' ? (
                 <>
-                  <a 
-                    href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'} target="_blank" rel="noopener noreferrer"
+                  <Link 
+                    href="/free-trial"
                     className="w-full py-3 rounded-xl text-sm font-bold transition-all text-center mt-auto bg-[#00e676] text-black hover:bg-[#00ff87] shadow-[0_0_15px_rgba(0,230,118,0.3)] block"
                   >
-                    Buy Now →
-                  </a>
+                    Get Instant Access →
+                  </Link>
                   <Link 
                     href="/free-trial"
                     className="w-full py-2 mt-2 rounded-xl text-xs font-bold transition-all text-center border border-transparent text-gray-400 hover:text-white hover:bg-white/5 block"
@@ -175,7 +175,7 @@ export function PricingPreview() {
                     Claim Free Trial →
                   </Link>
                   <p className="text-center text-xs text-gray-500 mt-2">
-                    or <a href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'} target="_blank" rel="noopener noreferrer" className="hover:underline text-gray-400">buy directly →</a>
+                    or <Link href="/free-trial" className="hover:underline text-gray-400">get instant access →</Link>
                   </p>
                 </>
               )}

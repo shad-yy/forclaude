@@ -159,12 +159,11 @@ export default async function UFCEventPage({ params }: { params: { id: string } 
             No PPV charges. Every event included in your subscription.
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <a href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
-              target="_blank" rel="noopener noreferrer"
+            <Link href="/free-trial"
               className="bg-[#00e676] text-black font-bold 
                 px-6 py-3 rounded-xl text-sm">
-              Buy Now →
-            </a>
+              Get Instant Access →
+            </Link>
             <Link href="/free-trial"
               className="border border-[#2a2a3a] text-gray-300 
                 font-bold px-6 py-3 rounded-xl text-sm">

@@ -177,13 +177,12 @@ export default async function WatchLeaguePage({ params }: Props) {
                             >
                                 Stream {theme.name} Free For 24 Hours
                             </ShimmerButton>
-                            <a
-                                href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
-                                target="_blank" rel="noopener noreferrer"
-                                className="px-8 py-4 text-lg rounded-lg font-bold bg-white text-black hover:bg-gray-200 transition-colors w-full sm:w-auto text-center"
+                            <Link
+                                href="/free-trial"
+                                className="bg-[#00e676] text-black font-extrabold px-10 py-5 rounded-xl text-lg hover:bg-[#00ff87] transition-all shadow-[0_0_20px_rgba(0,230,118,0.3)] touch-manipulation w-full sm:w-auto text-center"
                             >
-                                Buy Now
-                            </a>
+                                Get Instant Access →
+                            </Link>
                         </div>
                     </div>
                 </section>
@@ -377,13 +376,12 @@ export default async function WatchLeaguePage({ params }: Props) {
                             >
                                 Start Watching {theme.name} Tonight — Free Trial
                             </ShimmerButton>
-                            <a
-                                href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
-                                target="_blank" rel="noopener noreferrer"
+                            <Link
+                                href="/free-trial"
                                 className="px-10 py-5 text-xl rounded-xl font-bold bg-white text-black hover:bg-gray-200 transition-colors w-full sm:w-auto text-center"
                             >
-                                Buy Now
-                            </a>
+                                Get Instant Access →
+                            </Link>
                         </div>
                     </div>
                 </section>
@@ -392,14 +390,12 @@ export default async function WatchLeaguePage({ params }: Props) {
       {/* Mobile Sticky CTA — md:hidden */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0f]/95 backdrop-blur-md border-t border-[#2a2a3a] p-4">
         <div className="grid grid-cols-2 gap-3">
-          <a
-            href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/free-trial"
             className="bg-[#00e676] text-black font-bold text-base py-4 rounded-2xl text-center touch-manipulation active:scale-95 transition-transform cta-button"
           >
             Get Free Trial
-          </a>
+          </Link>
           <a
             href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
             target="_blank"

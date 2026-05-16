@@ -18,7 +18,7 @@ export const BLOG_POSTS: BlogPost[] = [
     category: "how-to",
     publishedAt: "2026-03-20",
     readTime: 6,
-    featured: true,
+    featured: false,
     content: `
 <h2>Can You Watch Premier League from Europe or UK?</h2>
 <p>Yes — and you don't need a VPN to do it. Most official broadcasters like Sky Sports geo-block their streams outside the UK, but IPTV services like Smart Live TV operate globally, giving you access to every <a href="/watch/premier-league">Premier League</a> match in 4K regardless of where you are.</p>

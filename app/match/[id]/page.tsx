@@ -144,13 +144,12 @@ export default async function MatchPage(
             </div>
           ) : (
             <div className="flex gap-4 justify-center flex-wrap">
-              <a
-                href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'}
-                target="_blank" rel="noopener noreferrer"
+              <Link
+                href="/free-trial"
                 className="bg-[#00e676] text-black font-extrabold px-8 py-4 rounded-xl text-base hover:bg-[#00ff87] transition-all shadow-[0_0_20px_rgba(0,230,118,0.3)]"
               >
                 Watch This Match Live →
-              </a>
+              </Link>
               <Link href="/free-trial" className="border border-[#2a2a3a] hover:border-[#00e676]/30 text-gray-300 font-bold px-8 py-4 rounded-xl text-base">
                 Free 24H Trial
               </Link>
@@ -232,9 +231,9 @@ export default async function MatchPage(
       {/* Mobile sticky */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0f]/95 backdrop-blur border-t border-[#2a2a3a] p-4">
         <div className="grid grid-cols-2 gap-3">
-          <a href={process.env.NEXT_PUBLIC_STORE_URL || '/pricing'} target="_blank" rel="noopener noreferrer" className="bg-[#00e676] text-black font-bold text-sm py-4 rounded-2xl text-center touch-manipulation">
+          <Link href="/free-trial" className="bg-[#00e676] text-black font-bold text-sm py-4 rounded-2xl text-center touch-manipulation">
             Watch Live
-          </a>
+          </Link>
           <Link href="/free-trial" className="border border-[#2a2a3a] text-gray-300 font-bold text-sm py-4 rounded-2xl text-center">
             Free Trial
           </Link>

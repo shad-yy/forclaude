@@ -4,7 +4,9 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { CHANNELS, REGIONS, CATEGORIES } from './channelData'
 
-export default function ChannelLibrary({ storeUrl }: { storeUrl: string }) {
+import Link from 'next/link'
+
+export default function ChannelLibrary() {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const debounceRef = useRef<NodeJS.Timeout>()
@@ -154,15 +156,13 @@ export default function ChannelLibrary({ storeUrl }: { storeUrl: string }) {
                       INCLUDED
                     </span>
                     
-                    <a
-                      href={storeUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      href="/free-trial"
                       className="text-xs font-bold text-black bg-[#00e676] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Watch This Channel →
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ))}

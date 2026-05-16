@@ -58,9 +58,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     datePublished: post.publishedAt,
     dateModified,
     author: {
-      "@type": "Person",
-      name: "James Harper",
-      jobTitle: "Sports Streaming Journalist",
+      "@type": "Organization",
+      name: "Smart Live TV",
     },
     publisher: {
       "@type": "Organization",
@@ -96,8 +95,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       <BlogPostLayout
         title={post.title}
         description={post.description}
-        author="James Harper"
-        authorTitle="Sports Streaming Journalist"
+        author="Smart Live TV"
+        authorTitle="Sports Streaming Expert"
         date={post.publishedAt}
         lastModified={dateModified.slice(0, 10)}
         readingTime={`${post.readTime} min read`}

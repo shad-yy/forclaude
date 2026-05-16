@@ -220,11 +220,7 @@ const nextConfig = {
 
       config.externals = [...baseExternals, 'cheerio', 'undici']
     }
-    // Avoid WasmHash crash on very large source files (e.g. channelData.ts)
-    config.output = {
-      ...config.output,
-      hashFunction: 'xxhash64',
-    }
+    // No hashFunction override needed — use webpack default
     return config
   },
 }

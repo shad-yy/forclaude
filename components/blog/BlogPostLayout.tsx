@@ -55,7 +55,7 @@ export function BlogPostLayout({
     year: 'numeric',
   })
 
-  const initials = author
+  const initials = author === 'Smart Live TV' ? 'SL' : author
     .split(' ')
     .map((n) => n[0])
     .join('')

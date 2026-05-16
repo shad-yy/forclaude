@@ -178,7 +178,7 @@ export async function getLatestSportsNews(
 
   // Free plan: size must be 1-10
   const safeSize = Math.min(Math.max(1, size), 10)
-  const cacheKey = `news:sports:v2:${safeSize}`
+  const cacheKey = `news:sports:v3:${safeSize}`
 
   // Check module-level cache first (6 hour TTL)
   const cached = newsCache.get(cacheKey)
@@ -200,7 +200,8 @@ export async function getLatestSportsNews(
   try {
     console.log('[NewsAPI DEBUG] fetching:', url.replace(apiKey, 'REDACTED'))
     let response = await fetch(url, {
-      next: { revalidate: 21600 }, // Next.js cache: 6 hours
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
     })
 
     // Some plans reject multiple domains and return 422; retry with one domain.
@@ -209,7 +210,8 @@ export async function getLatestSportsNews(
       console.warn('[NewsAPI] Domain filter rejected, retrying with fallback domain')
       console.log('[NewsAPI DEBUG] retrying:', fallbackUrl.replace(apiKey || '', 'REDACTED'))
       response = await fetch(fallbackUrl, {
-        next: { revalidate: 21600 },
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -240,7 +242,7 @@ export async function getLatestSportsNews(
     // Store in module-level cache for 6 hours
     newsCache.set(cacheKey, {
       data: data.results as NewsArticle[],
-      expires: Date.now() + 21600 * 1000,
+      expires: Date.now() + 3600 * 1000, // 1 hour in-process cache (no-store bypasses Vercel cache)
     })
 
     return data.results as NewsArticle[]
