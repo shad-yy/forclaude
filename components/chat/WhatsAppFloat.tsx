@@ -6,7 +6,7 @@ export function WhatsAppFloat() {
   const [show, setShow] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [tooltipVisible, setTooltipVisible] = useState(false)
-  const waUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL
+  const waUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL || null
 
   useEffect(() => {
     if (!waUrl) return
@@ -47,8 +47,7 @@ export function WhatsAppFloat() {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="fixed bottom-24 right-4 md:bottom-8 md:right-6 
-            z-50 flex flex-col items-end gap-2"
+          className="fixed bottom-24 right-4 md:bottom-8 md:right-6 z-40 flex flex-col items-end gap-2"
         >
           {/* Tooltip */}
           <AnimatePresence>

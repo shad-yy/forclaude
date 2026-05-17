@@ -35,10 +35,10 @@ export function generateMetadata({ params }: Props): Metadata {
     if (!device) return { title: 'Device Not Found' }
 
     return {
-        title: `How to Watch Live Sports on ${device.name} in 2025 | SmartLiveTV`,
+        title: `How to Watch Live Sports on ${device.name} in 2026 | SmartLiveTV`,
         description: `Stream Premier League, La Liga, UFC and more on your ${device.name}. Step-by-step setup guide. Works with all major IPTV apps.`,
         openGraph: {
-            title: `How to Watch Live Sports on ${device.name} in 2025`,
+            title: `How to Watch Live Sports on ${device.name} in 2026`,
             description: `Stream Premier League, La Liga, UFC and more on your ${device.name}.`,
             type: 'article',
         }
@@ -72,6 +72,7 @@ export default async function SetupDevicePage({ params }: Props) {
     const breadcrumbSchema = {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
+      '@id': `${ENV.BASE_URL}/setup/${params.device}#breadcrumb`,
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', 
           item: `${ENV.BASE_URL}/` },

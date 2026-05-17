@@ -28,17 +28,17 @@ export function FadeIn({
     <motion.div
       ref={ref}
       className={className}
-      initial={{ opacity: 0, ...directions[direction] }}
+      initial={{ opacity: 0 }}
       animate={isInView 
-        ? { opacity: 1, x: 0, y: 0 } 
-        : { opacity: 0, ...directions[direction] }
+        ? { opacity: 1 } 
+        : { opacity: 0 }
       }
       transition={{ 
         duration: 0.5, 
         delay, 
         ease: [0.21, 0.47, 0.32, 0.98] 
       }}
-      style={{ willChange: isInView ? 'auto' : 'transform, opacity' }}
+      style={{ willChange: isInView ? 'auto' : 'opacity' }}
     >
       {children}
     </motion.div>

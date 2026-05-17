@@ -22,6 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/ufc`, priority: 0.8, changeFrequency: 'weekly', lastModified: new Date() },
     { url: `${baseUrl}/news`, priority: 0.8, changeFrequency: 'daily', lastModified: new Date() },
     { url: `${baseUrl}/blog`, priority: 0.7, changeFrequency: 'weekly', lastModified: new Date() },
+    { url: `${baseUrl}/faq`, priority: 0.8, changeFrequency: 'monthly' as const, lastModified: new Date() },
     { url: `${baseUrl}/setup/firestick`, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date() },
     { url: `${baseUrl}/setup/smart-tv`, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date() },
     { url: `${baseUrl}/setup/android`, priority: 0.8, changeFrequency: 'monthly', lastModified: new Date() },

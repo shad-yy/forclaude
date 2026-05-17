@@ -62,9 +62,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       name: "Smart Live TV",
     },
     publisher: {
-      "@type": "Organization",
-      name: "Smart Live TV",
-      url: ENV.BASE_URL,
+      '@id': `${ENV.BASE_URL}/#organization`,
+    },
+    isPartOf: {
+      '@id': `${ENV.BASE_URL}/#website`,
     },
     url: `${ENV.BASE_URL}/blog/${post.slug}`,
   }
@@ -72,6 +73,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${ENV.BASE_URL}/blog/${post.slug}#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: `${ENV.BASE_URL}/` },
       { '@type': 'ListItem', position: 2, name: 'Blog', item: `${ENV.BASE_URL}/blog` },

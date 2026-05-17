@@ -20,145 +20,61 @@ export interface NewsArticle {
   creator: string[] | null
 }
 
-const MOCK_NEWS: NewsArticle[] = [
+const FALLBACK_ARTICLES: NewsArticle[] = [
   {
-    article_id: 'mock-1',
-    title: 'Champions League Quarter-Finals: Draw Revealed',
-    link: '#',
-    description: "Europe's elite clubs discover their path to the final as the Champions League knockout stage heats up.",
+    article_id: 'fallback-1',
+    title: 'How to Watch Premier League Live Without Sky Sports',
+    description: 'Complete guide to streaming every Premier League match in 2026.',
+    image_url: null,
+    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.com'}/blog/sky-sports-vs-iptv-honest-comparison`,
+    source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
-    source_name: 'BBC Sport',
+    category: ['football'],
     source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&q=80',
-    category: ['champions league'],
-    language: 'english',
-    country: ['united kingdom'],
+    language: 'en',
+    country: ['gb'],
     creator: null,
   },
   {
-    article_id: 'mock-2',
-    title: 'Premier League Title Race: Top Four Separated by Points',
-    link: '#',
-    description: 'With eight games remaining the title race is tighter than ever as four clubs battle for glory.',
+    article_id: 'fallback-2',
+    title: 'Champions League 2025-26: How to Watch Every Match',
+    description: 'Stream every UEFA Champions League match live in 4K.',
+    image_url: null,
+    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.com'}/watch/champions-league`,
+    source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
-    source_name: 'Sky Sports',
+    category: ['football'],
     source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1508098682722-e99c643e7485?w=800&q=80',
-    category: ['premier league'],
-    language: 'english',
-    country: ['united kingdom'],
+    language: 'en',
+    country: ['gb'],
     creator: null,
   },
   {
-    article_id: 'mock-3',
-    title: 'Transfer Window: Summer Moves Already Taking Shape',
-    link: '#',
-    description: 'Clubs are lining up targets ahead of the summer window with several big names linked to moves.',
+    article_id: 'fallback-3',
+    title: 'Is IPTV Legal in the UK? What You Need to Know in 2026',
+    description: 'The definitive guide to IPTV legality in the UK.',
+    image_url: null,
+    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.com'}/blog/is-iptv-legal-uk`,
+    source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
-    source_name: 'ESPN',
+    category: ['guides'],
     source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=800&q=80',
-    category: ['transfers'],
-    language: 'english',
-    country: ['united states of america'],
+    language: 'en',
+    country: ['gb'],
     creator: null,
   },
   {
-    article_id: 'mock-4',
-    title: 'Bundesliga: Bayern Lead Challenged by Surprising Contenders',
-    link: '#',
-    description: 'German football is more competitive than ever with several clubs pushing for the title.',
+    article_id: 'fallback-4',
+    title: 'World Cup 2026: How to Watch Every Match Live',
+    description: 'Complete guide to streaming all 104 World Cup 2026 matches.',
+    image_url: null,
+    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.com'}/watch/world-cup-2026`,
+    source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
-    source_name: 'Goal.com',
+    category: ['football'],
     source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80',
-    category: ['bundesliga'],
-    language: 'english',
-    country: ['germany'],
-    creator: null,
-  },
-  {
-    article_id: 'mock-5',
-    title: 'Serie A Weekend Roundup: Drama at Both Ends',
-    link: '#',
-    description: 'Italian football delivered drama throughout as title contenders and relegation battlers clashed.',
-    pubDate: new Date().toISOString(),
-    source_name: 'The Guardian',
-    source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1551958219-acbc4bbdf75c?w=800&q=80',
-    category: ['serie a'],
-    language: 'english',
-    country: ['italy'],
-    creator: null,
-  },
-  {
-    article_id: 'mock-6',
-    title: 'La Liga: El Clásico Preview — Form, Stats & Predictions',
-    link: '#',
-    description: 'The biggest match in club football returns as Madrid and Barça meet in a crucial title showdown.',
-    pubDate: new Date(Date.now() - 3600000).toISOString(),
-    source_name: 'Marca',
-    source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1560271888-f93a0c3acd37?w=800&q=80',
-    category: ['la liga'],
-    language: 'english',
-    country: ['spain'],
-    creator: null,
-  },
-  {
-    article_id: 'mock-7',
-    title: 'Ligue 1: PSG on Track for Another Title Defence',
-    link: '#',
-    description: 'Paris Saint-Germain maintain their grip on the French league as rivals struggle to keep pace.',
-    pubDate: new Date(Date.now() - 7200000).toISOString(),
-    source_name: 'L\'Équipe',
-    source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=800&q=80',
-    category: ['ligue 1'],
-    language: 'english',
-    country: ['france'],
-    creator: null,
-  },
-  {
-    article_id: 'mock-8',
-    title: 'UEFA Nations League: Semi-Final Berths Confirmed',
-    link: '#',
-    description: 'International football heats up as several nations clinch their places in the knockout rounds.',
-    pubDate: new Date(Date.now() - 10800000).toISOString(),
-    source_name: 'UEFA.com',
-    source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80',
-    category: ['international'],
-    language: 'english',
-    country: ['europe'],
-    creator: null,
-  },
-  {
-    article_id: 'mock-9',
-    title: 'Champions League: Shock Result Sends Giant Home',
-    link: '#',
-    description: 'In a night of stunning football, a heavyweight European side crash out at the Round of 16.',
-    pubDate: new Date(Date.now() - 14400000).toISOString(),
-    source_name: 'Mirror Sport',
-    source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&q=80',
-    category: ['champions league'],
-    language: 'english',
-    country: ['united kingdom'],
-    creator: null,
-  },
-  {
-    article_id: 'mock-10',
-    title: 'Premier League: Injury Crisis Deepens Ahead of Derby',
-    link: '#',
-    description: 'A top-six club faces crisis as multiple first-team players are ruled out for the crucial city derby.',
-    pubDate: new Date(Date.now() - 18000000).toISOString(),
-    source_name: 'Sky Sports',
-    source_icon: null,
-    image_url: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&q=80',
-    category: ['premier league'],
-    language: 'english',
-    country: ['united kingdom'],
+    language: 'en',
+    country: ['gb'],
     creator: null,
   },
 ]
@@ -173,7 +89,7 @@ export async function getLatestSportsNews(
 
   if (!apiKey) {
     console.warn('[NewsAPI] NEWS_API_KEY missing in env')
-    return MOCK_NEWS
+    return FALLBACK_ARTICLES
   }
 
   // Free plan: size must be 1-10
@@ -217,24 +133,24 @@ export async function getLatestSportsNews(
 
     if (response.status === 401 || response.status === 403) {
       console.error('[NewsAPI] Unauthorized — check NEWS_API_KEY in .env.local')
-      return MOCK_NEWS
+      return FALLBACK_ARTICLES
     }
 
     if (response.status === 429) {
       console.error('[NewsAPI] Rate limit hit — using mock data')
-      return MOCK_NEWS
+      return FALLBACK_ARTICLES
     }
 
     if (!response.ok) {
       console.error(`[NewsAPI] Request failed with status ${response.status} — using mock data`)
-      return MOCK_NEWS
+      return FALLBACK_ARTICLES
     }
 
     const data = await response.json()
 
     if (data.status !== 'success' || !Array.isArray(data.results) || data.results.length === 0) {
       console.warn('[NewsAPI] Empty or error response — using mock data')
-      return MOCK_NEWS
+      return FALLBACK_ARTICLES
     }
 
     console.log(`[NewsAPI] Success — got ${data.results.length} articles`)
@@ -249,7 +165,7 @@ export async function getLatestSportsNews(
 
   } catch (error) {
     console.error('[NewsAPI] Network error:', error)
-    return MOCK_NEWS
+    return FALLBACK_ARTICLES
   }
 }
 

@@ -132,6 +132,7 @@ export default function ChannelLibrary() {
               {visibleChannels.map((channel, idx) => (
                 <div 
                   key={`${channel.name}-${idx}`}
+                  style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 150px' }}
                   className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl p-5 hover:border-[#00e676]/40 transition-all cursor-pointer group flex flex-col h-full"
                 >
                   <div className="flex items-start gap-4">

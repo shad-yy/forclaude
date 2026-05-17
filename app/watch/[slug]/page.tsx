@@ -145,9 +145,36 @@ export default async function WatchLeaguePage({ params }: Props) {
         },
     }
 
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      '@id': `${ENV.BASE_URL}/watch/${slug}#breadcrumb`,
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: `${ENV.BASE_URL}/`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Watch Live',
+          item: `${ENV.BASE_URL}/watch`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: theme.name,
+          item: `${ENV.BASE_URL}/watch/${slug}`,
+        },
+      ],
+    }
+
     return (
         <div className="min-h-screen bg-gray-950 text-gray-100">
             <SchemaMarkup schema={sportsOrgSchema} />
+            <SchemaMarkup schema={breadcrumbSchema} />
 
             {/* Hero Section */}
             <FadeIn>
@@ -251,14 +278,14 @@ export default async function WatchLeaguePage({ params }: Props) {
                                     <div key={match.id} className="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-gray-700 transition">
                                         <div className="flex items-center gap-6 w-full md:w-auto flex-1">
                                             <div className="flex flex-col items-center w-24">
-                                                <img src={safeBadge(match.homeLogo)} alt={match.homeTeam} className="w-12 h-12 object-contain mb-2" />
+                                                <img src={safeBadge(match.homeLogo)} alt={match.homeTeam} width={48} height={48} className="w-12 h-12 object-contain mb-2" />
                                                 <span className="text-xs text-center font-bold text-gray-300">{match.homeTeam}</span>
                                             </div>
                                             <div className="text-center px-4 text-sm text-gray-500 font-bold">
                                                 VS<br /><span className="text-xs font-normal">{formatMatchDate(match.date)}</span>
                                             </div>
                                             <div className="flex flex-col items-center w-24">
-                                                <img src={safeBadge(match.awayLogo)} alt={match.awayTeam} className="w-12 h-12 object-contain mb-2" />
+                                                <img src={safeBadge(match.awayLogo)} alt={match.awayTeam} width={48} height={48} className="w-12 h-12 object-contain mb-2" />
                                                 <span className="text-xs text-center font-bold text-gray-300">{match.awayTeam}</span>
                                             </div>
                                         </div>
@@ -336,7 +363,7 @@ export default async function WatchLeaguePage({ params }: Props) {
                                             <td className="py-2 px-2 text-center font-bold text-gray-500">{team.position}</td>
                                             <td className="py-2 px-2">
                                                 <div className={`flex items-center gap-2 pl-2 ${getDescriptionBorder(team.description)}`}>
-                                                    <img src={safeBadge(team.teamLogo)} alt={team.team} className="w-5 h-5 object-contain" />
+                                                    <img src={safeBadge(team.teamLogo)} alt={team.team} width={20} height={20} className="w-5 h-5 object-contain" />
                                                     <span className="font-semibold text-gray-200 line-clamp-1 flex-1">{team.team}</span>
                                                 </div>
                                             </td>

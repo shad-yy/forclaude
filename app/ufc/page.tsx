@@ -10,6 +10,7 @@ import Link from "next/link"
 import { getUpcomingEvents, getPastEvents, getRankings } from "@/lib/api/ufc"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
+import { SchemaMarkup } from "@/components/SchemaMarkup"
 
 export const metadata: Metadata = {
   title: "UFC — Live Events, Fighter Rankings & Coverage",
@@ -238,6 +239,7 @@ export default function UFCPage() {
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${ENV.BASE_URL}/ufc#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', 
         item: `${ENV.BASE_URL}/` },
@@ -248,10 +250,7 @@ export default function UFCPage() {
 
   return (
     <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-28 md:pt-36 pb-16 md:pb-20 space-y-8 bg-gray-950 min-h-screen">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
+      <SchemaMarkup schema={breadcrumbSchema} />
       {/* Header */}
       <FadeIn>
       <div className="text-center mb-12 pt-8">

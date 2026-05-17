@@ -30,6 +30,10 @@ export default function TermsPage() {
             <p>Subscriptions are billed monthly with no long-term contract. 
             You may cancel at any time before your next billing date. 
             No refunds are issued for partial months of service.</p>
+            <p className="mt-4"><strong>7-Day Money Back Guarantee:</strong> If you are not 
+            satisfied with the service within 7 days of your 
+            first payment, contact us via WhatsApp and we will 
+            issue a full refund. No questions asked.</p>
           </section>
 
           <section>

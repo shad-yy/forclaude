@@ -137,6 +137,7 @@ export default async function EuropaLeaguePage() {
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${ENV.BASE_URL}/watch/europa-league#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: `${ENV.BASE_URL}/` },
       { '@type': 'ListItem', position: 2, name: 'Watch Live', item: `${ENV.BASE_URL}/watch` },
@@ -217,6 +218,7 @@ export default async function EuropaLeaguePage() {
                         </span>
                         <img src={match.homeTeam.crest} 
                           alt={match.homeTeam.name}
+                          width={24} height={24}
                           className="w-6 h-6 object-contain" />
                       </div>
                       <div className="text-center px-3 flex-shrink-0">
@@ -232,6 +234,7 @@ export default async function EuropaLeaguePage() {
                       <div className="flex items-center gap-2 flex-1">
                         <img src={match.awayTeam.crest}
                           alt={match.awayTeam.name}
+                          width={24} height={24}
                           className="w-6 h-6 object-contain" />
                         <span className="text-white font-semibold text-sm 
                           truncate max-w-[120px]">
@@ -265,6 +268,7 @@ export default async function EuropaLeaguePage() {
                         </span>
                         <img src={match.homeTeam.crest} 
                           alt={match.homeTeam.name}
+                          width={24} height={24}
                           className="w-6 h-6 object-contain" />
                       </div>
                       <div className="text-center px-3 flex-shrink-0">
@@ -282,6 +286,7 @@ export default async function EuropaLeaguePage() {
                       <div className="flex items-center gap-2 flex-1">
                         <img src={match.awayTeam.crest}
                           alt={match.awayTeam.name}
+                          width={24} height={24}
                           className="w-6 h-6 object-contain" />
                         <span className="text-white font-semibold text-sm 
                           truncate max-w-[120px]">
@@ -340,6 +345,7 @@ export default async function EuropaLeaguePage() {
                                 <img
                                   src={safeBadge(t.strTeamBadge || t.strBadge)}
                                   alt={t.strTeam}
+                                  width={24} height={24}
                                   className="w-6 h-6 object-contain"
                                 />
                                 <span className="font-bold text-white line-clamp-1">{t.strTeam}</span>

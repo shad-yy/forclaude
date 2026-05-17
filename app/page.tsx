@@ -34,49 +34,77 @@ export default function HomePage() {
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': `${ENV.BASE_URL}/#organization`,
     name: 'Smart Live TV',
     url: ENV.BASE_URL,
-    logo: `${ENV.BASE_URL}/og-default.png`,
-    description: 'UK IPTV service providing 230,000+ live channels including all Sky Sports, TNT Sports, beIN Sports and Premier League coverage from £12/month.',
+    logo: {
+      '@type': 'ImageObject',
+      url: `${ENV.BASE_URL}/og-default.png`,
+      width: 1200,
+      height: 630,
+    },
+    description: 'UK IPTV service replacing Netflix, Disney+, Amazon Prime and Sky Sports with one subscription from £12/month. 230,000+ channels, 4K quality, free 24-hour trial.',
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer support',
-      availableLanguage: ['English', 'French', 'Arabic'],
-      areaServed: ['GB', 'MA', 'FR', 'IE'],
-      hoursAvailable: 'Mo-Su 09:00-23:00'
+      availableLanguage: ['English'],
+      areaServed: 'GB',
+      hoursAvailable: {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: [
+          'Monday','Tuesday','Wednesday','Thursday',
+          'Friday','Saturday','Sunday'
+        ],
+        opens: '09:00',
+        closes: '23:00',
+      },
     },
+    knowsAbout: [
+      'IPTV',
+      'Internet Protocol Television',
+      'Live Sports Streaming',
+      'Premier League',
+      'Champions League',
+      'UFC',
+      'Formula 1',
+      'Sky Sports',
+      'Netflix',
+      'Disney Plus',
+      'UK Television',
+    ],
     sameAs: [
-      process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK,
-      process.env.NEXT_PUBLIC_SOCIAL_TWITTER,
-      process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM,
-      process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE,
-    ].filter(Boolean),
+      // Add real URLs when available. For now use placeholder
+      // that will be populated when social accounts are created.
+      // Even an empty array is fine — but the structure must exist.
+    ],
     offers: {
       '@type': 'AggregateOffer',
       lowPrice: '12',
       highPrice: '54',
       priceCurrency: 'GBP',
       offerCount: 4,
-    }
+    },
+  }
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${ENV.BASE_URL}/#website`,
+    url: `${ENV.BASE_URL}/`,
+    name: 'Smart Live TV',
+    publisher: {
+      '@id': `${ENV.BASE_URL}/#organization`,
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${ENV.BASE_URL}/search?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
   }
 
   return (
     <div className="min-h-screen bg-gray-950 overflow-x-hidden text-gray-100">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            url: `${ENV.BASE_URL}/`,
-            potentialAction: {
-              "@type": "SearchAction",
-              target: `${ENV.BASE_URL}/search?q={search_term_string}`,
-              "query-input": "required name=search_term_string"
-            }
-          })
-        }}
-      />
+      <SchemaMarkup schema={websiteSchema} />
       <SchemaMarkup schema={organizationSchema} />
       <FadeIn delay={0.1}>
         <HeroSection />
@@ -105,16 +133,24 @@ export default function HomePage() {
         <PricingPreview />
       </ScrollReveal>
 
-      <ScrollReveal>
-        <section className="py-16 md:py-20 bg-[#0a0a0f] border-t border-[#2a2a3a] relative">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
-          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
-            <Suspense fallback={<NewsSkeleton />}>
-              <NewsSection maxArticles={12} />
-            </Suspense>
-          </div>
-        </section>
-      </ScrollReveal>
+      <div className="contain-layout min-h-[500px]">
+        <Suspense fallback={
+          <section className="py-16 md:py-20 bg-[#0a0a0f] border-t border-[#2a2a3a]">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+              <NewsSkeleton />
+            </div>
+          </section>
+        }>
+          <ScrollReveal>
+            <section className="py-16 md:py-20 bg-[#0a0a0f] border-t border-[#2a2a3a] relative">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
+              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+                <NewsSection maxArticles={12} />
+              </div>
+            </section>
+          </ScrollReveal>
+        </Suspense>
+      </div>
 
     </div>
   )

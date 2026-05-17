@@ -31,6 +31,7 @@ const footerLinks = [
       { name: "Pricing", href: "/pricing" },
       { name: 'About Us', href: '/about' },
       { name: 'Contact Us', href: '/contact' },
+      { name: 'FAQ', href: '/faq' },
       { name: "Privacy Policy", href: "/privacy" },
       { name: "Terms of Service", href: "/terms" },
     ],

@@ -49,6 +49,7 @@ export default function ChannelsPage() {
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${ENV.BASE_URL}/channels#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', 
         item: `${ENV.BASE_URL}/` },

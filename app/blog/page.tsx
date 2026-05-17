@@ -27,6 +27,7 @@ export default function BlogIndexPage() {
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    "@id": `${ENV.BASE_URL}/blog#breadcrumb`,
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: `${ENV.BASE_URL}/` },
       { "@type": "ListItem", position: 2, name: "Blog", item: `${ENV.BASE_URL}/blog` },

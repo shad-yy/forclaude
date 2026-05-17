@@ -144,6 +144,8 @@ export function NewsCarousel({ articles }: NewsCarouselProps) {
                       <img
                         src={img}
                         alt={article.title}
+                        width={320}
+                        height={176}
                         /* GPU-only transform via translate3d (scale triggers composited layer) */
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 will-change-transform"
                         loading="lazy"

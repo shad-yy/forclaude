@@ -74,6 +74,7 @@ export default function PricingPage() {
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${ENV.BASE_URL}/pricing#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', 
         item: `${ENV.BASE_URL}/` },
@@ -85,8 +86,9 @@ export default function PricingPage() {
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    '@id': `${ENV.BASE_URL}/pricing#product`,
     name: 'Smart Live TV IPTV Subscription',
-    description: 'Access to 230,000+ live TV channels including all Sky Sports, TNT Sports, beIN Sports, UFC, NBA, Premier League and 50+ countries. 4K quality, works on Firestick, Smart TV, Android and iPhone.',
+    description: 'Access to 230,000+ live TV channels including Netflix, Disney+, Amazon Prime, all Sky Sports channels, TNT Sports, beIN Sports, UFC, F1, NBA and more. 4K quality, works on all devices.',
     brand: {
       '@type': 'Brand',
       name: 'Smart Live TV',
@@ -96,57 +98,61 @@ export default function PricingPage() {
     offers: [
       {
         '@type': 'Offer',
+        '@id': `${ENV.BASE_URL}/pricing#offer-1month`,
         name: '1 Month Subscription',
         price: '12.00',
         priceCurrency: 'GBP',
         availability: 'https://schema.org/InStock',
         url: `${ENV.BASE_URL}/free-trial`,
-        validFrom: new Date().toISOString().split('T')[0],
-        priceValidUntil: new Date(
-          new Date().setFullYear(new Date().getFullYear() + 1)
-        ).toISOString().split('T')[0],
+        validFrom: '2026-01-01',
+        priceValidUntil: '2026-12-31',
         seller: {
-          '@type': 'Organization',
-          name: 'Smart Live TV',
+          '@id': `${ENV.BASE_URL}/#organization`,
         },
       },
       {
         '@type': 'Offer',
+        '@id': `${ENV.BASE_URL}/pricing#offer-3month`,
         name: '3 Month Subscription',
         price: '24.00',
         priceCurrency: 'GBP',
         availability: 'https://schema.org/InStock',
         url: `${ENV.BASE_URL}/free-trial`,
-        validFrom: new Date().toISOString().split('T')[0],
-        priceValidUntil: new Date(
-          new Date().setFullYear(new Date().getFullYear() + 1)
-        ).toISOString().split('T')[0],
+        validFrom: '2026-01-01',
+        priceValidUntil: '2026-12-31',
         seller: {
-          '@type': 'Organization',
-          name: 'Smart Live TV',
+          '@id': `${ENV.BASE_URL}/#organization`,
         },
       },
       {
         '@type': 'Offer',
+        '@id': `${ENV.BASE_URL}/pricing#offer-6month`,
         name: '6 Month Subscription',
         price: '36.00',
         priceCurrency: 'GBP',
         availability: 'https://schema.org/InStock',
         url: `${ENV.BASE_URL}/free-trial`,
-        seller: { '@type': 'Organization', name: 'Smart Live TV' },
+        validFrom: '2026-01-01',
+        priceValidUntil: '2026-12-31',
+        seller: {
+          '@id': `${ENV.BASE_URL}/#organization`,
+        },
       },
       {
         '@type': 'Offer',
+        '@id': `${ENV.BASE_URL}/pricing#offer-12month`,
         name: '12 Month Subscription',
         price: '54.00',
         priceCurrency: 'GBP',
         availability: 'https://schema.org/InStock',
         url: `${ENV.BASE_URL}/free-trial`,
-        seller: { '@type': 'Organization', name: 'Smart Live TV' },
+        validFrom: '2026-01-01',
+        priceValidUntil: '2026-12-31',
+        seller: {
+          '@id': `${ENV.BASE_URL}/#organization`,
+        },
       },
     ],
-    // NOTE: Only add AggregateRating once you have real reviews
-    // Fake ratings are a Google manual action — do not fabricate
   }
 
   return (
@@ -182,6 +188,33 @@ export default function PricingPage() {
       {/* SECTION 2 — PRICING CARDS */}
       <FadeIn direction="up">
       <section className="bg-[#0a0a0f] pb-16 md:pb-20 px-4 md:px-6 container mx-auto max-w-7xl">
+        <div className="flex flex-wrap items-center justify-center gap-6 mb-10">
+          <div className="text-center">
+            <div className="text-2xl font-extrabold text-[#00e676]">24H</div>
+            <div className="text-xs text-gray-500 mt-0.5">Free Trial</div>
+          </div>
+          <div className="h-8 w-px bg-[#2a2a3a] hidden sm:block" />
+          <div className="text-center">
+            <div className="text-2xl font-extrabold text-[#00e676]">7-Day</div>
+            <div className="text-xs text-gray-500 mt-0.5">Money Back</div>
+          </div>
+          <div className="h-8 w-px bg-[#2a2a3a] hidden sm:block" />
+          <div className="text-center">
+            <div className="text-2xl font-extrabold text-[#00e676]">4K</div>
+            <div className="text-xs text-gray-500 mt-0.5">Ultra HD</div>
+          </div>
+          <div className="h-8 w-px bg-[#2a2a3a] hidden sm:block" />
+          <div className="text-center">
+            <div className="text-2xl font-extrabold text-[#00e676]">£109</div>
+            <div className="text-xs text-gray-500 mt-0.5">Monthly Saving</div>
+          </div>
+          <div className="h-8 w-px bg-[#2a2a3a] hidden sm:block" />
+          <div className="text-center">
+            <div className="text-2xl font-extrabold text-[#00e676]">∞</div>
+            <div className="text-xs text-gray-500 mt-0.5">No Contract</div>
+          </div>
+        </div>
+
         <StaggerIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto py-6 pb-16">
           
           {/* CARD 1 — 1 MONTH */}
@@ -376,6 +409,23 @@ export default function PricingPage() {
           </div>
 
         </StaggerIn>
+
+        <div className="text-center mt-8 mb-4">
+          <p className="text-xs text-gray-600 mb-3 uppercase tracking-wide">
+            Secure Payment Methods
+          </p>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            {['Visa', 'Mastercard', 'PayPal', 'Bank Transfer', 'Crypto'].map(method => (
+              <span key={method}
+                className="bg-[#12121a] border border-[#2a2a3a] text-gray-500 text-xs px-3 py-1.5 rounded-lg font-medium">
+                {method}
+              </span>
+            ))}
+          </div>
+          <p className="text-xs text-gray-700 mt-3">
+            256-bit SSL encrypted · Secure checkout
+          </p>
+        </div>
         
         <div className="text-center mt-6 mb-4">
           <p className="text-xs text-gray-600">

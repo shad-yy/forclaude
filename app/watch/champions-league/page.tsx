@@ -137,6 +137,7 @@ export default async function ChampionsLeaguePage() {
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': `${ENV.BASE_URL}/watch/champions-league#breadcrumb`,
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: `${ENV.BASE_URL}/` },
       { '@type': 'ListItem', position: 2, name: 'Watch Live', item: `${ENV.BASE_URL}/watch` },
@@ -217,6 +218,7 @@ export default async function ChampionsLeaguePage() {
                         </span>
                         <img src={match.homeTeam.crest} 
                           alt={match.homeTeam.name}
+                          width={24} height={24}
                           className="w-6 h-6 object-contain" />
                       </div>
                       <div className="text-center px-3 flex-shrink-0">
@@ -232,6 +234,7 @@ export default async function ChampionsLeaguePage() {
                       <div className="flex items-center gap-2 flex-1">
                         <img src={match.awayTeam.crest}
                           alt={match.awayTeam.name}
+                          width={24} height={24}
                           className="w-6 h-6 object-contain" />
                         <span className="text-white font-semibold text-sm 
                           truncate max-w-[120px]">
@@ -265,6 +268,7 @@ export default async function ChampionsLeaguePage() {
                         </span>
                         <img src={match.homeTeam.crest} 
                           alt={match.homeTeam.name}
+                          width={24} height={24}
                           className="w-6 h-6 object-contain" />
                       </div>
                       <div className="text-center px-3 flex-shrink-0">
@@ -282,6 +286,7 @@ export default async function ChampionsLeaguePage() {
                       <div className="flex items-center gap-2 flex-1">
                         <img src={match.awayTeam.crest}
                           alt={match.awayTeam.name}
+                          width={24} height={24}
                           className="w-6 h-6 object-contain" />
                         <span className="text-white font-semibold text-sm 
                           truncate max-w-[120px]">
@@ -340,6 +345,7 @@ export default async function ChampionsLeaguePage() {
                                 <img
                                   src={safeBadge(t.strTeamBadge || t.strBadge)}
                                   alt={t.strTeam}
+                                  width={24} height={24}
                                   className="w-6 h-6 object-contain"
                                 />
                                 <span className="font-bold text-white line-clamp-1">{t.strTeam}</span>
@@ -369,14 +375,14 @@ export default async function ChampionsLeaguePage() {
                   Live group standings are available to verified league data partners.
                 </p>
                 <p className="text-white font-bold text-lg mb-4">
-                  2024–25 UEFA Champions League
+                  2025–26 UEFA Champions League
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-6">
                   {[
-                    { round: 'Quarter-Finals', date: 'Apr 2025' },
-                    { round: 'Semi-Finals', date: 'Apr/May 2025' },
-                    { round: 'Final', date: '31 May 2025 · Munich' },
-                    { round: 'Champions', date: 'Real Madrid' },
+                    { round: 'Quarter-Finals', date: 'Apr 2026' },
+                    { round: 'Semi-Finals', date: 'Apr/May 2026' },
+                    { round: 'Final', date: '30 May 2026 · Munich' },
+                    { round: 'Current Stage', date: 'Semi-Finals' },
                   ].map(item => (
                     <div key={item.round} className="bg-gray-900 rounded-xl p-3 border border-gray-700">
                       <div className="text-gray-400 text-xs mb-1">{item.round}</div>
