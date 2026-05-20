@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/`, priority: 1.0, changeFrequency: 'daily', lastModified: new Date() },
     { url: `${baseUrl}/channels`, priority: 0.9, changeFrequency: 'weekly', lastModified: new Date() },
     { url: `${baseUrl}/pricing`, priority: 0.9, changeFrequency: 'monthly', lastModified: new Date() },
+    { url: `${baseUrl}/buy`, priority: 0.9, changeFrequency: 'monthly' as const, lastModified: new Date() },
     { url: `${baseUrl}/free-trial`, priority: 0.9, changeFrequency: 'weekly', lastModified: new Date() },
     { url: `${baseUrl}/watch/premier-league`, priority: 0.9, changeFrequency: 'daily', lastModified: new Date() },
     { url: `${baseUrl}/watch/la-liga`, priority: 0.9, changeFrequency: 'daily', lastModified: new Date() },

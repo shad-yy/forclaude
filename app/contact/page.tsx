@@ -30,8 +30,8 @@ export default function ContactPage() {
             <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
               <h2 className="font-bold text-white mb-2">📧 Email</h2>
               <p className="text-gray-400 text-sm mb-2">For billing and account queries</p>
-              <a href="mailto:support@smartlivetv.com" className="text-[#00e676] hover:underline">
-                support@smartlivetv.com
+              <a href="mailto:support@smartlivetv.co.uk" className="text-[#00e676] hover:underline">
+                support@smartlivetv.co.uk
               </a>
             </div>
             <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">

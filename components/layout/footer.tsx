@@ -46,15 +46,20 @@ export const Footer = memo(function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 mb-12">
           <div className="space-y-6 md:col-span-2">
-            <Link href="/" className="flex items-center space-x-2 group">
-              <span className="text-2xl font-bold tracking-tight text-text-primary">
-                Smart <span className="inline-flex items-center"><span className="w-2 h-2 rounded-full bg-live-red mr-1"></span>Live</span> TV
-              </span>
+            <Link href="/" className="flex items-center">
+              <img
+                src="/logo.svg"
+                alt="Smart Live TV"
+                width={180}
+                height={40}
+                className="h-8 w-auto"
+              />
             </Link>
             <p className="text-text-secondary leading-relaxed max-w-sm">
               Stream all sports on any device with our premium IPTV service. No blackouts, no cable required.
             </p>
             <div className="flex space-x-4">
+              {/* Social icons — enable when accounts are created
               {[
                 { 
                   Icon: Facebook, 
@@ -88,6 +93,7 @@ export const Footer = memo(function Footer() {
                   <Icon className="w-4 h-4" />
                 </a>
               ))}
+              */}
             </div>
           </div>
 

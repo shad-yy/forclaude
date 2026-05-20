@@ -23,13 +23,13 @@ export const ENV = {
     return process.env.JWT_SECRET || ""
   },
   get STORE_URL() {
-    return process.env.NEXT_PUBLIC_STORE_URL || "https://smartlivetv.com/store"
+    return process.env.NEXT_PUBLIC_STORE_URL || "https://smartlivetv.co.uk/store"
   },
   get WHATSAPP_URL() {
     return process.env.NEXT_PUBLIC_WHATSAPP_URL || ""
   },
   get BASE_URL() {
-    return process.env.NEXT_PUBLIC_APP_URL || "https://smartlivetv.com"
+    return process.env.NEXT_PUBLIC_APP_URL || "https://smartlivetv.co.uk"
   },
   get RAPIDAPI_MMA_KEY() {
     return process.env.RAPIDAPI_MMA_KEY || 

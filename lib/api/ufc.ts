@@ -70,9 +70,9 @@ const mockUpcomingEvents: UFCEvent[] = [
 
 const mockPastEvents: UFCEvent[] = [
   {
-    id: "401716926",
-    name: "UFC 309: Jones vs Miocic",
-    date: "2024-11-16",
+    id: "ufc-310",
+    name: "UFC 310: Recent Event",
+    date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     location: "Madison Square Garden, New York, NY",
     status: "Past",
     image: "/ufc-309-poster.png",
@@ -100,7 +100,7 @@ const mockPastEvents: UFCEvent[] = [
   {
     id: "401716925",
     name: "UFC 308: Topuria vs Holloway",
-    date: "2024-10-26",
+    date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     location: "Etihad Arena, Abu Dhabi, UAE",
     status: "Past",
     image: "/ufc-308-poster.png",

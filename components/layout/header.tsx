@@ -132,21 +132,14 @@ export const Header = memo(function Header() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             {/* LEFT: Logo */}
-            <Link href="/" className="flex items-center space-x-2 group">
-              <motion.span
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="text-xl font-bold tracking-tight text-text-primary"
-              >
-                Smart <span className="inline-flex items-center">
-                  <motion.span
-                    className="w-2 h-2 rounded-full bg-[#ff1744] mr-1"
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                  Live
-                </span> TV
-              </motion.span>
+            <Link href="/" className="flex items-center">
+              <img
+                src="/logo.svg"
+                alt="Smart Live TV"
+                width={180}
+                height={40}
+                className="h-8 w-auto"
+              />
             </Link>
 
             {/* CENTER: Desktop Navigation */}
@@ -356,8 +349,8 @@ export const Header = memo(function Header() {
               <Link href="/contact" className="text-sm font-semibold text-text-muted hover:text-text-primary transition-colors">
                 Support
               </Link>
-              <ShimmerButton href="/free-trial" className="text-sm px-6 py-2.5">
-                Free Trial →
+              <ShimmerButton href="/buy" className="text-sm px-6 py-2.5">
+                Get Access →
               </ShimmerButton>
             </div>
 
@@ -435,11 +428,11 @@ export const Header = memo(function Header() {
             <div className="mt-auto pt-8">
               <div onClick={() => setIsMobileMenuOpen(false)} className="mb-4">
                 <ShimmerButton
-                  href="/free-trial"
+                  href="/buy"
                   variant="primary"
                   className="w-full justify-center py-4 rounded-xl text-base"
                 >
-                  Free Trial →
+                  Get Access Now →
                 </ShimmerButton>
               </div>
               <Link

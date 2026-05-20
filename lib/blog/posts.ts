@@ -31,9 +31,9 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <h2>Step-by-Step: How to Set It Up</h2>
 <ol>
-<li><strong>Choose your plan</strong> — Start with the <a href="/pricing">free 24-hour trial</a> at smartlivetv.com/pricing. No card required.</li>
+<li><strong>Choose your plan</strong> — Start with the <a href="/pricing">free 24-hour trial</a> at smartlivetv.co.uk/pricing. No card required.</li>
 <li><strong>Receive your login</strong> — We'll send your credentials to your WhatsApp or email within 1 hour.</li>
-<li><strong>Install the app</strong> — Works on <a href="/setup/firestick">Firestick</a>, Android, iPhone, Smart TV or PC. Full guide at smartlivetv.com/setup/firestick.</li>
+<li><strong>Install the app</strong> — Works on <a href="/setup/firestick">Firestick</a>, Android, iPhone, Smart TV or PC. Full guide at smartlivetv.co.uk/setup/firestick.</li>
 <li><strong>Watch</strong> — Open the app, find the Premier League channel, and enjoy 4K football from Morocco.</li>
 </ol>
 
@@ -165,7 +165,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>TNT Sports alone: £29.99/mo (£360/year). Smart Live TV Sports Fan: £9.99/mo (£120/year) — and you also get <a href="/watch/premier-league">Premier League</a>, La Liga, UFC, and 230,000 other channels.</p>
 
 <h2>Get Started Tonight</h2>
-<p>If there's a Champions League match tonight, you can watch it. Start your <a href="/pricing">free 24-hour trial</a> at smartlivetv.com/pricing — no card required, setup takes under 5 minutes.</p>
+<p>If there's a Champions League match tonight, you can watch it. Start your <a href="/pricing">free 24-hour trial</a> at smartlivetv.co.uk/pricing — no card required, setup takes under 5 minutes.</p>
     `,
   },
   {

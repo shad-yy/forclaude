@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { ENV } from '@/lib/config/env'
 import { FadeIn } from "@/components/ui/fade-in"
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'Smart Live TV privacy policy — how we collect, use and protect your personal data.',
+  description: 'Smart Live TV privacy policy — how we collect, use and protect your personal data under UK GDPR.',
   alternates: { canonical: `${ENV.BASE_URL}/privacy` },
 }
 
@@ -14,51 +15,93 @@ export default function PrivacyPage() {
       <FadeIn>
       <div className="container mx-auto px-4 max-w-3xl">
         <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 md:mb-6">Privacy Policy</h1>
-        <p className="text-gray-500 text-sm mb-8 md:mb-12">Last updated: April 2026</p>
+        <p className="text-gray-500 text-sm mb-8 md:mb-12">Last updated: May 2026</p>
 
         <div className="space-y-8 text-gray-300 leading-relaxed">
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">1. Information We Collect</h2>
-            <p>When you place an order or contact us, we collect your name, 
-            email address, and WhatsApp number. We do not collect payment 
-            card details directly — payments are processed through our 
-            secure payment partner.</p>
+            <h2 className="text-xl font-bold text-white mb-3">1. Data We Collect</h2>
+            <p className="mb-4">We collect the following data:</p>
+
+            <h3 className="text-lg font-bold text-white mb-2">Analytics Data (Google Analytics 4)</h3>
+            <p className="mb-4">
+              We use Google Analytics 4 to understand how visitors use our website. GA4 collects
+              anonymised data including: pages visited, time on site, device type, and geographic
+              region (country/city level only). No personally identifiable information is collected
+              by GA4 unless you explicitly provide it. You can opt out via our cookie consent banner
+              or at{' '}
+              <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer"
+                className="text-[#00e676] hover:underline">
+                tools.google.com/dlpage/gaoptout
+              </a>.
+            </p>
+
+            <h3 className="text-lg font-bold text-white mb-2">Form Data</h3>
+            <p className="mb-4">
+              When you submit a trial request or purchase form, we collect your name, email address,
+              WhatsApp number, and device type. This data is used solely to activate your subscription
+              and provide customer support. We do not sell or share this data with third parties.
+            </p>
+
+            <h3 className="text-lg font-bold text-white mb-2">Technical Data (Vercel)</h3>
+            <p className="mb-4">
+              Our website is hosted on Vercel, which processes server logs including IP addresses and
+              request data for security and performance purposes. See Vercel&apos;s privacy policy at{' '}
+              <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer"
+                className="text-[#00e676] hover:underline">
+                vercel.com/legal/privacy-policy
+              </a>.
+            </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">2. How We Use Your Information</h2>
-            <p>We use your contact details solely to fulfil your subscription 
-            order and provide customer support. We do not sell your data to 
-            third parties. We may send you service-related communications 
+            <h2 className="text-xl font-bold text-white mb-3">2. Cookies</h2>
+            <p className="mb-3">We use the following cookies:</p>
+            <ul className="list-disc pl-6 space-y-2 mb-4">
+              <li>
+                <strong className="text-white">_ga, _ga_*</strong> (Google Analytics): Expire after 2 years.
+                Used for analytics. Only set after you accept cookies.
+              </li>
+              <li>
+                <strong className="text-white">Functional cookies</strong>: Set after consent to remember
+                preferences. Expire after 1 year.
+              </li>
+            </ul>
+            <p>
+              You can accept or decline cookies using our consent banner. Declining will disable
+              analytics tracking.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-white mb-3">3. How We Use Your Information</h2>
+            <p>We use your contact details solely to fulfil your subscription
+            order and provide customer support. We do not sell your data to
+            third parties. We may send you service-related communications
             about your subscription.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">3. Data Storage</h2>
-            <p>Your data is stored securely. We retain order information for 
-            up to 2 years for customer service purposes. You may request 
+            <h2 className="text-xl font-bold text-white mb-3">4. Data Storage</h2>
+            <p>Your data is stored securely. We retain order information for
+            up to 2 years for customer service purposes. You may request
             deletion of your data at any time by contacting us.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">4. Cookies</h2>
-            <p>We use Google Analytics cookies to measure site usage. 
-            These are only set after you give explicit consent via our 
-            cookie banner. You can withdraw consent at any time by 
-            clearing your browser cookies and declining on next visit.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-white mb-3">5. Your Rights</h2>
-            <p>Under UK GDPR you have the right to access, correct or delete 
-            your personal data. To exercise these rights, contact us at 
-            support@smartlivetv.com or via WhatsApp.</p>
+            <h2 className="text-xl font-bold text-white mb-3">5. Your Rights (UK GDPR)</h2>
+            <p>
+              Under the UK General Data Protection Regulation and the Data Protection Act 2018,
+              you have the right to: access your data, request deletion, and withdraw consent at
+              any time. Contact us via the details on our{' '}
+              <Link href="/contact" className="text-[#00e676] hover:underline">Contact page</Link>{' '}
+              to exercise these rights.
+            </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-white mb-3">6. Contact</h2>
-            <p>Privacy questions: <a href="mailto:support@smartlivetv.com" 
-              className="text-[#00e676] hover:underline">support@smartlivetv.com</a>
+            <p>Privacy questions: <a href="mailto:support@smartlivetv.co.uk"
+              className="text-[#00e676] hover:underline">support@smartlivetv.co.uk</a>
             </p>
           </section>
         </div>

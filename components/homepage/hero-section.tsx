@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Check } from "lucide-react"
 import { LEAGUES } from "@/lib/constants/leagues"
 import { LeagueBadge } from "@/components/league/league-badge"
+import { LiveStats } from "@/components/homepage/LiveStats"
 
 export function HeroSection() {
   return (
@@ -64,14 +65,24 @@ export function HeroSection() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-2"
             >
-              <ShimmerButton href="/free-trial" variant="primary"
+              <ShimmerButton href="/buy" variant="primary"
                 className="w-full sm:w-auto px-8 py-4 text-lg rounded-lg">
-                Get My Free 24-Hour Trial
+                Get Instant Access →
               </ShimmerButton>
-              <ShimmerButton href="#fixtures" variant="ghost"
+              <ShimmerButton href="/free-trial" variant="ghost"
                 className="w-full sm:w-auto px-8 py-4 text-lg rounded-lg">
-                See Tonight's Matches ↓
+                Try Free for 24H ↓
               </ShimmerButton>
+            </motion.div>
+
+            {/* Live Stats Ticker */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              className="w-full"
+            >
+              <LiveStats />
             </motion.div>
 
             {/* Trust Indicators */}

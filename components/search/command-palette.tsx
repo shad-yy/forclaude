@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
-import { Search, X, ExternalLink } from "lucide-react"
+import { Search, X, ExternalLink, Gift, CreditCard, Tv, Newspaper, BookOpen, Settings, MessageCircle } from "lucide-react"
 import { BLOG_POSTS } from "@/lib/blog/posts"
 
 interface SearchResult {
@@ -10,7 +10,7 @@ interface SearchResult {
   title: string
   subtitle?: string
   href: string
-  icon?: string
+  icon?: string | React.ComponentType<{ className?: string }>
   badge?: string
   external?: boolean
 }
@@ -28,13 +28,13 @@ const STATIC_RESULTS: SearchResult[] = [
   { type: 'sport', title: 'Formula 1', subtitle: 'Every race live', href: '/watch/formula-1', icon: '/leagues/formula-1.png' },
   { type: 'sport', title: 'UFC / MMA', subtitle: 'Fight nights', href: '/ufc', icon: '/leagues/ufc.png' },
   // Pages
-  { type: 'page', title: 'Free Trial', subtitle: 'Start watching in 5 minutes', href: '/free-trial', icon: '🎁', badge: 'No Card' },
-  { type: 'page', title: 'Pricing', subtitle: 'Plans from £12/month', href: '/pricing', icon: '💳' },
-  { type: 'page', title: 'Channel List', subtitle: '230,000+ channels', href: '/channels', icon: '📺' },
-  { type: 'page', title: 'News', subtitle: 'Latest sports headlines', href: '/news', icon: '📰' },
-  { type: 'page', title: 'Blog', subtitle: 'Guides & tips', href: '/blog', icon: '✍️' },
-  { type: 'page', title: 'Setup Guides', subtitle: 'Firestick, Smart TV, Android, iPhone', href: '/setup/firestick', icon: '⚙️' },
-  { type: 'page', title: 'Contact Support', subtitle: 'We reply in 5 minutes', href: '/contact', icon: '💬' },
+  { type: 'page', title: 'Free Trial', subtitle: 'Start watching in 5 minutes', href: '/free-trial', icon: Gift, badge: 'No Card' },
+  { type: 'page', title: 'Pricing', subtitle: 'Plans from £12/month', href: '/pricing', icon: CreditCard },
+  { type: 'page', title: 'Channel List', subtitle: '230,000+ channels', href: '/channels', icon: Tv },
+  { type: 'page', title: 'News', subtitle: 'Latest sports headlines', href: '/news', icon: Newspaper },
+  { type: 'page', title: 'Blog', subtitle: 'Guides & tips', href: '/blog', icon: BookOpen },
+  { type: 'page', title: 'Setup Guides', subtitle: 'Firestick, Smart TV, Android, iPhone', href: '/setup/firestick', icon: Settings },
+  { type: 'page', title: 'Contact Support', subtitle: 'We reply in 5 minutes', href: '/contact', icon: MessageCircle },
 ]
 
 function getBlogResults(): SearchResult[] {
@@ -43,7 +43,7 @@ function getBlogResults(): SearchResult[] {
     title: p.title,
     subtitle: p.description?.slice(0, 60) + '...',
     href: `/blog/${p.slug}`,
-    icon: '📖',
+    icon: BookOpen,
   }))
 }
 
@@ -138,7 +138,8 @@ export function CommandPalette() {
 
   const ResultItem = ({ result, idx }: { result: SearchResult; idx: number }) => {
     const isActive = idx === activeIdx
-    const isImg = result.icon?.startsWith('/')
+    const isImg = typeof result.icon === 'string' && result.icon.startsWith('/')
+    const IconComponent = typeof result.icon === 'function' ? result.icon : null
 
     return (
       <Link
@@ -156,11 +157,11 @@ export function CommandPalette() {
           justify-center flex-shrink-0 overflow-hidden
           ${isImg ? 'bg-[#12121a] border border-[#2a2a3a] p-1.5' : ''}`}>
           {isImg ? (
-            <img src={result.icon} alt="" 
+            <img src={result.icon as string} alt="" 
               className="w-full h-full object-contain" />
-          ) : (
-            <span className="text-base">{result.icon}</span>
-          )}
+          ) : IconComponent ? (
+            <IconComponent className="w-4 h-4 text-gray-400" />
+          ) : null}
         </div>
 
         {/* Text */}

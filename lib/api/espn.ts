@@ -83,13 +83,31 @@ export async function getUFCEvents(): Promise<{
 }> {
   const data = await espnFetch<ESPNScoreboard>(
     'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard',
-    'espn:ufc:scoreboard',
-    900 // 15 minute cache — events change daily
+    'espn:ufc:scoreboard:v4', // bump cache key
+    900
   )
 
   const events = data?.events || []
-  const upcoming = events.filter(e => !e.status?.type?.completed)
-  const recent = events.filter(e => e.status?.type?.completed)
+  const now = new Date()
+  
+  // Filter upcoming: events with date in the future
+  const upcoming = events.filter(e => {
+    if (e.status?.type?.completed) return false
+    if (!e.date) return false
+    const eventDate = new Date(e.date)
+    return eventDate >= new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  })
+  
+  // Filter recent: completed events from last 90 days
+  const ninetyDaysAgo = new Date(
+    now.getTime() - 90 * 24 * 60 * 60 * 1000
+  )
+  const recent = events.filter(e => {
+    if (!e.status?.type?.completed) return false
+    if (!e.date) return false
+    const eventDate = new Date(e.date)
+    return eventDate >= ninetyDaysAgo
+  })
 
   return { upcoming, recent }
 }

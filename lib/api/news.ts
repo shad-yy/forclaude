@@ -26,7 +26,7 @@ const FALLBACK_ARTICLES: NewsArticle[] = [
     title: 'How to Watch Premier League Live Without Sky Sports',
     description: 'Complete guide to streaming every Premier League match in 2026.',
     image_url: null,
-    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.com'}/blog/sky-sports-vs-iptv-honest-comparison`,
+    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.co.uk'}/blog/sky-sports-vs-iptv-honest-comparison`,
     source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
     category: ['football'],
@@ -40,7 +40,7 @@ const FALLBACK_ARTICLES: NewsArticle[] = [
     title: 'Champions League 2025-26: How to Watch Every Match',
     description: 'Stream every UEFA Champions League match live in 4K.',
     image_url: null,
-    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.com'}/watch/champions-league`,
+    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.co.uk'}/watch/champions-league`,
     source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
     category: ['football'],
@@ -54,7 +54,7 @@ const FALLBACK_ARTICLES: NewsArticle[] = [
     title: 'Is IPTV Legal in the UK? What You Need to Know in 2026',
     description: 'The definitive guide to IPTV legality in the UK.',
     image_url: null,
-    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.com'}/blog/is-iptv-legal-uk`,
+    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.co.uk'}/blog/is-iptv-legal-uk`,
     source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
     category: ['guides'],
@@ -68,7 +68,7 @@ const FALLBACK_ARTICLES: NewsArticle[] = [
     title: 'World Cup 2026: How to Watch Every Match Live',
     description: 'Complete guide to streaming all 104 World Cup 2026 matches.',
     image_url: null,
-    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.com'}/watch/world-cup-2026`,
+    link: `${process.env.NEXT_PUBLIC_APP_URL || 'https://smartlivetv.co.uk'}/watch/world-cup-2026`,
     source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
     category: ['football'],
@@ -99,7 +99,9 @@ export async function getLatestSportsNews(
   // Check module-level cache first (6 hour TTL)
   const cached = newsCache.get(cacheKey)
   if (cached && Date.now() < cached.expires) {
-    console.log('[NewsAPI] Cache hit — returning cached articles')
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[NewsAPI] Cache hit — returning cached articles')
+    }
     return cached.data
   }
 
@@ -114,7 +116,9 @@ export async function getLatestSportsNews(
   const url = `https://newsdata.io/api/1/news?${params.toString()}&domainurl=${domainFilter}`
 
   try {
-    console.log('[NewsAPI DEBUG] fetching:', url.replace(apiKey, 'REDACTED'))
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[NewsAPI DEBUG] fetching:', url.replace(apiKey, 'REDACTED'))
+    }
     let response = await fetch(url, {
       cache: 'no-store',
       headers: { 'Content-Type': 'application/json' },
@@ -124,7 +128,9 @@ export async function getLatestSportsNews(
     if (response.status === 422) {
       const fallbackUrl = `https://newsdata.io/api/1/news?${params.toString()}&domainurl=${NEWS_DOMAIN_FALLBACK}`
       console.warn('[NewsAPI] Domain filter rejected, retrying with fallback domain')
-      console.log('[NewsAPI DEBUG] retrying:', fallbackUrl.replace(apiKey || '', 'REDACTED'))
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[NewsAPI DEBUG] retrying:', fallbackUrl.replace(apiKey || '', 'REDACTED'))
+      }
       response = await fetch(fallbackUrl, {
         cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
@@ -153,7 +159,9 @@ export async function getLatestSportsNews(
       return FALLBACK_ARTICLES
     }
 
-    console.log(`[NewsAPI] Success — got ${data.results.length} articles`)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[NewsAPI] Success — got ${data.results.length} articles`)
+    }
 
     // Store in module-level cache for 6 hours
     newsCache.set(cacheKey, {

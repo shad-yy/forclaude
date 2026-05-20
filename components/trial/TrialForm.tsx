@@ -3,6 +3,7 @@ import { useState, useRef } from "react"
 import HCaptcha from "@hcaptcha/react-hcaptcha"
 import { useRouter } from "next/navigation"
 import { trackEvent } from "@/lib/analytics"
+import { Check } from "lucide-react"
 
 const COUNTRIES = [
   "United Kingdom", "Morocco", "France", "Germany", "Spain",
@@ -96,7 +97,7 @@ export function TrialForm() {
       <div className="text-center py-12">
         <div className="w-16 h-16 rounded-full bg-[#00e676]/10 border-2 
           border-[#00e676] flex items-center justify-center mx-auto mb-6">
-          <span className="text-[#00e676] text-2xl">✓</span>
+          <span className="text-[#00e676] text-2xl"><Check className="w-6 h-6" /></span>
         </div>
         <h2 className="text-2xl font-extrabold text-white mb-3">
           Trial Request Received!

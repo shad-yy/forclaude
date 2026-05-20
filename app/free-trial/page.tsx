@@ -5,6 +5,7 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { TrialForm } from "@/components/trial/TrialForm"
+import { CheckCircle2, Clock, CreditCard, Check } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Get Your Free 24-Hour IPTV Trial',
@@ -32,17 +33,17 @@ export default function FreeTrialPage() {
 
         <div className="flex gap-6 justify-center flex-wrap mb-10">
           <div className="text-center">
-            <div className="text-2xl mb-1">✅</div>
+            <div className="flex justify-center mb-1"><CheckCircle2 className="w-8 h-8 text-[#00e676]" /></div>
             <div className="text-sm font-bold text-white">Full Access</div>
             <div className="text-xs text-gray-500">All 230,000+ channels</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl mb-1">⏱</div>
+            <div className="flex justify-center mb-1"><Clock className="w-8 h-8 text-[#00e676]" /></div>
             <div className="text-sm font-bold text-white">24 Hours</div>
             <div className="text-xs text-gray-500">Complete trial period</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl mb-1">💳</div>
+            <div className="flex justify-center mb-1"><CreditCard className="w-8 h-8 text-[#00e676]" /></div>
             <div className="text-sm font-bold text-white">No Card</div>
             <div className="text-xs text-gray-500">Zero payment details</div>
           </div>
@@ -129,7 +130,7 @@ export default function FreeTrialPage() {
             "230,000+ total channels from 50+ countries"
           ].map((item, i) => (
             <div key={i} className="bg-[#12121a] border border-[#2a2a3a] rounded-xl px-4 py-3 flex items-center gap-3">
-              <span className="text-[#00e676]">✓</span>
+              <Check className="w-4 h-4 text-[#00e676] flex-shrink-0" />
               <span className="text-sm text-gray-300">{item}</span>
             </div>
           ))}

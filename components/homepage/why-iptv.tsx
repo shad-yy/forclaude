@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Server, Zap, Clock, Globe } from "lucide-react"
 
 import { StaggerChildren } from "@/components/ui/stagger-children"
 
@@ -93,6 +94,57 @@ export function WhyIPTV() {
                     >
                         Try Free For 24 Hours — No Card Required
                     </Link>
+                </div>
+
+                <div className="mt-16 border-t border-[#2a2a3a] pt-12">
+                    <p className="text-center text-xs font-bold text-gray-600 uppercase tracking-widest mb-8">
+                        Infrastructure &amp; Service Statistics
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                        {[
+                            {
+                                value: '99.9%',
+                                label: 'Server Uptime',
+                                sub: 'Redundant server network',
+                                icon: () => <Server className="w-5 h-5 text-[#00e676]" />,
+                            },
+                            {
+                                value: '10 Gbps',
+                                label: 'Network Capacity',
+                                sub: 'Per server bandwidth',
+                                icon: () => <Zap className="w-5 h-5 text-[#00e676]" />,
+                            },
+                            {
+                                value: '< 1s',
+                                label: 'Channel Load Time',
+                                sub: 'Average zap time',
+                                icon: () => <Clock className="w-5 h-5 text-[#00e676]" />,
+                            },
+                            {
+                                value: '50+',
+                                label: 'Server Locations',
+                                sub: 'Global CDN nodes',
+                                icon: () => <Globe className="w-5 h-5 text-[#00e676]" />,
+                            },
+                        ].map(stat => {
+                            const Icon = stat.icon
+                            return (
+                                <div key={stat.value}
+                                    className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl p-5 text-center">
+                                    <div className="flex justify-center mb-3">
+                                        <Icon />
+                                    </div>
+                                    <div className="text-2xl font-extrabold text-white mb-1">
+                                        {stat.value}
+                                    </div>
+                                    <div className="text-white font-bold text-xs mb-1">
+                                        {stat.label}
+                                    </div>
+                                    <div className="text-gray-600 text-xs">{stat.sub}</div>
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
             </div>
         </section>

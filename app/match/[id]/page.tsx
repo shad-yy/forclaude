@@ -97,7 +97,7 @@ export default async function MatchPage(
         name: `How to watch ${homeTeam} vs ${awayTeam} live?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `Watch ${homeTeam} vs ${awayTeam} live in 4K on Smart Live TV. All ${league} matches are included in the subscription from £12/month. Start a free 24-hour trial at smartlivetv.com/free-trial — no card needed.`,
+          text: `Watch ${homeTeam} vs ${awayTeam} live in 4K on Smart Live TV. All ${league} matches are included in the subscription from £12/month. Start a free 24-hour trial at smartlivetv.co.uk/free-trial — no card needed.`,
         },
       },
       {

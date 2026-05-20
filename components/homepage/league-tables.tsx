@@ -39,6 +39,8 @@ function TeamBadge({ logoUrl, teamName }: { logoUrl?: string | null; teamName: s
                 <img
                     src={logoUrl!}
                     alt={teamName}
+                    width={32}
+                    height={32}
                     className="max-h-8 max-w-8 object-contain"
                     loading="lazy"
                     onError={() => setImgOk(false)}
@@ -137,6 +139,8 @@ export function LeagueTables() {
                                 <img 
                                     src={league.localBadge || league.badgeUrl}
                                     alt={league.name}
+                                    width={20}
+                                    height={20}
                                     className="w-5 h-5 object-contain flex-shrink-0"
                                     onError={(e) => {
                                         const t = e.target as HTMLImageElement

@@ -154,10 +154,10 @@ export function PricingPreview() {
               {plan.color === 'highlighted' ? (
                 <>
                   <Link 
-                    href="/free-trial"
+                    href="/buy"
                     className="w-full py-3 rounded-xl text-sm font-bold transition-all text-center mt-auto bg-[#00e676] text-black hover:bg-[#00ff87] shadow-[0_0_15px_rgba(0,230,118,0.3)] block"
                   >
-                    Get Instant Access →
+                    Get Access Now →
                   </Link>
                   <Link 
                     href="/free-trial"
@@ -169,13 +169,13 @@ export function PricingPreview() {
               ) : (
                 <>
                   <Link 
-                    href="/free-trial"
+                    href="/buy"
                     className="w-full py-3 rounded-xl text-sm font-bold transition-all text-center mt-auto bg-[#1a1a24] text-white hover:bg-[#2a2a3a] border border-[#2a2a3a] block"
                   >
-                    Claim Free Trial →
+                    Get Access Now →
                   </Link>
                   <p className="text-center text-xs text-gray-500 mt-2">
-                    or <Link href="/free-trial" className="hover:underline text-gray-400">get instant access →</Link>
+                    or <Link href="/free-trial" className="hover:underline text-gray-400">try free for 24h →</Link>
                   </p>
                 </>
               )}
@@ -187,6 +187,12 @@ export function PricingPreview() {
           <p className="text-sm text-gray-500 font-medium bg-[#12121a] inline-block px-6 py-2 rounded-full border border-[#2a2a3a]">
             <span className="text-[#00e676] mr-2">✓</span>
             All plans have identical features · Only duration differs · Cancel anytime
+          </p>
+          <p className="text-center text-xs text-gray-600 mt-4">
+            Not sure yet?{' '}
+            <Link href="/free-trial" className="text-[#00e676] hover:underline">
+              Try free for 24 hours — no card needed
+            </Link>
           </p>
         </div>
       </div>

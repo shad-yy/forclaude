@@ -1,0 +1,27 @@
+<svg width="180" height="40" viewBox="0 0 180 40"
+  xmlns="http://www.w3.org/2000/svg">
+  <!-- Live indicator dot -->
+  <circle cx="10" cy="20" r="7" fill="#ff1744"/>
+  <circle cx="10" cy="20" r="4" fill="#ff1744" opacity="0.5">
+    <animate attributeName="r" from="4" to="8"
+      dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" from="0.5" to="0"
+      dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Wordmark -->
+  <text x="24" y="26" font-family="system-ui, -apple-system,
+    sans-serif" font-weight="800" font-size="18"
+    fill="white" letter-spacing="-0.5">
+    Smart
+  </text>
+  <text x="84" y="26" font-family="system-ui, -apple-system,
+    sans-serif" font-weight="800" font-size="18"
+    fill="#00e676" letter-spacing="-0.5">
+    Live
+  </text>
+  <text x="124" y="26" font-family="system-ui, -apple-system,
+    sans-serif" font-weight="800" font-size="18"
+    fill="white" letter-spacing="-0.5">
+    TV
+  </text>
+</svg>

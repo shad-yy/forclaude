@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const { name, email, whatsapp, plan, message } = parsed.data
 
     const resendKey = process.env.RESEND_API_KEY
-    const notifyEmail = process.env.ORDER_NOTIFY_EMAIL || 'orders@smartlivetv.com'
+    const notifyEmail = process.env.ORDER_NOTIFY_EMAIL || 'orders@smartlivetv.co.uk'
 
     if (resendKey) {
       await fetch('https://api.resend.com/emails', {
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Smart Live TV Orders <noreply@smartlivetv.com>',
+          from: 'Smart Live TV Orders <noreply@smartlivetv.co.uk>',
           to: [notifyEmail],
           subject: `New Order: ${plan} — ${name}`,
           html: `
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Smart Live TV <noreply@smartlivetv.com>',
+          from: 'Smart Live TV <noreply@smartlivetv.co.uk>',
           to: [email],
           subject: 'Your Smart Live TV Order — We\'ll Be In Touch Shortly',
           html: `

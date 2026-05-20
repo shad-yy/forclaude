@@ -1,4 +1,3 @@
-import { Suspense } from "react"
 import { Metadata } from "next"
 import { ENV } from "@/lib/config/env"
 import { SchemaMarkup } from "@/components/SchemaMarkup"
@@ -9,7 +8,6 @@ import { LeagueTables } from "@/components/homepage/league-tables"
 import { WhyIPTV } from "@/components/homepage/why-iptv"
 import { PricingPreview } from "@/components/homepage/pricing-preview"
 import { NewsSection } from "@/components/homepage/news-section"
-import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
@@ -26,9 +24,6 @@ export const metadata: Metadata = {
   }
 }
 
-function NewsSkeleton() {
-  return <Skeleton className="h-96 w-full rounded-3xl" />
-}
 
 export default function HomePage() {
   const organizationSchema = {
@@ -134,22 +129,14 @@ export default function HomePage() {
       </ScrollReveal>
 
       <div className="contain-layout min-h-[500px]">
-        <Suspense fallback={
-          <section className="py-16 md:py-20 bg-[#0a0a0f] border-t border-[#2a2a3a]">
-            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-              <NewsSkeleton />
+        <ScrollReveal>
+          <section className="py-16 md:py-20 bg-[#0a0a0f] border-t border-[#2a2a3a] relative">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
+            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+              <NewsSection maxArticles={12} />
             </div>
           </section>
-        }>
-          <ScrollReveal>
-            <section className="py-16 md:py-20 bg-[#0a0a0f] border-t border-[#2a2a3a] relative">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
-              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
-                <NewsSection maxArticles={12} />
-              </div>
-            </section>
-          </ScrollReveal>
-        </Suspense>
+        </ScrollReveal>
       </div>
 
     </div>

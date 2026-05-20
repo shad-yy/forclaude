@@ -375,14 +375,14 @@ export default async function EuropaLeaguePage() {
                   Live group standings are available to verified league data partners.
                 </p>
                 <p className="text-white font-bold text-lg mb-4">
-                  2024–25 UEFA Europa League
+                  2025–26 UEFA Europa League
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-6">
                   {[
-                    { round: 'Quarter-Finals', date: 'Apr 2025' },
-                    { round: 'Semi-Finals', date: 'Apr/May 2025' },
-                    { round: 'Final', date: '21 May 2025 · Bilbao' },
-                    { round: 'Champions', date: 'TBD' },
+                    { round: 'League Phase', date: 'Sep–Jan 2026' },
+                    { round: 'Knockout Rounds', date: 'Feb–Apr 2026' },
+                    { round: 'Semi-Finals', date: 'Apr/May 2026' },
+                    { round: 'Final', date: '21 May 2026 · Bilbao' },
                   ].map(item => (
                     <div key={item.round} className="bg-gray-900 rounded-xl p-3 border border-gray-700">
                       <div className="text-gray-400 text-xs mb-1">{item.round}</div>

@@ -77,7 +77,7 @@ export function DynamicSEOContent({
     },
     {
       question: `How to watch ${leagueName} live in the UK?`,
-      answer: `Watch every ${leagueName} match live in HD and 4K on Smart Live TV. All UK broadcast channels showing ${leagueName} are included — Sky Sports, TNT Sports, and beIN Sports — from £12/month with no contract. Start a free 24-hour trial at smartlivetv.com/free-trial.`,
+      answer: `Watch every ${leagueName} match live in HD and 4K on Smart Live TV. All UK broadcast channels showing ${leagueName} are included — Sky Sports, TNT Sports, and beIN Sports — from £12/month with no contract. Start a free 24-hour trial at smartlivetv.co.uk/free-trial.`,
     },
   ].filter(Boolean) as Array<{ question: string; answer: string }>
 

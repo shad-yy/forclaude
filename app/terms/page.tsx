@@ -68,8 +68,8 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-bold text-white mb-3">7. Contact</h2>
-            <p>Questions about these terms: <a href="mailto:support@smartlivetv.com"
-              className="text-[#00e676] hover:underline">support@smartlivetv.com</a>
+            <p>Questions about these terms: <a href="mailto:support@smartlivetv.co.uk"
+              className="text-[#00e676] hover:underline">support@smartlivetv.co.uk</a>
             </p>
           </section>
         </div>
