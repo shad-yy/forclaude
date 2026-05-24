@@ -83,30 +83,31 @@ export async function getUFCEvents(): Promise<{
 }> {
   const data = await espnFetch<ESPNScoreboard>(
     'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard',
-    'espn:ufc:scoreboard:v4', // bump cache key
+    'espn:ufc:scoreboard:v5',
     900
   )
 
   const events = data?.events || []
   const now = new Date()
   
-  // Filter upcoming: events with date in the future
+  // 30 days ago threshold for "recent"
+  const thirtyDaysAgo = new Date(
+    now.getTime() - 30 * 24 * 60 * 60 * 1000
+  )
+
   const upcoming = events.filter(e => {
     if (e.status?.type?.completed) return false
     if (!e.date) return false
-    const eventDate = new Date(e.date)
-    return eventDate >= new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const d = new Date(e.date)
+    return !isNaN(d.getTime()) && 
+      d >= new Date(now.getTime() - 24 * 60 * 60 * 1000)
   })
-  
-  // Filter recent: completed events from last 90 days
-  const ninetyDaysAgo = new Date(
-    now.getTime() - 90 * 24 * 60 * 60 * 1000
-  )
+
   const recent = events.filter(e => {
     if (!e.status?.type?.completed) return false
     if (!e.date) return false
-    const eventDate = new Date(e.date)
-    return eventDate >= ninetyDaysAgo
+    const d = new Date(e.date)
+    return !isNaN(d.getTime()) && d >= thirtyDaysAgo
   })
 
   return { upcoming, recent }

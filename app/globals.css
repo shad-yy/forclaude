@@ -43,10 +43,9 @@ body.menu-open {
   user-select: none;
 }
 
-/* Prevent scroll lock on modals/overlays */
-.overflow-hidden {
-  touch-action: none;
-}
+/* Note: Do NOT add touch-action: none to .overflow-hidden —
+   Tailwind's overflow-x-hidden uses this class and it kills
+   iOS scrolling. Body scroll lock is handled via body.menu-open. */
 
 /* ── Section spacing utilities ── */
 .section {

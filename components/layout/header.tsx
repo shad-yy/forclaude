@@ -108,6 +108,23 @@ export const Header = memo(function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [isMobileMenuOpen])
+
   const handleMouseEnter = () => {
     if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current)
     setIsDropdownOpen(true)
@@ -311,14 +328,14 @@ export const Header = memo(function Header() {
                         {/* Footer CTA */}
                         <div className="px-2 pt-2 border-t border-[#2a2a3a]">
                           <Link
-                            href="/free-trial"
+                            href="/buy"
                             className="flex items-center justify-between w-full 
                               px-4 py-3 bg-[#00e676]/10 hover:bg-[#00e676]/20 
                               border border-[#00e676]/20 hover:border-[#00e676]/40 
                               rounded-xl transition-all group"
                           >
                             <span className="text-sm font-bold text-[#00e676]">
-                              Get free 24-hour access to all channels
+                              Get instant access to all channels
                             </span>
                             <span className="text-[#00e676] text-sm 
                               group-hover:translate-x-1 transition-transform">
@@ -365,87 +382,95 @@ export const Header = memo(function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation Overlay */}
-        <div
-          className={cn(
-            "lg:hidden fixed inset-0 top-[60px] bg-background/95 backdrop-blur-xl z-40 transition-all duration-300 ease-in-out border-t border-border",
-            isMobileMenuOpen ? "opacity-100 visible h-[calc(100vh-60px)]" : "opacity-0 invisible h-0"
-          )}
-          style={{
-            WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain',
-          }}
-        >
-          <div className="flex flex-col h-full p-6 overflow-y-auto pb-24">
-            <div className="space-y-6">
-              <div>
-                <div className="text-xs font-bold text-text-muted uppercase tracking-widest mb-3">Watch Live</div>
-                <div className="grid gap-2">
-                  {[...WATCH_LINKS.football, ...WATCH_LINKS.more].map((link) => (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      className="flex items-center gap-3 py-3.5 px-3 touch-manipulation rounded-lg bg-surface border border-border text-text-primary hover:border-accent-primary transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-[#12121a] border 
-                        border-[#2a2a3a] flex items-center justify-center 
-                        flex-shrink-0">
-                        <img
-                          src={link.badge}
-                          alt={link.name}
-                          className="w-5 h-5 object-contain"
-                          onError={(e) => {
-                            const t = e.target as HTMLImageElement
-                            if (link.remoteBadge && t.src !== link.remoteBadge) {
-                              t.src = link.remoteBadge
-                            } else {
-                              t.src = '/leagues/placeholder.svg'
-                            }
-                          }}
-                        />
-                      </div>
-                      <span className="font-semibold">{link.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+      </header>
 
-              <div className="pt-4 border-t border-border flex flex-col gap-2">
-                <Link href="/favorites" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}><Heart className="w-4 h-4 text-red-400" /> Favorites</Link>
-                <Link href="/news" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>News</Link>
-                <Link href="/channels" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Channels</Link>
-                <Link href="/blog" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
-                <Link href="/ufc" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>UFC</Link>
-                <Link href="/pricing" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
-                <Link href="/about" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
-                <Link href="/contact" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
-                <div className="pt-2 flex items-center gap-2">
-                </div>
+      {/* Mobile Navigation Overlay — uses translateY instead of opacity/h-0
+          to keep rendering context. Solid background, no backdrop-filter. */}
+      <div
+        className={cn(
+          "lg:hidden fixed left-0 right-0 bottom-0 z-40",
+          "transition-transform duration-300 ease-in-out",
+          "border-t border-[#2a2a3a]",
+          isMobileMenuOpen
+            ? "translate-y-0 pointer-events-auto"
+            : "translate-y-full pointer-events-none"
+        )}
+        style={{
+          top: '60px',
+          backgroundColor: '#0a0a0f',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+        }}
+      >
+        <div className="flex flex-col h-full p-6 overflow-y-auto pb-24">
+          <div className="space-y-6">
+            <div>
+              <div className="text-xs font-bold text-text-muted uppercase tracking-widest mb-3">Watch Live</div>
+              <div className="grid gap-2">
+                {[...WATCH_LINKS.football, ...WATCH_LINKS.more].map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="flex items-center gap-3 py-3.5 px-3 touch-manipulation rounded-lg bg-surface border border-border text-text-primary hover:border-accent-primary transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#12121a] border 
+                      border-[#2a2a3a] flex items-center justify-center 
+                      flex-shrink-0">
+                      <img
+                        src={link.badge}
+                        alt={link.name}
+                        className="w-5 h-5 object-contain"
+                        onError={(e) => {
+                          const t = e.target as HTMLImageElement
+                          if (link.remoteBadge && t.src !== link.remoteBadge) {
+                            t.src = link.remoteBadge
+                          } else {
+                            t.src = '/leagues/placeholder.svg'
+                          }
+                        }}
+                      />
+                    </div>
+                    <span className="font-semibold">{link.name}</span>
+                  </Link>
+                ))}
               </div>
             </div>
 
-            <div className="mt-auto pt-8">
-              <div onClick={() => setIsMobileMenuOpen(false)} className="mb-4">
-                <ShimmerButton
-                  href="/buy"
-                  variant="primary"
-                  className="w-full justify-center py-4 rounded-xl text-base"
-                >
-                  Get Access Now →
-                </ShimmerButton>
+            <div className="pt-4 border-t border-border flex flex-col gap-2">
+              <Link href="/favorites" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}><Heart className="w-4 h-4 text-red-400" /> Favorites</Link>
+              <Link href="/news" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>News</Link>
+              <Link href="/channels" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Channels</Link>
+              <Link href="/blog" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
+              <Link href="/ufc" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>UFC</Link>
+              <Link href="/pricing" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
+              <Link href="/about" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+              <Link href="/contact" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
+              <div className="pt-2 flex items-center gap-2">
               </div>
-              <Link
-                href="/contact"
-                className="w-full flex justify-center text-sm font-semibold text-text-secondary py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Need help? Contact Support
-              </Link>
             </div>
           </div>
+
+          <div className="mt-auto pt-8">
+            <div onClick={() => setIsMobileMenuOpen(false)} className="mb-4">
+              <ShimmerButton
+                href="/buy"
+                variant="primary"
+                className="w-full justify-center py-4 rounded-xl text-base"
+              >
+                Get Access Now →
+              </ShimmerButton>
+            </div>
+            <Link
+              href="/contact"
+              className="w-full flex justify-center text-sm font-semibold text-text-secondary py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Need help? Contact Support
+            </Link>
+          </div>
         </div>
-      </header>
+      </div>
     </>
   )
 })

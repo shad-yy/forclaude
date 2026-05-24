@@ -145,7 +145,7 @@ export default async function MatchPage(
           ) : (
             <div className="flex gap-4 justify-center flex-wrap">
               <Link
-                href="/free-trial"
+                href="/buy"
                 className="bg-[#00e676] text-black font-extrabold px-8 py-4 rounded-xl text-base hover:bg-[#00ff87] transition-all shadow-[0_0_20px_rgba(0,230,118,0.3)]"
               >
                 Watch This Match Live →
@@ -231,7 +231,7 @@ export default async function MatchPage(
       {/* Mobile sticky */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0f]/95 backdrop-blur border-t border-[#2a2a3a] p-4">
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/free-trial" className="bg-[#00e676] text-black font-bold text-sm py-4 rounded-2xl text-center touch-manipulation">
+          <Link href="/buy" className="bg-[#00e676] text-black font-bold text-sm py-4 rounded-2xl text-center touch-manipulation">
             Watch Live
           </Link>
           <Link href="/free-trial" className="border border-[#2a2a3a] text-gray-300 font-bold text-sm py-4 rounded-2xl text-center">

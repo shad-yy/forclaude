@@ -107,9 +107,9 @@ export default function WorldCup2026Page() {
             in 4K with no blackouts, from any device, anywhere in the world.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/free-trial"
+            <Link href="/buy"
               className="bg-[#00e676] text-black font-extrabold px-10 py-4 rounded-xl text-lg hover:bg-[#00ff87] transition-all shadow-[0_0_30px_rgba(0,230,118,0.3)]">
-              Stream World Cup Free for 24H →
+              Stream World Cup Live →
             </Link>
             <Link href="/pricing"
               className="border border-[#2a2a3a] hover:border-[#00e676] text-white font-bold px-10 py-4 rounded-xl text-lg">
@@ -214,7 +214,7 @@ export default function WorldCup2026Page() {
           </p>
           <Link href="/free-trial"
             className="inline-flex items-center bg-[#00e676] text-black font-extrabold px-12 py-5 rounded-xl text-xl hover:bg-[#00ff87] transition-all shadow-[0_0_40px_rgba(0,230,118,0.25)]">
-            Watch World Cup Free →
+            Start Free Trial →
           </Link>
         </section>
       </div>

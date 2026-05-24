@@ -197,12 +197,12 @@ export default async function WatchLeaguePage({ params }: Props) {
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <ShimmerButton
-                                href="/free-trial"
+                                href="/buy"
                                 variant="league"
                                 leagueColor={theme.secondary}
                                 className="px-8 py-4 text-lg rounded-lg w-full sm:w-auto"
                             >
-                                Stream {theme.name} Free For 24 Hours
+                                Stream {theme.name} in 4K →
                             </ShimmerButton>
                             <Link
                                 href="/buy"
@@ -290,7 +290,7 @@ export default async function WatchLeaguePage({ params }: Props) {
                                             </div>
                                         </div>
                                         <ShimmerButton
-                                            href="/free-trial"
+                                            href="/buy"
                                             variant="league"
                                             leagueColor={theme.secondary}
                                             className="px-6 py-3 text-sm rounded-lg whitespace-nowrap w-full md:w-auto"
@@ -396,12 +396,12 @@ export default async function WatchLeaguePage({ params }: Props) {
                         <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">Ready to ditch the cable?</h2>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
                             <ShimmerButton
-                                href="/free-trial"
+                                href="/buy"
                                 variant="league"
                                 leagueColor={theme.secondary}
                                 className="px-10 py-5 text-xl rounded-xl w-full sm:w-auto"
                             >
-                                Start Watching {theme.name} Tonight — Free Trial
+                                Start Watching Tonight →
                             </ShimmerButton>
                             <Link
                                 href="/buy"
@@ -421,16 +421,14 @@ export default async function WatchLeaguePage({ params }: Props) {
             href="/buy"
             className="bg-[#00e676] text-black font-bold text-base py-4 rounded-2xl text-center touch-manipulation active:scale-95 transition-transform cta-button"
           >
-            Get Access Now
+            Watch Now
           </Link>
-          <a
-            href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/free-trial"
             className="bg-[#25D366] text-black font-bold text-base py-4 rounded-2xl text-center touch-manipulation active:scale-95 transition-transform cta-button"
           >
-            💬 WhatsApp
-          </a>
+            Free Trial
+          </Link>
         </div>
       </div>
         </div>

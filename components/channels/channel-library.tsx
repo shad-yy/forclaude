@@ -158,7 +158,7 @@ export default function ChannelLibrary() {
                     </span>
                     
                     <Link
-                      href="/free-trial"
+                      href="/buy"
                       className="text-xs font-bold text-black bg-[#00e676] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
                       onClick={(e) => e.stopPropagation()}
                     >

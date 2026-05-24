@@ -248,7 +248,7 @@ export default async function Formula1Page() {
                       </div>
                     ))}
                   </div>
-                  <Link href="/free-trial" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white text-sm"
+                  <Link href="/buy" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white text-sm"
                     style={{ backgroundColor: '#e10600' }}>
                     Watch F1 Live →
                   </Link>
