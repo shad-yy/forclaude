@@ -86,6 +86,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
         <link rel="preconnect" href="https://www.thesportsdb.com" />
         <link rel="dns-prefetch" href="https://www.thesportsdb.com" />
         <link rel="preconnect" href="https://r2.thesportsdb.com" />
@@ -111,27 +114,6 @@ export default function RootLayout({
         </SportThemeProvider>
         </ThemeProvider>
 
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Basic performance monitoring
-              if ('performance' in window && 'PerformanceObserver' in window) {
-                try {
-                  const observer = new PerformanceObserver((list) => {
-                    for (const entry of list.getEntries()) {
-                      if (entry.entryType === 'navigation') {
-                        console.log('Page Load Time:', entry.loadEventEnd - entry.loadEventStart, 'ms');
-                      }
-                    }
-                  });
-                  observer.observe({ entryTypes: ['navigation'] });
-                } catch (e) {
-                  // Silently fail if not supported
-                }
-              }
-            `,
-          }}
-        />
         <GoogleAnalytics measurementId={ENV.GA_MEASUREMENT_ID} />
         <WebVitals />
         <CookieBanner />

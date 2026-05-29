@@ -116,6 +116,45 @@ export const Footer = memo(function Footer() {
           ))}
         </div>
 
+        {/* Payment Methods */}
+        <div className="pt-8 border-t border-border mb-8">
+          <p className="text-xs font-bold text-text-muted uppercase tracking-widest mb-4 text-center">We Accept All Payment Methods</p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {/* Visa */}
+            <div className="bg-white/5 border border-border rounded-lg px-3 py-2 flex items-center justify-center" title="Visa">
+              <svg width="40" height="14" viewBox="0 0 40 14" fill="none"><path d="M16.3 0.5L10.7 13.5H7.1L4.3 3.2C4.1 2.5 3.9 2.2 3.3 1.9C2.4 1.4 0.9 1 0 0.7L0.1 0.5H5.8C6.5 0.5 7.1 1 7.2 1.8L8.5 8.8L12 0.5H16.3ZM28.8 9.2C28.8 5.7 23.8 5.5 23.8 3.9C23.8 3.4 24.3 2.9 25.4 2.8C25.9 2.7 27.4 2.7 29 3.4L29.7 0.9C28.8 0.6 27.7 0.3 26.3 0.3C22.2 0.3 19.4 2.4 19.4 5.4C19.4 7.6 21.4 8.8 22.9 9.5C24.5 10.3 25 10.8 25 11.5C25 12.5 23.8 12.9 22.7 12.9C20.9 12.9 19.9 12.5 19.1 12.1L18.4 14.7C19.2 15 20.7 15.4 22.3 15.4C26.7 15.4 29.3 13.3 28.8 9.2ZM38.2 13.5H34.8L35.1 12.2H31.4L30.8 13.5H26.5L31.8 1.2C32 0.7 32.5 0.5 33.1 0.5H36L38.2 13.5ZM33.3 4L31.9 9.4H34.7L33.3 4ZM17.8 13.5L21 0.5H17.2L14 13.5H17.8Z" fill="#e5e7eb"/></svg>
+            </div>
+            {/* Mastercard */}
+            <div className="bg-white/5 border border-border rounded-lg px-3 py-2 flex items-center justify-center" title="Mastercard">
+              <svg width="32" height="20" viewBox="0 0 32 20" fill="none"><circle cx="11" cy="10" r="9" fill="#eb001b" opacity="0.8"/><circle cx="21" cy="10" r="9" fill="#f79e1b" opacity="0.8"/><path d="M16 3.8a9 9 0 0 1 0 12.4 9 9 0 0 1 0-12.4z" fill="#ff5f00" opacity="0.9"/></svg>
+            </div>
+            {/* American Express */}
+            <div className="bg-white/5 border border-border rounded-lg px-3 py-2 flex items-center justify-center" title="American Express">
+              <svg width="32" height="20" viewBox="0 0 32 20" fill="none"><rect x="1" y="1" width="30" height="18" rx="3" fill="none" stroke="#2e77bc" strokeWidth="1.5"/><text x="16" y="12" textAnchor="middle" fontFamily="Inter,sans-serif" fontWeight="800" fontSize="7" fill="#2e77bc">AMEX</text></svg>
+            </div>
+            {/* PayPal */}
+            <div className="bg-white/5 border border-border rounded-lg px-3 py-2 flex items-center justify-center" title="PayPal">
+              <svg width="36" height="16" viewBox="0 0 36 16" fill="none"><text x="0" y="12" fontFamily="Inter,sans-serif" fontWeight="700" fontSize="10" fill="#009cde">Pay</text><text x="17" y="12" fontFamily="Inter,sans-serif" fontWeight="700" fontSize="10" fill="#012169">Pal</text></svg>
+            </div>
+            {/* Apple Pay */}
+            <div className="bg-white/5 border border-border rounded-lg px-3 py-2 flex items-center justify-center" title="Apple Pay">
+              <svg width="40" height="16" viewBox="0 0 40 16" fill="none"><path d="M7.8 2.4C7.3 3 6.5 3.5 5.7 3.4C5.6 2.6 6 1.8 6.4 1.2C6.9 0.6 7.8 0.1 8.5 0C8.6 0.9 8.3 1.7 7.8 2.4ZM8.5 3.6C7.3 3.5 6.3 4.3 5.7 4.3C5.1 4.3 4.2 3.6 3.2 3.7C2 3.7 0.9 4.4 0.4 5.5C-0.8 7.7 0.1 11 1.3 12.8C1.8 13.7 2.5 14.7 3.4 14.6C4.3 14.6 4.7 14 5.8 14C6.9 14 7.3 14.6 8.2 14.6C9.2 14.6 9.7 13.7 10.3 12.8C10.9 11.8 11.2 10.8 11.2 10.8C11.2 10.8 9.5 10.1 9.5 8.1C9.5 6.4 10.8 5.6 10.9 5.5C10 4.2 8.6 4 8.5 3.6Z" fill="#e5e7eb"/><text x="14" y="12" fontFamily="Inter,sans-serif" fontWeight="600" fontSize="9" fill="#e5e7eb">Pay</text></svg>
+            </div>
+            {/* Google Pay */}
+            <div className="bg-white/5 border border-border rounded-lg px-3 py-2 flex items-center justify-center" title="Google Pay">
+              <svg width="40" height="16" viewBox="0 0 40 16" fill="none"><text x="0" y="12" fontFamily="Inter,sans-serif" fontWeight="600" fontSize="9" fill="#4285f4">G</text><text x="7" y="12" fontFamily="Inter,sans-serif" fontWeight="600" fontSize="9" fill="#ea4335">o</text><text x="14" y="12" fontFamily="Inter,sans-serif" fontWeight="600" fontSize="9" fill="#fbbc05">o</text><text x="21" y="12" fontFamily="Inter,sans-serif" fontWeight="600" fontSize="9" fill="#4285f4">g</text><text x="27" y="12" fontFamily="Inter,sans-serif" fontWeight="600" fontSize="9" fill="#34a853">le</text><text x="37" y="12" fontFamily="Inter,sans-serif" fontWeight="600" fontSize="9" fill="#e5e7eb"> </text></svg>
+            </div>
+            {/* Crypto / Bitcoin */}
+            <div className="bg-white/5 border border-border rounded-lg px-3 py-2 flex items-center justify-center" title="Cryptocurrency">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="none" stroke="#f7931a" strokeWidth="1.5"/><text x="10" y="14" textAnchor="middle" fontFamily="Inter,sans-serif" fontWeight="800" fontSize="11" fill="#f7931a">₿</text></svg>
+            </div>
+            {/* Bank Transfer */}
+            <div className="bg-white/5 border border-border rounded-lg px-3 py-2 flex items-center justify-center" title="Bank Transfer">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 1L2 6V8H18V6L10 1Z" fill="none" stroke="#9ca3af" strokeWidth="1.2"/><rect x="4" y="9" width="2" height="6" rx="0.5" fill="#9ca3af"/><rect x="9" y="9" width="2" height="6" rx="0.5" fill="#9ca3af"/><rect x="14" y="9" width="2" height="6" rx="0.5" fill="#9ca3af"/><rect x="2" y="16" width="16" height="2" rx="0.5" fill="#9ca3af"/></svg>
+            </div>
+          </div>
+        </div>
+
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-medium text-text-muted">
           <p>&copy; {currentYear} SmartLiveTV. All rights reserved.</p>
           <div className="flex gap-6">

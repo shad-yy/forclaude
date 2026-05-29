@@ -27,10 +27,7 @@ export function HeroSection() {
 
           {/* LEFT COLUMN (60%) */}
           <div className="flex-1 lg:max-w-[60%] flex flex-col items-start text-left space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
+            <div
               className="inline-flex items-center gap-2 bg-surface-elevated border border-accent-primary/30 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide"
             >
               <span className="relative flex h-2 w-2">
@@ -38,31 +35,22 @@ export function HeroSection() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-live-red"></span>
               </span>
               <span className="text-text-primary">Replaces £120+/month in streaming subscriptions</span>
-            </motion.div>
+            </div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
+            <h1
               className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1]"
             >
               Replace Netflix, Sky Sports & Disney+ <br />
               <span className="text-accent-primary">With One £12 Subscription</span>
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+            <p
               className="text-lg md:text-xl text-text-secondary max-w-xl font-normal leading-relaxed"
             >
               Watch every Premier League match, Champions League, UFC, Formula 1, NBA — plus Netflix, Disney+, Amazon Prime, Hulu, Shahid and every streaming service. One subscription. All devices. Cancel anytime.
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+            <div
               className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-2"
             >
               <ShimmerButton href="/buy" variant="primary"
@@ -73,7 +61,7 @@ export function HeroSection() {
                 className="w-full sm:w-auto px-8 py-4 text-lg rounded-lg">
                 Try Free for 24H ↓
               </ShimmerButton>
-            </motion.div>
+            </div>
 
             {/* Live Stats Ticker */}
             <motion.div

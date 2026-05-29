@@ -141,9 +141,11 @@ export const Header = memo(function Header() {
       <header
         className={cn(
           "fixed top-0 z-50 w-full transition-all duration-300",
-          isScrolled
-            ? "bg-[#0a0a0f]/90 backdrop-blur-xl border-b border-[#2a2a3a]/60 shadow-[0_1px_0_0_rgba(255,255,255,0.04)] py-3"
-            : "bg-transparent border-transparent py-4"
+          isMobileMenuOpen
+            ? "bg-[#0a0a0f] border-b border-[#2a2a3a]/60 py-3"
+            : isScrolled
+              ? "bg-[#0a0a0f]/90 backdrop-blur-xl border-b border-[#2a2a3a]/60 shadow-[0_1px_0_0_rgba(255,255,255,0.04)] py-3"
+              : "bg-transparent border-transparent py-4"
         )}
       >
         <div className="container mx-auto px-4">
@@ -391,18 +393,20 @@ export const Header = memo(function Header() {
           "lg:hidden fixed left-0 right-0 bottom-0 z-40",
           "transition-transform duration-300 ease-in-out",
           "border-t border-[#2a2a3a]",
+          "isolate",
           isMobileMenuOpen
             ? "translate-y-0 pointer-events-auto"
             : "translate-y-full pointer-events-none"
         )}
         style={{
           top: '60px',
-          backgroundColor: '#0a0a0f',
+          background: '#0a0a0f',
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
+          contain: 'paint',
         }}
       >
-        <div className="flex flex-col h-full p-6 overflow-y-auto pb-24">
+        <div className="flex flex-col h-full p-6 overflow-y-auto pb-24 bg-[#0a0a0f] relative z-10">
           <div className="space-y-6">
             <div>
               <div className="text-xs font-bold text-text-muted uppercase tracking-widest mb-3">Watch Live</div>

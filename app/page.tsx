@@ -4,10 +4,12 @@ import { SchemaMarkup } from "@/components/SchemaMarkup"
 
 import { HeroSection } from "@/components/homepage/hero-section"
 import { MatchCard } from "@/components/homepage/match-card"
-import { LeagueTables } from "@/components/homepage/league-tables"
-import { WhyIPTV } from "@/components/homepage/why-iptv"
-import { PricingPreview } from "@/components/homepage/pricing-preview"
-import { NewsSection } from "@/components/homepage/news-section"
+import dynamic from "next/dynamic"
+
+const LeagueTables = dynamic(() => import("@/components/homepage/league-tables").then(mod => ({ default: mod.LeagueTables })))
+const WhyIPTV = dynamic(() => import("@/components/homepage/why-iptv").then(mod => ({ default: mod.WhyIPTV })))
+const PricingPreview = dynamic(() => import("@/components/homepage/pricing-preview").then(mod => ({ default: mod.PricingPreview })))
+const NewsSection = dynamic(() => import("@/components/homepage/news-section").then(mod => ({ default: mod.NewsSection })))
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
@@ -101,9 +103,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-950 overflow-x-hidden text-gray-100">
       <SchemaMarkup schema={websiteSchema} />
       <SchemaMarkup schema={organizationSchema} />
-      <FadeIn delay={0.1}>
-        <HeroSection />
-      </FadeIn>
+      <HeroSection />
 
       <FadeIn direction="up">
         <ScrollReveal>
