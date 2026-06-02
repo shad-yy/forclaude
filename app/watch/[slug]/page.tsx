@@ -39,7 +39,13 @@ function safeParseSportsDBDate(date: string, time?: string): Date | null {
 function formatMatchDate(dateStr: string | null | undefined): string {
     const d = safeParseSportsDBDate(dateStr || '')
     if (!d) return 'TBA'
-    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+    // Reject obviously wrong years
+    if (d.getFullYear() < 2024 || d.getFullYear() > 2030) return 'TBA'
+    return d.toLocaleDateString('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+    })
 }
 
 // Exact titles per spec — all verified under 60 chars
@@ -187,7 +193,13 @@ export default async function WatchLeaguePage({ params }: Props) {
                 >
                     <div className="container mx-auto max-w-4xl">
                         <div className="flex items-center justify-center mb-6">
-                            <LeagueBadge src={theme.badgeUrl} alt={theme.name} size={64} className="object-contain" />
+                            <LeagueBadge 
+                                src={theme.badgeUrl}
+                                localSrc={theme.localBadge}
+                                alt={theme.name} 
+                                size={64}
+                                className="object-contain" 
+                            />
                         </div>
                         <h1 className="text-4xl md:text-6xl font-extrabold mb-4 md:mb-6">
                             {theme.heroText}

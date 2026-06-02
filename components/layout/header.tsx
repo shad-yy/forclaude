@@ -251,14 +251,12 @@ export const Header = memo(function Header() {
                                   <img
                                     src={link.badge}
                                     alt={link.name}
-                                    className="w-5 h-5 object-contain"
+                                    width={24}
+                                    height={24}
+                                    className="w-6 h-6 object-contain"
                                     onError={(e) => {
-                                      const t = e.target as HTMLImageElement
-                                      if (link.remoteBadge && t.src !== link.remoteBadge) {
-                                        t.src = link.remoteBadge
-                                      } else {
-                                        t.src = '/leagues/placeholder.svg'
-                                      }
+                                      (e.target as HTMLImageElement).src = 
+                                        '/leagues/placeholder.svg'
                                     }}
                                   />
                                 </div>
@@ -302,14 +300,12 @@ export const Header = memo(function Header() {
                                 <img
                                   src={link.badge}
                                   alt={link.name}
-                                  className="w-5 h-5 object-contain"
+                                  width={24}
+                                  height={24}
+                                  className="w-6 h-6 object-contain"
                                   onError={(e) => {
-                                    const t = e.target as HTMLImageElement
-                                    if (link.remoteBadge && t.src !== link.remoteBadge) {
-                                      t.src = link.remoteBadge
-                                    } else {
-                                      t.src = '/leagues/placeholder.svg'
-                                    }
+                                    (e.target as HTMLImageElement).src = 
+                                      '/leagues/placeholder.svg'
                                   }}
                                 />
                               </div>
@@ -424,14 +420,12 @@ export const Header = memo(function Header() {
                       <img
                         src={link.badge}
                         alt={link.name}
-                        className="w-5 h-5 object-contain"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6 object-contain"
                         onError={(e) => {
-                          const t = e.target as HTMLImageElement
-                          if (link.remoteBadge && t.src !== link.remoteBadge) {
-                            t.src = link.remoteBadge
-                          } else {
-                            t.src = '/leagues/placeholder.svg'
-                          }
+                          (e.target as HTMLImageElement).src = 
+                            '/leagues/placeholder.svg'
                         }}
                       />
                     </div>

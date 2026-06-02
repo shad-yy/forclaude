@@ -8,32 +8,26 @@ interface LeagueBadgeProps {
   className?: string
 }
 
-export function LeagueBadge({
-  src,
-  localSrc,
-  alt,
-  size = 64,
-  className = "object-contain rounded-sm",
+export function LeagueBadge({ 
+  src, localSrc, alt, size = 32, className 
 }: LeagueBadgeProps) {
-  // Use local file if available, fall back to remote
-  const primarySrc = localSrc || src || '/leagues/placeholder.svg'
-
-  if (!primarySrc) return null
-
+  // Always prefer local file — no network dependency
+  const imgSrc = localSrc || src || '/leagues/placeholder.svg'
+  
   return (
     <img
-      src={primarySrc}
+      src={imgSrc}
       alt={alt}
       width={size}
       height={size}
       className={className}
+      loading="lazy"
       onError={(e) => {
         const img = e.target as HTMLImageElement
-        // Try remote fallback if local fails
-        if (src && img.src !== src) {
+        // Try remote fallback
+        if (src && img.src !== src && !img.src.includes('placeholder')) {
           img.src = src
         } else {
-          // Final fallback: placeholder
           img.src = '/leagues/placeholder.svg'
         }
       }}

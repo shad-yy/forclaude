@@ -55,21 +55,49 @@ function safeParseSportsDBDate(date: string, time?: string): Date | null {
 function formatMatchDate(dateStr: string | null | undefined): string {
     const d = safeParseSportsDBDate(dateStr || '')
     if (!d) return 'TBA'
+    if (d.getFullYear() < 2024 || d.getFullYear() > 2030) return 'TBA'
     return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
-function formatMatchTime(timeStr: string | null | undefined): string {
-    if (!timeStr) return ''
-    // Handle "HH:MM:SS+00:00" or "HH:MM:SS" format
-    const clean = timeStr.split('+')[0].split('-')[0].trim()
-    const parts = clean.split(':')
-    if (parts.length < 2) return ''
-    const hours = parseInt(parts[0], 10)
-    const minutes = parseInt(parts[1], 10)
-    if (isNaN(hours) || isNaN(minutes)) return ''
-    const d = new Date()
-    d.setUTCHours(hours, minutes, 0, 0)
-    return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })
+function formatMatchTime(dateStr?: string, timeStr?: string): string {
+    if (!dateStr) return 'TBA'
+    try {
+        const parts = dateStr.split('-').map(Number)
+        if (parts.length !== 3) return 'TBA'
+        const [y, m, d] = parts
+        if (y < 2024 || y > 2030) return 'TBA'
+
+        let date: Date
+        if (timeStr) {
+            const timePart = timeStr.split('+')[0]
+            date = new Date(`${dateStr}T${timePart}Z`)
+        } else {
+            date = new Date(Date.UTC(y, m - 1, d))
+        }
+
+        if (isNaN(date.getTime())) return 'TBA'
+
+        // Show time if today, show date if tomorrow
+        const now = new Date()
+        const isToday = date.toDateString() === now.toDateString()
+
+        if (isToday) {
+            return date.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Europe/London',
+            })
+        }
+
+        return date.toLocaleDateString('en-GB', {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            timeZone: 'Europe/London',
+        })
+    } catch {
+        return 'TBA'
+    }
 }
 
 function getTeamInitials(name: string) { return name.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase() }
@@ -188,7 +216,7 @@ export function MatchCard() {
                         {currentList.map((match) => {
                             const isLive = ['Live', 'HT', '1H', '2H', 'IN PLAY', 'In Progress'].includes(match.strStatus)
                             const isFinished = ['match finished', 'ft', 'aet', 'pen', 'fulltime', 'full time', 'finished'].includes((match.strStatus || '').toLowerCase().trim())
-                            const formattedTime = formatMatchTime(match.strTime)
+                            const formattedTime = formatMatchTime(match.strDate, match.strTime)
                             const formattedDate = formatMatchDate(match.strDate)
                             const borderClass = getLeagueColor(match.strLeague)
                             const homeBadge = safeBadge(match.strHomeTeamBadge)
@@ -326,6 +354,44 @@ export function MatchCard() {
                                 </button>
                             )
                         })}
+                    </div>
+
+                    {/* Other Live Sport */}
+                    <div className="mt-6 pt-6 border-t border-[#2a2a3a]">
+                      <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">
+                        More Live Sport
+                      </h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          {
+                            sport: 'UFC / MMA',
+                            icon: '/leagues/ufc.png',
+                            href: '/ufc',
+                            desc: 'All events included',
+                          },
+                          {
+                            sport: 'Formula 1',
+                            icon: '/leagues/formula-1.png',
+                            href: '/watch/formula-1',
+                            desc: 'Every race live',
+                          },
+                        ].map(s => (
+                          <Link key={s.sport} href={s.href}
+                            className="flex items-center gap-3 bg-[#12121a] border border-[#2a2a3a] hover:border-[#00e676]/30 rounded-xl p-3 transition-all group">
+                            <img src={s.icon} alt={s.sport}
+                              width={32} height={32}
+                              className="w-8 h-8 object-contain" />
+                            <div>
+                              <p className="text-white font-bold text-xs group-hover:text-[#00e676] transition-colors">
+                                {s.sport}
+                              </p>
+                              <p className="text-gray-600 text-[10px]">
+                                {s.desc}
+                              </p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                     </>
                 ) : (

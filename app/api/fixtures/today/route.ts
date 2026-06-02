@@ -1,21 +1,7 @@
 import { NextResponse } from "next/server"
 
-export const revalidate = 300 // Cache for 300 seconds
-
-const LEAGUE_IDS = [4328, 4335, 4331, 4332, 4334]
-
-function safeParseSportsDBDate(date: string, time?: string): Date | null {
-    if (!date) return null
-    const parts = date.split('-').map(Number)
-    if (parts.length !== 3 || parts.some(isNaN)) return null
-    const [year, month, day] = parts
-    if (time) {
-      const t = time.split('+')[0].split('-')[0]
-      const [h, m] = t.split(':').map(Number)
-      return new Date(Date.UTC(year, month - 1, day, h || 0, m || 0))
-    }
-    return new Date(Date.UTC(year, month - 1, day))
-}
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 function mapEvent(e: any) {
     return {
@@ -38,119 +24,91 @@ function mapEvent(e: any) {
 
 export async function GET() {
     try {
+        // Get today AND tomorrow in UTC to catch timezone edge cases
         const now = new Date()
-        const today = now.toISOString().split('T')[0] // always YYYY-MM-DD in UTC
-        const yesterday = new Date(now)
-        yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-        const yesterdayStr = yesterday.toISOString().split('T')[0]
+        const todayUTC = now.toISOString().split('T')[0]
+        const tomorrowUTC = new Date(now.getTime() + 86400000)
+          .toISOString().split('T')[0]
+        const yesterdayUTC = new Date(now.getTime() - 86400000)
+          .toISOString().split('T')[0]
 
-        // Step 1 — Convert to YYYY-MM-DD
-        const todayDate = today
-        let res = await fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${todayDate}&s=Soccer`, { next: { revalidate: 300 } })
-        let rawData = await res.json()
-        let matches = rawData.events || []
-        let dayLabel = "today"
+        // Fetch fixtures for today AND tomorrow
+        const [todayRes, tomorrowRes] = await Promise.allSettled([
+          fetch(
+            `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${todayUTC}&s=Soccer`,
+            { cache: 'no-store' }
+          ),
+          fetch(
+            `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${tomorrowUTC}&s=Soccer`,
+            { cache: 'no-store' }
+          ),
+        ])
 
-        matches = matches.filter((e: any) => LEAGUE_IDS.includes(parseInt(e.idLeague)))
+        // Combine and deduplicate
+        const todayEvents = todayRes.status === 'fulfilled' && todayRes.value.ok
+          ? (await todayRes.value.json())?.events || []
+          : []
+        const tomorrowEvents = tomorrowRes.status === 'fulfilled' && tomorrowRes.value.ok
+          ? (await tomorrowRes.value.json())?.events || []
+          : []
 
-        // Step 2 — If events array empty → try tomorrow
-        if (matches.length === 0) {
-            const tomorrowDateObj = new Date()
-            tomorrowDateObj.setDate(tomorrowDateObj.getDate() + 1)
-            const tomorrowDate = tomorrowDateObj.toISOString().split('T')[0]
-            res = await fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${tomorrowDate}&s=Soccer`, { next: { revalidate: 300 } })
-            rawData = await res.json()
-            matches = rawData.events || []
-            matches = matches.filter((e: any) => LEAGUE_IDS.includes(parseInt(e.idLeague)))
-            dayLabel = "tomorrow"
-        }
+        const allEvents = [...todayEvents, ...tomorrowEvents]
 
-        // Step 3 — If still empty → fetch next event per league
-        if (matches.length === 0) {
-            const promises = LEAGUE_IDS.map(id =>
-                fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsnextleague.php?id=${id}`, { next: { revalidate: 300 } })
-                    .then(r => r.json())
-                    .then(d => d.events || [])
-                    .catch(() => [])
+        // Separate upcoming and results
+        const upcoming = allEvents
+          .filter((e: any) => {
+            const status = (e.strStatus || '').toLowerCase()
+            return !status.includes('finished') && 
+                   status !== 'ft' &&
+                   e.intHomeScore === null
+          })
+          .slice(0, 8)
+          .map(mapEvent)
+
+        const results = allEvents
+          .filter((e: any) => {
+            const status = (e.strStatus || '').toLowerCase()
+            return status.includes('finished') || 
+                   status === 'ft' ||
+                   (e.intHomeScore !== null && e.intHomeScore !== '')
+          })
+          .slice(0, 8)
+          .map(mapEvent)
+
+        // If no results today, get yesterday's
+        let finalResults = results
+        if (results.length === 0) {
+          try {
+            const yestRes = await fetch(
+              `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${yesterdayUTC}&s=Soccer`,
+              { cache: 'no-store' }
             )
-            const results = await Promise.all(promises)
-            matches = results.flat().filter(Boolean)
-            dayLabel = "upcoming"
-        }
-
-        if (!matches) matches = []
-
-        // Step 4 — Dedupe and sort
-        const uniqueMatches: any[] = Array.from(new Map(matches.filter(Boolean).map((e: any) => [e.idEvent, e])).values())
-        uniqueMatches.sort((a, b) => {
-            const dateA = safeParseSportsDBDate(a.dateEvent || a.strDate, a.strTime || '00:00:00')?.getTime() || 0
-            const dateB = safeParseSportsDBDate(b.dateEvent || b.strDate, b.strTime || '00:00:00')?.getTime() || 0
-            return dateA - dateB
-        })
-
-        const finalMatches = uniqueMatches.slice(0, 10).map(mapEvent)
-
-        // Step 5 — Fetch today's results (non-blocking)
-        let resultsData: any[] = []
-        try {
-            const [tRes, yRes] = await Promise.all([
-                fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${today}&s=Soccer`, { next: { revalidate: 300 } }),
-                fetch(`https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${yesterdayStr}&s=Soccer`, { next: { revalidate: 300 } })
-            ]);
-            
-            const [tRaw, yRaw] = await Promise.all([tRes.json(), yRes.json()]);
-            
-            const allEvents = [
-                ...(tRaw.events || []),
-                ...(yRaw.events || [])
-            ].filter((e: any) => LEAGUE_IDS.includes(parseInt(e.idLeague)));
-
-            // Get both today and yesterday matches
-            const allRecentMatches = allEvents
+            if (yestRes.ok) {
+              const yestData = await yestRes.json()
+              finalResults = (yestData?.events || [])
                 .filter((e: any) => {
-                    const d = e.dateEvent || ''
-                    return d === today || d === yesterdayStr
+                  const s = (e.strStatus || '').toLowerCase()
+                  return s.includes('finished') || s === 'ft'
                 })
-                .filter((e: any) => {
-                    const status = (e.strStatus || '').toLowerCase().trim()
-                    const hasScore = e.intHomeScore !== null &&
-                        e.intHomeScore !== undefined &&
-                        e.intHomeScore !== '' &&
-                        e.intAwayScore !== null &&
-                        e.intAwayScore !== undefined
-                    return status.includes('finished') ||
-                        status === 'ft' || status === 'aet' ||
-                        status === 'pen' || hasScore
-                })
-
-            const uniqueMatches: any[] = Array.from(new Map(allRecentMatches.map((e: any) => [e.idEvent, e])).values())
-
-            // Label yesterday's results appropriately
-            const resultsWithLabel = uniqueMatches.map((e: any) => ({
-                ...mapEvent(e),
-                isYesterday: (e.dateEvent || '') === yesterdayStr
-            }))
-
-            resultsData = resultsWithLabel.slice(0, 8)
-        } catch {
-            // Non-critical — show empty results if this fails
+                .slice(0, 6)
+                .map((e: any) => ({ ...mapEvent(e), isYesterday: true }))
+            }
+          } catch {}
         }
 
         return NextResponse.json({
-            upcoming: finalMatches,
-            events: finalMatches, // backwards compat
-            results: resultsData,
-            label: dayLabel,
-            count: finalMatches.length
+          upcoming,
+          events: upcoming, // backwards compat
+          results: finalResults,
+          label: upcoming.length > 0 ? 'today' : 'upcoming',
+          count: upcoming.length,
         }, {
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
-            }
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+          }
         })
     } catch (error) {
         console.error(`[Fixtures Today API] Error:`, error)
-        return NextResponse.json({ events: [], results: [], label: "error", count: 0 })
+        return NextResponse.json({ events: [], upcoming: [], results: [], label: "error", count: 0 })
     }
 }

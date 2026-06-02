@@ -3,6 +3,7 @@ import { ENV } from "@/lib/config/env"
 import { SchemaMarkup } from "@/components/SchemaMarkup"
 
 import { HeroSection } from "@/components/homepage/hero-section"
+import { LiveNowBanner } from '@/components/homepage/LiveNowBanner'
 import { MatchCard } from "@/components/homepage/match-card"
 import dynamic from "next/dynamic"
 
@@ -104,6 +105,7 @@ export default function HomePage() {
       <SchemaMarkup schema={websiteSchema} />
       <SchemaMarkup schema={organizationSchema} />
       <HeroSection />
+      <LiveNowBanner />
 
       <FadeIn direction="up">
         <ScrollReveal>

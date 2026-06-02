@@ -1,0 +1,135 @@
+"use client"
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
+
+const ALWAYS_ON = [
+  {
+    title: "Premier League",
+    sub: "All 380 matches this season",
+    href: "/watch/premier-league",
+    badge: "/leagues/premier-league.png",
+    color: "#3d0099",
+  },
+  {
+    title: "Champions League",
+    sub: "Every UCL match live",
+    href: "/watch/champions-league",
+    badge: "/leagues/champions-league.png",
+    color: "#001489",
+  },
+  {
+    title: "UFC Fight Nights",
+    sub: "No PPV charges",
+    href: "/ufc",
+    badge: "/leagues/ufc.png",
+    color: "#cc0000",
+  },
+  {
+    title: "Formula 1 2026",
+    sub: "Every race, no ad breaks",
+    href: "/watch/formula-1",
+    badge: "/leagues/formula-1.png",
+    color: "#e10600",
+  },
+  {
+    title: "World Cup 2026",
+    sub: "Live now — all 104 matches",
+    href: "/watch/world-cup-2026",
+    badge: "/leagues/world-cup.png",
+    color: "#004d00",
+  },
+]
+
+export function LiveNowBanner() {
+  const [current, setCurrent] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent(i => (i + 1) % ALWAYS_ON.length)
+    }, 3500)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <div className="bg-[#0d0d14] border-y border-[#2a2a3a] 
+      py-4 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+        <div className="flex items-center gap-6">
+          
+          {/* Live indicator */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex 
+                h-full w-full rounded-full bg-[#ff1744] opacity-75"/>
+              <span className="relative inline-flex rounded-full 
+                h-2.5 w-2.5 bg-[#ff1744]"/>
+            </span>
+            <span className="text-[#ff1744] font-extrabold 
+              text-xs uppercase tracking-widest">
+              Live
+            </span>
+          </div>
+
+          <div className="h-5 w-px bg-[#2a2a3a]" />
+
+          {/* Rotating content */}
+          <div className="flex-1 overflow-hidden h-7 relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-3 absolute inset-0"
+              >
+                <img
+                  src={ALWAYS_ON[current].badge}
+                  alt={ALWAYS_ON[current].title}
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain flex-shrink-0"
+                />
+                <Link
+                  href={ALWAYS_ON[current].href}
+                  className="text-white font-bold text-sm 
+                    hover:text-[#00e676] transition-colors"
+                >
+                  {ALWAYS_ON[current].title}
+                </Link>
+                <span className="text-gray-500 text-xs hidden sm:block">
+                  — {ALWAYS_ON[current].sub}
+                </span>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Dot indicators */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {ALWAYS_ON.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-all
+                  ${i === current 
+                    ? 'bg-[#00e676] w-3' 
+                    : 'bg-[#2a2a3a]'
+                  }`}
+              />
+            ))}
+          </div>
+
+          {/* CTA */}
+          <Link href="/buy"
+            className="hidden sm:flex flex-shrink-0 items-center 
+              gap-1.5 bg-[#00e676] text-black font-bold text-xs 
+              px-4 py-2 rounded-lg hover:bg-[#00ff87] 
+              transition-all touch-manipulation">
+            Watch Now
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
