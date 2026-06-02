@@ -129,7 +129,7 @@ export function AnimatedHero() {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
           >
             <a
-              href="/subscribe"
+              href="/buy"
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white opacity-100 font-semibold px-8 py-4 rounded-lg transition-colors text-lg"
               style={{ backgroundColor: '#2563eb', color: '#ffffff', padding: '16px 32px', borderRadius: '8px', fontWeight: '600', fontSize: '18px', opacity: 1, visibility: 'visible' }}
             >
