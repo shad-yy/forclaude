@@ -7,13 +7,25 @@ import { motion } from "framer-motion"
 
 const footerLinks = [
   {
-    title: "Leagues",
+    title: "Watch Live",
     links: [
       { name: "Premier League", href: "/watch/premier-league" },
       { name: "La Liga", href: "/watch/la-liga" },
-      { name: "Bundesliga", href: "/watch/bundesliga" },
-      { name: "Serie A", href: "/watch/serie-a" },
-      { name: "Ligue 1", href: "/watch/ligue-1" },
+      { name: "Champions League", href: "/watch/champions-league" },
+      { name: "Europa League", href: "/watch/europa-league" },
+      { name: "World Cup 2026", href: "/watch/world-cup-2026" },
+      { name: "Formula 1", href: "/watch/formula-1" },
+      { name: "UFC / MMA", href: "/ufc" },
+    ],
+  },
+  {
+    title: "Get Started",
+    links: [
+      { name: "Pricing", href: "/pricing" },
+      { name: "Free Trial", href: "/free-trial" },
+      { name: "Buy Now", href: "/buy" },
+      { name: "Channels", href: "/channels" },
+      { name: "Blog", href: "/blog" },
     ],
   },
   {
@@ -28,7 +40,6 @@ const footerLinks = [
   {
     title: "Company",
     links: [
-      { name: "Pricing", href: "/pricing" },
       { name: 'About Us', href: '/about' },
       { name: 'Contact Us', href: '/contact' },
       { name: 'FAQ', href: '/faq' },
@@ -44,8 +55,8 @@ export const Footer = memo(function Footer() {
   return (
     <footer className="bg-background border-t border-border pt-16 pb-8 transition-colors duration-500 relative z-10">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12 mb-12">
-          <div className="space-y-6 md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-10 mb-12">
+          <div className="space-y-6 lg:col-span-2">
             <Link href="/" className="flex items-center">
               <img
                 src="/logo.svg"

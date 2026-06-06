@@ -34,14 +34,32 @@ export function generateMetadata({ params }: Props): Metadata {
     const device = DEVICES[params.device as keyof typeof DEVICES]
     if (!device) return { title: 'Device Not Found' }
 
+    const canonical = `${ENV.BASE_URL}/setup/${params.device}`
+
+    if (params.device === 'firestick') {
+        return {
+            title: 'Watch Live Sports on Firestick (2026) — Smart Live TV IPTV Guide',
+            description:
+                'Set up Smart Live TV on Amazon Firestick in 5 minutes. Stream Premier League, TNT Sports, UFC and 230,000+ live channels. Free 24-hour trial — no card required.',
+            alternates: { canonical },
+            openGraph: {
+                title: 'Watch Live Sports on Firestick (2026) — Smart Live TV',
+                description:
+                    'Step-by-step Firestick IPTV setup for live sports, Premier League, and 230,000+ channels.',
+                type: 'article',
+            },
+        }
+    }
+
     return {
-        title: `How to Watch Live Sports on ${device.name} in 2026 | SmartLiveTV`,
+        title: `How to Watch Live Sports on ${device.name} in 2026 | Smart Live TV`,
         description: `Stream Premier League, La Liga, UFC and more on your ${device.name}. Step-by-step setup guide. Works with all major IPTV apps.`,
+        alternates: { canonical },
         openGraph: {
             title: `How to Watch Live Sports on ${device.name} in 2026`,
             description: `Stream Premier League, La Liga, UFC and more on your ${device.name}.`,
             type: 'article',
-        }
+        },
     }
 }
 

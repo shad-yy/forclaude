@@ -11,20 +11,23 @@ const LeagueTables = dynamic(() => import("@/components/homepage/league-tables")
 const WhyIPTV = dynamic(() => import("@/components/homepage/why-iptv").then(mod => ({ default: mod.WhyIPTV })))
 const PricingPreview = dynamic(() => import("@/components/homepage/pricing-preview").then(mod => ({ default: mod.PricingPreview })))
 const NewsSection = dynamic(() => import("@/components/homepage/news-section").then(mod => ({ default: mod.NewsSection })))
+import { SiteNavigationLinks } from "@/components/seo/site-navigation-links"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
-  title: 'Smart Live TV — Netflix, Sky Sports & Disney+ for £12/mo',
-  description: 'Replace Netflix, Disney+, Amazon Prime and Sky Sports with one Smart Live TV subscription from £12/month. 230,000+ channels. 4K quality. Free 24-hour trial.',
+  title: 'Smart Live TV — Official UK IPTV Site | Free 24h Trial from £12/mo',
+  description:
+    'Smart Live TV (smartlivetv.co.uk) — official UK IPTV replacing Netflix, Sky Sports & Disney+ from £12/month. 230,000+ live channels. Start your free 24-hour trial today.',
   alternates: {
     canonical: ENV.BASE_URL,
   },
   openGraph: {
-    title: 'Smart Live TV — Netflix, Sky Sports & Disney+ for £12/mo',
-    description: 'Replace Netflix, Disney+, Amazon Prime and Sky Sports with one Smart Live TV subscription from £12/month. 230,000+ channels. 4K quality. Free 24-hour trial.',
-  }
+    title: 'Smart Live TV — Official UK IPTV Site | Free 24h Trial',
+    description:
+      'Replace Netflix, Sky Sports & Disney+ with one Smart Live TV subscription from £12/month. 230,000+ channels. Free 24-hour trial — no card required.',
+  },
 }
 
 
@@ -129,6 +132,8 @@ export default function HomePage() {
       <ScrollReveal>
         <PricingPreview />
       </ScrollReveal>
+
+      <SiteNavigationLinks />
 
       <div className="contain-layout min-h-[500px]">
         <ScrollReveal>

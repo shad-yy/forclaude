@@ -31,13 +31,14 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
+    "Smart Live TV — UK IPTV for live sports, Netflix, Sky Sports & 230,000+ channels. Free 24-hour trial from £12/month.",
   openGraph: {
     type: "website",
     locale: "en_GB",
     siteName: "SmartLiveTV",
-    title: "Smart Live TV - Watch Sports Live",
-    description: "Watch Premier League, La Liga, Champions League, UFC and more live. Stream all sports on any device with our IPTV service.",
+    title: "Smart Live TV — Official UK IPTV Site",
+    description:
+      "Smart Live TV — UK IPTV replacing Netflix, Sky Sports & Disney+ from £12/month. Free 24-hour trial.",
     images: [
       {
         url: "/og-default.png",
@@ -50,8 +51,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     site: '@smartlivetv',
-    title: 'Smart Live TV — Netflix, Sky Sports & Disney+ for £12/mo',
-    description: 'Replace Netflix, Disney+, Amazon Prime and Sky Sports with one subscription from £12/month. 230,000+ channels. Free 24-hour trial.',
+    title: 'Smart Live TV — Official UK IPTV | Free 24h Trial from £12/mo',
+    description: 'Smart Live TV UK IPTV — Netflix, Sky Sports & Disney+ replaced from £12/month. Free 24-hour trial.',
     images: ['/og-default.png'],
   },
   alternates: {

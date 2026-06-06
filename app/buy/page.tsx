@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 }
 
 const plans = [
-  { id: '1month', name: 'Starter', period: '1 Month', price: '£12', monthly: '£12/mo', popular: false },
+  { id: '1month', name: 'Basic', period: '1 Month', price: '£12', monthly: '£12/mo', popular: false },
   { id: '3month', name: 'Popular', period: '3 Months', price: '£24', monthly: '£8/mo', popular: true },
   { id: '6month', name: 'Standard', period: '6 Months', price: '£36', monthly: '£6/mo', popular: false },
-  { id: '12month', name: 'Ultimate', period: '12 Months', price: '£54', monthly: '£4.50/mo', popular: false },
+  { id: '12month', name: 'Premium', period: '12 Months', price: '£54', monthly: '£4.50/mo', popular: false },
 ]
 
 export default function BuyPage() {

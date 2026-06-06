@@ -27,7 +27,7 @@ const faqs: FaqItem[] = [
   },
   {
     q: "What's the difference between the plans?",
-    a: "Only the duration and effective monthly price differ. The 1-month Starter is £12/mo. The 3-month Popular works out at £8/mo. The 6-month Standard is £6/mo. The 12-month Ultimate is £4.50/mo. Every plan has identical features."
+    a: "Only the duration and effective monthly price differ. The 1-month Basic is £12/mo. The 3-month Popular works out at £8/mo. The 6-month Standard is £6/mo. The 12-month Premium is £4.50/mo. Every plan has identical features."
   },
   {
     q: "What happens after the 24-hour trial?",

@@ -18,8 +18,8 @@ const pagesToAudit = [
   '/about', '/contact', '/privacy', '/terms', '/favorites', '/login', '/sitemap.xml'
 ];
 
-const baseUrl = 'https://smartlivetv-pi.vercel.app';
-//const baseUrl = 'http://localhost:3000';
+//const baseUrl = 'https://smartlivetv-pi.vercel.app';
+const baseUrl = 'http://localhost:3000';
 
 async function run() {
   const browser = await chromium.launch({ headless: true });
@@ -63,20 +63,22 @@ async function run() {
         hasIssues = true;
       }
       
-      if (!title || title.trim() === '') {
-         results += `  🟡 HIGH: Missing title tag.\n`;
-         highCount++;
-         hasIssues = true;
-      }
-      if (!metaDesc || metaDesc === 'NONE') {
-         results += `  🟡 HIGH: Missing meta description.\n`;
-         highCount++;
-         hasIssues = true;
-      }
-      if (h1 === 'NONE' && status !== 404) {
-         results += `  🟡 HIGH: Missing H1 tag.\n`;
-         highCount++;
-         hasIssues = true;
+      if (!path.endsWith('.xml')) {
+        if (!title || title.trim() === '') {
+           results += `  🟡 HIGH: Missing title tag.\n`;
+           highCount++;
+           hasIssues = true;
+        }
+        if (!metaDesc || metaDesc === 'NONE') {
+           results += `  🟡 HIGH: Missing meta description.\n`;
+           highCount++;
+           hasIssues = true;
+        }
+        if (h1 === 'NONE' && status !== 404) {
+           results += `  🟡 HIGH: Missing H1 tag.\n`;
+           highCount++;
+           hasIssues = true;
+        }
       }
 
       if (brokenLinks.length > 0) {

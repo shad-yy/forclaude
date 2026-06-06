@@ -45,7 +45,7 @@ const faqs = [
   },
   {
     q: "What's the difference between the plans?",
-    a: "Only the duration and effective monthly price differ. The 1-month Starter is £12/mo. The 3-month Popular works out at £8/mo. The 6-month Standard is £6/mo. The 12-month Ultimate is £4.50/mo. Every plan has identical features."
+    a: "Only the duration and effective monthly price differ. The 1-month Basic is £12/mo. The 3-month Popular works out at £8/mo. The 6-month Standard is £6/mo. The 12-month Premium is £4.50/mo. Every plan has identical features."
   },
   {
     q: "What happens after the 24-hour trial?",
@@ -223,7 +223,7 @@ export default function PricingPage() {
           
           {/* CARD 1 — 1 MONTH */}
           <div className="bg-[#12121a] border border-[#2a2a3a] rounded-3xl p-8 flex flex-col">
-            <div className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Starter</div>
+            <div className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Basic</div>
             <div>
               <span className="text-5xl font-extrabold text-white">£12</span>
             </div>
@@ -368,7 +368,7 @@ export default function PricingPage() {
 
           {/* CARD 4 — 12 MONTHS */}
           <div className="bg-[#12121a] border border-[#2a2a3a] rounded-3xl p-8 flex flex-col pt-8 md:pt-8 mt-4 lg:mt-0">
-            <div className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Ultimate</div>
+            <div className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Premium</div>
             <div>
               <span className="text-5xl font-extrabold text-white">£54</span>
             </div>
@@ -435,7 +435,7 @@ export default function PricingPage() {
             Prices shown in GBP. Customers outside the UK —
             equivalent pricing available.{' '}
             <a 
-              href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'}
+              href={process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#25D366] hover:underline"

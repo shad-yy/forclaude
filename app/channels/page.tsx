@@ -30,7 +30,7 @@ const TOP_10_CHANNELS = [
 
 export default function ChannelsPage() {
 
-  const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL || '#'
+  const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL || '/contact'
 
   const schema = {
     "@context": "https://schema.org",

@@ -10,6 +10,7 @@ const orderSchema = z.object({
     '1 Month', '3 Months', '6 Months', '12 Months',
     // Marketing plan names (from BuyForm)
     'Starter', 'Popular', 'Standard', 'Ultimate',
+    'Basic', 'Premium',
     // Trial
     'Free Trial Request',
   ]),

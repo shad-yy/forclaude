@@ -1,3 +1,5 @@
+import { resolveSiteUrl } from '@/lib/config/site-url'
+
 export const ENV = {
   get GA_MEASUREMENT_ID() {
     return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ""
@@ -17,7 +19,12 @@ export const ENV = {
     return process.env.NEWS_API_KEY
   },
   get NEXT_PUBLIC_APP_URL() {
-    return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+      return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
+    }
+    return process.env.VERCEL_ENV === 'production'
+      ? resolveSiteUrl()
+      : 'http://localhost:3000'
   },
   get JWT_SECRET() {
     return process.env.JWT_SECRET || ""
@@ -29,7 +36,7 @@ export const ENV = {
     return process.env.NEXT_PUBLIC_WHATSAPP_URL || ""
   },
   get BASE_URL() {
-    return process.env.NEXT_PUBLIC_APP_URL || "https://smartlivetv.co.uk"
+    return resolveSiteUrl()
   },
   get RAPIDAPI_MMA_KEY() {
     return process.env.RAPIDAPI_MMA_KEY ||
