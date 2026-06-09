@@ -10,9 +10,12 @@ const footerLinks = [
     title: "Watch Live",
     links: [
       { name: "Premier League", href: "/watch/premier-league" },
-      { name: "La Liga", href: "/watch/la-liga" },
       { name: "Champions League", href: "/watch/champions-league" },
       { name: "Europa League", href: "/watch/europa-league" },
+      { name: "La Liga", href: "/watch/la-liga" },
+      { name: "Serie A", href: "/watch/serie-a" },
+      { name: "Bundesliga", href: "/watch/bundesliga" },
+      { name: "Ligue 1", href: "/watch/ligue-1" },
       { name: "World Cup 2026", href: "/watch/world-cup-2026" },
       { name: "Formula 1", href: "/watch/formula-1" },
       { name: "UFC / MMA", href: "/ufc" },

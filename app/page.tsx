@@ -11,6 +11,7 @@ const LeagueTables = dynamic(() => import("@/components/homepage/league-tables")
 const WhyIPTV = dynamic(() => import("@/components/homepage/why-iptv").then(mod => ({ default: mod.WhyIPTV })))
 const PricingPreview = dynamic(() => import("@/components/homepage/pricing-preview").then(mod => ({ default: mod.PricingPreview })))
 const NewsSection = dynamic(() => import("@/components/homepage/news-section").then(mod => ({ default: mod.NewsSection })))
+const RecentPosts = dynamic(() => import("@/components/homepage/recent-posts").then(mod => ({ default: mod.RecentPosts })))
 import { SiteNavigationLinks } from "@/components/seo/site-navigation-links"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { FadeIn } from "@/components/ui/fade-in"
@@ -53,8 +54,8 @@ export default function HomePage() {
       hoursAvailable: {
         '@type': 'OpeningHoursSpecification',
         dayOfWeek: [
-          'Monday','Tuesday','Wednesday','Thursday',
-          'Friday','Saturday','Sunday'
+          'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+          'Friday', 'Saturday', 'Sunday'
         ],
         opens: '09:00',
         closes: '23:00',
@@ -110,11 +111,17 @@ export default function HomePage() {
       <HeroSection />
       <LiveNowBanner />
 
+      <ScrollReveal>
+        <NewsSection />
+      </ScrollReveal>
+
       <FadeIn direction="up">
         <ScrollReveal>
           <MatchCard />
         </ScrollReveal>
       </FadeIn>
+
+
 
       {/* Decorative separator */}
       <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
@@ -131,6 +138,11 @@ export default function HomePage() {
 
       <ScrollReveal>
         <PricingPreview />
+      </ScrollReveal>
+
+
+      <ScrollReveal>
+        <RecentPosts />
       </ScrollReveal>
 
       <SiteNavigationLinks />
