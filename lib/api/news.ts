@@ -112,7 +112,7 @@ export async function getLatestSportsNews(
     q: query,
   })
 
-  const domainFilter = 'skysports.com,bbc.com,goal.com,espn.com,theguardian.com,bbc.co.uk,telegraph.co.uk'
+  const domainFilter = 'skysports.com,bbc.com,espn.com,theguardian.com'
   const url = `https://newsdata.io/api/1/news?${params.toString()}&domainurl=${domainFilter}`
 
   try {
