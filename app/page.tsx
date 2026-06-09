@@ -14,8 +14,6 @@ const NewsSection = dynamic(() => import("@/components/homepage/news-section").t
 const RecentPosts = dynamic(() => import("@/components/homepage/recent-posts").then(mod => ({ default: mod.RecentPosts })))
 import { SiteNavigationLinks } from "@/components/seo/site-navigation-links"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
-import { FadeIn } from "@/components/ui/fade-in"
-import { StaggerIn } from "@/components/ui/stagger-in"
 
 export const metadata: Metadata = {
   title: 'Smart Live TV — Official UK IPTV Site | Free 24h Trial from £12/mo',
@@ -108,56 +106,52 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-950 overflow-x-hidden text-gray-100">
       <SchemaMarkup schema={websiteSchema} />
       <SchemaMarkup schema={organizationSchema} />
-      <HeroSection />
-      <LiveNowBanner />
 
+      {/* ─── 1. HERO ─── */}
+      <HeroSection />
+
+      {/* ─── 2. NEWS (above match cards) ─── */}
+      <section className="py-12 md:py-16 bg-[#0a0a0f] border-t border-[#1a1a2a] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/8 via-transparent to-transparent pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+          <ScrollReveal>
+            <NewsSection />
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ─── 3. LIVE FIXTURES / MATCH CARDS ─── */}
       <ScrollReveal>
-        <NewsSection />
+        <MatchCard />
       </ScrollReveal>
 
-      <FadeIn direction="up">
-        <ScrollReveal>
-          <MatchCard />
-        </ScrollReveal>
-      </FadeIn>
-
-
-
-      {/* Decorative separator */}
+      {/* ─── 4. STANDINGS / LEAGUE TABLES ─── */}
       <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
-
       <ScrollReveal>
         <LeagueTables />
       </ScrollReveal>
 
+      {/* ─── 5. WHY IPTV / FEATURES ─── */}
       <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
-
       <ScrollReveal>
         <WhyIPTV />
       </ScrollReveal>
 
+      {/* ─── 6. PRICING PREVIEW ─── */}
       <ScrollReveal>
         <PricingPreview />
       </ScrollReveal>
 
+      {/* ─── 7. LIVE NOW BANNER ─── */}
+      <LiveNowBanner />
 
+      {/* ─── 8. BLOG POSTS (recent posts at bottom) ─── */}
       <ScrollReveal>
         <RecentPosts />
       </ScrollReveal>
 
+      {/* ─── 9. SITE NAVIGATION (SEO internal links) ─── */}
       <SiteNavigationLinks />
-
-      <div className="contain-layout min-h-[500px]">
-        <ScrollReveal>
-          <section className="py-16 md:py-20 bg-[#0a0a0f] border-t border-[#2a2a3a] relative">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
-            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
-              <NewsSection maxArticles={12} />
-            </div>
-          </section>
-        </ScrollReveal>
-      </div>
-
     </div>
   )
 }

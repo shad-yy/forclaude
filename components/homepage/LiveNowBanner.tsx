@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
+import { ArrowRight } from "lucide-react"
 
 const ALWAYS_ON = [
   {
@@ -52,10 +53,13 @@ export function LiveNowBanner() {
   }, [])
 
   return (
-    <div className="bg-[#0d0d14] border-y border-[#2a2a3a] 
-      py-4 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-        <div className="flex items-center gap-6">
+    <div className="bg-gradient-to-r from-[#0d0d14] via-[#0f0f1a] to-[#0d0d14] border-y border-[#1a1a2a] 
+      py-4 overflow-hidden relative">
+      {/* Subtle animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#00e676]/3 via-transparent to-[#00e676]/3 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+        <div className="flex items-center gap-4 sm:gap-6">
           
           {/* Live indicator */}
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -111,11 +115,12 @@ export function LiveNowBanner() {
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
-                className={`w-1.5 h-1.5 rounded-full transition-all
+                className={`h-1.5 rounded-full transition-all duration-300
                   ${i === current 
-                    ? 'bg-[#00e676] w-3' 
-                    : 'bg-[#2a2a3a]'
+                    ? 'bg-[#00e676] w-4' 
+                    : 'bg-[#2a2a3a] w-1.5 hover:bg-[#3a3a4a]'
                   }`}
+                aria-label={`Show ${ALWAYS_ON[i].title}`}
               />
             ))}
           </div>
@@ -124,9 +129,10 @@ export function LiveNowBanner() {
           <Link href="/buy"
             className="hidden sm:flex flex-shrink-0 items-center 
               gap-1.5 bg-[#00e676] text-black font-bold text-xs 
-              px-4 py-2 rounded-lg hover:bg-[#00ff87] 
-              transition-all touch-manipulation">
+              px-5 py-2 rounded-lg hover:bg-[#00ff87] 
+              transition-all duration-300 hover:shadow-[0_0_15px_rgba(0,230,118,0.3)] touch-manipulation">
             Watch Now
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
