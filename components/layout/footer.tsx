@@ -32,12 +32,13 @@ const footerLinks = [
     ],
   },
   {
-    title: "Setup Guides",
+    title: "Guides",
     links: [
       { name: "Firestick", href: "/setup/firestick" },
       { name: "Smart TV", href: "/setup/smart-tv" },
       { name: "Android", href: "/setup/android" },
       { name: "iPhone", href: "/setup/iphone" },
+      { name: "IPTV vs Sky Sports", href: "/iptv-vs-sky-sports" },
     ],
   },
   {

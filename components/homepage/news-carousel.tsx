@@ -117,7 +117,6 @@ export function NewsCarousel({ articles }: NewsCarouselProps) {
         <div className="flex gap-4 px-1">
           {articles.map((article, i) => {
             const img = article.image_url || article.urlToImage
-            const href = article.link || article.url || '/news'
             const source =
               article.source_id ||
               article.source_name ||
@@ -126,62 +125,92 @@ export function NewsCarousel({ articles }: NewsCarouselProps) {
             const date = timeAgo(article.pubDate || article.publishedAt)
             const cat = article.category?.[0] || 'Football'
 
+            // Safe href construction
+            const articleHref = (() => {
+              const raw = article.link || article.url || ''
+              if (!raw || raw === '#') return '/news'
+              // For internal paths, use directly
+              if (raw.startsWith('/')) return raw
+              // For external URLs, verify it is a valid URL
+              try {
+                const url = new URL(raw)
+                if (!['http:', 'https:'].includes(url.protocol)) {
+                  return '/news'
+                }
+                return raw
+              } catch {
+                return '/news'
+              }
+            })()
+
+            const isExternal = articleHref.startsWith('http')
+
+            const cardContent = (
+              <div className="block bg-[#12121a] border border-[#2a2a3a] rounded-2xl overflow-hidden hover:border-[#00e676]/30 transition-all duration-200 h-full">
+                {/* Image — fixed height prevents CLS */}
+                <div className="relative h-44 bg-[#0a0a0f] overflow-hidden">
+                  {img ? (
+                    <img
+                      src={img}
+                      alt={article.title}
+                      width={320}
+                      height={176}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 will-change-transform"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        ;(e.target as HTMLImageElement).style.display = 'none'
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-[#12121a]">
+                      <span className="text-4xl opacity-20">📰</span>
+                    </div>
+                  )}
+                  {/* Category badge */}
+                  <span className="absolute top-3 left-3 bg-[#00e676] text-black text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                    {cat}
+                  </span>
+                </div>
+
+                {/* Card body */}
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2 text-[11px] text-gray-500">
+                    <span className="font-semibold uppercase tracking-wide truncate max-w-[120px]">
+                      {source}
+                    </span>
+                    {date && <span>{date}</span>}
+                  </div>
+                  <h3 className="font-bold text-white text-sm leading-snug line-clamp-3 mb-3 group-hover:text-[#00e676] transition-colors">
+                    {article.title}
+                  </h3>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 group-hover:text-[#00e676] transition-colors">
+                    Read Article
+                    <ExternalLink className="w-3 h-3" />
+                  </span>
+                </div>
+              </div>
+            )
+
             return (
               <div
-                key={article.article_id || `${href}-${i}`}
-                /* flex-none + explicit width = no layout shift */
+                key={article.article_id || `${articleHref}-${i}`}
                 className="flex-none w-[280px] sm:w-[320px] group"
               >
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block bg-[#12121a] border border-[#2a2a3a] rounded-2xl overflow-hidden hover:border-[#00e676]/30 transition-all duration-200 h-full"
-                >
-                  {/* Image — fixed height prevents CLS */}
-                  <div className="relative h-44 bg-[#0a0a0f] overflow-hidden">
-                    {img ? (
-                      <img
-                        src={img}
-                        alt={article.title}
-                        width={320}
-                        height={176}
-                        /* GPU-only transform via translate3d (scale triggers composited layer) */
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 will-change-transform"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[#12121a]">
-                        <span className="text-4xl opacity-20">📰</span>
-                      </div>
-                    )}
-                    {/* Category badge */}
-                    <span className="absolute top-3 left-3 bg-[#00e676] text-black text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-full">
-                      {cat}
-                    </span>
-                  </div>
-
-                  {/* Card body */}
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2 text-[11px] text-gray-500">
-                      <span className="font-semibold uppercase tracking-wide truncate max-w-[120px]">
-                        {source}
-                      </span>
-                      {date && <span>{date}</span>}
-                    </div>
-                    <h3 className="font-bold text-white text-sm leading-snug line-clamp-3 mb-3 group-hover:text-[#00e676] transition-colors">
-                      {article.title}
-                    </h3>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 group-hover:text-[#00e676] transition-colors">
-                      Read Article
-                      <ExternalLink className="w-3 h-3" />
-                    </span>
-                  </div>
-                </a>
+                {isExternal ? (
+                  <a
+                    href={articleHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block h-full"
+                  >
+                    {cardContent}
+                  </a>
+                ) : (
+                  <Link href={articleHref} className="block h-full">
+                    {cardContent}
+                  </Link>
+                )}
               </div>
             )
           })}

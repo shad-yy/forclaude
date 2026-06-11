@@ -7,6 +7,7 @@ import { ENV } from '@/lib/config/env'
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
+import { SpeedChecker } from '@/components/ui/SpeedChecker'
 
 const DEVICES = {
     'firestick': { name: 'Firestick' },
@@ -218,6 +219,10 @@ export default async function SetupDevicePage({ params }: Props) {
                         </div>
                     </section>
                     </FadeIn>
+
+                    <div className="max-w-sm mt-10">
+                        <SpeedChecker />
+                    </div>
 
                     <FadeIn direction="up">
                     <section>

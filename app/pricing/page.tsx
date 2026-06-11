@@ -8,6 +8,7 @@ import { StaggerIn } from "@/components/ui/stagger-in"
 import { VisaLogo, MastercardLogo, PayPalLogo, CryptoIcon, BankTransferIcon } from '@/components/ui/PaymentLogos'
 import { FirestickIcon, SmartTVIcon, AndroidIcon, IPhoneIcon } from '@/components/ui/DeviceIcons'
 import { Lock, RotateCcw, Zap, Ban, Headphones, Film, Trophy, Tv, Globe, Swords } from 'lucide-react'
+import { SpeedChecker } from '@/components/ui/SpeedChecker'
 
 
 export const metadata: Metadata = {
@@ -414,6 +415,10 @@ export default function PricingPage() {
 
         </StaggerIn>
 
+        <div className="max-w-sm mx-auto mt-10">
+          <SpeedChecker />
+        </div>
+
         <div className="text-center mt-8 mb-4">
           <p className="text-xs text-gray-600 mb-3 uppercase tracking-wide">
             Secure Payment Methods
@@ -551,6 +556,8 @@ export default function PricingPage() {
         </p>
       </section>
       </FadeIn>
+
+
 
       {/* SECTION 5 — FAQ */}
       <FadeIn direction="up">

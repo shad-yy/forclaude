@@ -6,51 +6,52 @@ export const revalidate = 0
 
 /**
  * Nuclear dedup — catches duplicates by URL, normalized title,
- * image URL (sans query-string), and description content hash.
- * If ANY single key matches a previously-seen article, it's a duplicate.
+ * and image URL (sans query-string).
+ * Uses safe thresholds to avoid false-positive collapse.
  */
 function nuclearDedup(articles: any[]): any[] {
   if (!articles?.length) return []
 
-  const seen = new Map<string, boolean>()
+  const seenUrls = new Set<string>()
+  const seenTitleKeys = new Set<string>()
+  const seenImages = new Set<string>()
 
   return articles.filter(article => {
-    if (!article) return false
+    if (!article || !article.title) return false
 
-    // Key 1: exact URL
+    // URL dedup — exact match only
     const url = (article.link || article.url || '').trim()
+    if (url && seenUrls.has(url)) return false
 
-    // Key 2: title normalized to 40 chars
-    const title = (article.title || '')
+    // Title dedup — use 60 chars to avoid
+    // false positive deduplication of different articles
+    const titleKey = (article.title || '')
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '')
-      .slice(0, 40)
+      .slice(0, 60)  // CRITICAL: was 40, too short
 
-    // Key 3: image URL (remove query params for CDN variants)
+    // Only deduplicate if title key is substantial
+    // (longer than 15 chars after normalisation)
+    if (titleKey.length >= 15 && seenTitleKeys.has(titleKey)) {
+      return false
+    }
+
+    // Image dedup — only deduplicate if different
+    // articles share the exact same image URL
+    // (indicates syndicated duplicates)
     const img = (article.image_url || article.urlToImage || '')
       .split('?')[0]
       .trim()
 
-    // Key 4: first 60 chars of description
-    const desc = (article.description || article.content || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 60)
+    if (img && img.length > 20 && seenImages.has(img)) {
+      return false
+    }
 
-    // Any of these keys being a repeat = duplicate
-    const keys = [
-      url && `url:${url}`,
-      title && title.length > 10 && `title:${title}`,
-      img && `img:${img}`,
-      desc && desc.length > 20 && `desc:${desc}`,
-    ].filter(Boolean) as string[]
+    // Mark as seen
+    if (url) seenUrls.add(url)
+    if (titleKey.length >= 15) seenTitleKeys.add(titleKey)
+    if (img && img.length > 20) seenImages.add(img)
 
-    // Check if ANY key has been seen before
-    const isDuplicate = keys.some(k => seen.has(k))
-    if (isDuplicate) return false
-
-    // Mark all keys as seen
-    keys.forEach(k => seen.set(k, true))
     return true
   })
 }

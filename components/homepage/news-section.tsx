@@ -33,14 +33,16 @@ export function NewsSection({ maxArticles = 10 }: NewsSectionProps) {
         if (cancelled) return
         const items = data?.articles || data?.results || []
         
-        // Deduplicate
+        // Deduplicate — use 60-char title key with minimum threshold
         const seen = new Set<string>()
         const unique = items.filter((a: NewsArticle) => {
           const key = (a.title || '')
             .toLowerCase()
             .replace(/[^a-z0-9]/g, '')
-            .slice(0, 40)
-          if (!key || seen.has(key)) return false
+            .slice(0, 60)
+          // Only dedup if key is substantial enough
+          if (key.length < 15) return !!a.title
+          if (seen.has(key)) return false
           seen.add(key)
           return true
         })

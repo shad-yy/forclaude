@@ -23,59 +23,59 @@ export interface NewsArticle {
 const FALLBACK_ARTICLES: NewsArticle[] = [
   {
     article_id: 'fallback-1',
-    title: 'Premier League 2025-26: Latest Transfer News and Rumours',
-    description: 'All the latest Premier League transfer news, rumours and done deals from the top flight.',
-    image_url: 'https://e0.365dm.com/25/01/2048x1152/skysports-premier-league-football_6780000.jpg',
-    link: 'https://www.skysports.com/premier-league-transfers',
-    source_name: 'Sky Sports',
+    title: 'Why IPTV Beats Sky Sports in 2026',
+    description: 'Sky Sports costs £43/month. Here is what you get for £12 instead.',
+    image_url: null,
+    link: '/blog/sky-sports-vs-iptv-honest-comparison',
+    source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
     category: ['football'],
-    source_icon: 'https://www.skysports.com/favicon.ico',
+    source_icon: null,
     language: 'en',
     country: ['gb'],
-    creator: ['Sky Sports'],
+    creator: ['Smart Live TV'],
   },
   {
     article_id: 'fallback-2',
-    title: 'Champions League: Fixtures, Results and Tables',
-    description: 'Keep up with all the UEFA Champions League action — fixtures, results, standings and highlights.',
-    image_url: 'https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/18225/production/_132280918_ucl.jpg',
-    link: 'https://www.bbc.co.uk/sport/football/champions-league',
-    source_name: 'BBC Sport',
+    title: 'Watch Every Premier League Match Without Sky Sports',
+    description: 'Complete guide to streaming all 380 Premier League matches in 2026.',
+    image_url: null,
+    link: '/blog/watch-premier-league-firestick-without-sky',
+    source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
     category: ['football'],
-    source_icon: 'https://www.bbc.co.uk/favicon.ico',
+    source_icon: null,
     language: 'en',
     country: ['gb'],
-    creator: ['BBC Sport'],
+    creator: ['Smart Live TV'],
   },
   {
     article_id: 'fallback-3',
-    title: 'UFC Fight Night: Latest Results, Highlights and Analysis',
-    description: 'Catch up on all the action from the latest UFC events with results, highlights and expert analysis.',
-    image_url: 'https://a.espncdn.com/photo/2024/0101/r1273264_1296x729_16-9.jpg',
-    link: 'https://www.espn.com/mma/',
-    source_name: 'ESPN',
+    title: 'Champions League 2025-26 — Watch Every Match Live',
+    description: 'Stream every UEFA Champions League match in 4K. No BT Sport needed.',
+    image_url: null,
+    link: '/watch/champions-league',
+    source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
-    category: ['mma'],
-    source_icon: 'https://www.espn.com/favicon.ico',
+    category: ['football'],
+    source_icon: null,
     language: 'en',
-    country: ['us'],
-    creator: ['ESPN'],
+    country: ['gb'],
+    creator: ['Smart Live TV'],
   },
   {
     article_id: 'fallback-4',
-    title: 'Formula 1: Race Calendar, Standings and Latest News',
-    description: 'Follow every Grand Prix of the 2026 F1 season — race calendar, driver standings and breaking news.',
-    image_url: 'https://i.guim.co.uk/img/media/f1-car-hero/2000x1200.jpg?width=1200&quality=85',
-    link: 'https://www.theguardian.com/sport/formulaone',
-    source_name: 'The Guardian',
+    title: 'World Cup 2026 — Stream All 104 Matches',
+    description: 'How to watch the World Cup 2026 live from anywhere.',
+    image_url: null,
+    link: '/watch/world-cup-2026',
+    source_name: 'Smart Live TV',
     pubDate: new Date().toISOString(),
-    category: ['motorsport'],
-    source_icon: 'https://www.theguardian.com/favicon.ico',
+    category: ['football'],
+    source_icon: null,
     language: 'en',
     country: ['gb'],
-    creator: ['The Guardian'],
+    creator: ['Smart Live TV'],
   },
 ]
 
@@ -94,7 +94,7 @@ export async function getLatestSportsNews(
 
   // Free plan: size must be 1-10
   const safeSize = Math.min(Math.max(1, size), 10)
-  const cacheKey = `news:sports:v3:${safeSize}`
+  const cacheKey = `news:sports:v5:${safeSize}`
 
   // Check module-level cache first (6 hour TTL)
   const cached = newsCache.get(cacheKey)
@@ -185,22 +185,42 @@ import { NewsArticle as SharedNewsArticle, NewsResponse } from "@/lib/api/types"
  */
 function nuclearDedup(articles: any[]): any[] {
   if (!articles?.length) return []
-  const seen = new Map<string, boolean>()
+
+  const seenUrls = new Set<string>()
+  const seenTitleKeys = new Set<string>()
+  const seenImages = new Set<string>()
+
   return articles.filter(article => {
-    if (!article) return false
+    if (!article || !article.title) return false
+
+    // URL dedup — exact match only
     const url = (article.link || article.url || '').trim()
-    const title = (article.title || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40)
-    const img = (article.image_url || article.urlToImage || '').split('?')[0].trim()
-    const desc = (article.description || article.content || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60)
-    const keys = [
-      url && `url:${url}`,
-      title && title.length > 10 && `title:${title}`,
-      img && `img:${img}`,
-      desc && desc.length > 20 && `desc:${desc}`,
-    ].filter(Boolean) as string[]
-    const isDuplicate = keys.some(k => seen.has(k))
-    if (isDuplicate) return false
-    keys.forEach(k => seen.set(k, true))
+    if (url && seenUrls.has(url)) return false
+
+    // Title dedup — use 60 chars to avoid false positives
+    const titleKey = (article.title || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 60)
+
+    if (titleKey.length >= 15 && seenTitleKeys.has(titleKey)) {
+      return false
+    }
+
+    // Image dedup — exact same image URL only
+    const img = (article.image_url || article.urlToImage || '')
+      .split('?')[0]
+      .trim()
+
+    if (img && img.length > 20 && seenImages.has(img)) {
+      return false
+    }
+
+    // Mark as seen
+    if (url) seenUrls.add(url)
+    if (titleKey.length >= 15) seenTitleKeys.add(titleKey)
+    if (img && img.length > 20) seenImages.add(img)
+
     return true
   })
 }

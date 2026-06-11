@@ -151,7 +151,7 @@ export default function HomePage() {
       </ScrollReveal>
 
       {/* ─── 9. SITE NAVIGATION (SEO internal links) ─── */}
-      <SiteNavigationLinks />
+
     </div>
   )
 }
