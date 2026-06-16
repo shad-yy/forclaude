@@ -53,38 +53,62 @@ export function SpeedChecker() {
     setStatus('testing')
     setResult(null)
 
+    // Method 1: navigator.connection (Chrome/Android)
+    const conn = (navigator as any).connection ||
+      (navigator as any).mozConnection ||
+      (navigator as any).webkitConnection
+
+    if (conn?.downlink && conn.downlink > 0) {
+      // downlink is in Mbps
+      const mbps = Math.round(conn.downlink)
+      setResult(getQuality(mbps))
+      setStatus('done')
+      return
+    }
+
+    // Method 2: Fetch own API route with timing
+    // This avoids CORS and CDN caching issues
     try {
-      // Measure download speed by timing a real fetch of a known-size resource.
-      // We use a public Wikimedia image (~200KB) — no API key needed.
-      const testUrl =
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/1200px-Camponotus_flavomarginatus_ant.jpg'
+      const iterations = 3
+      const times: number[] = []
 
-      const startTime = performance.now()
-      const response = await fetch(testUrl, {
-        cache: 'no-store',
-        mode: 'cors',
-      })
-      const blob = await response.blob()
-      const endTime = performance.now()
+      for (let i = 0; i < iterations; i++) {
+        const start = performance.now()
+        // Fetch a known-size response from our own server
+        // Adding timestamp prevents caching
+        await fetch(
+          `/api/speed-test?t=${Date.now()}&i=${i}`,
+          { cache: 'no-store' }
+        )
+        const end = performance.now()
+        times.push(end - start)
+      }
 
-      const fileSizeInBits = blob.size * 8
-      const durationInSeconds = (endTime - startTime) / 1000
+      // Remove fastest (likely cached) and average the rest
+      times.sort((a, b) => a - b)
+      const avgMs = times.slice(1).reduce(
+        (a, b) => a + b, 0
+      ) / (times.length - 1)
+
+      // Our test payload is ~50KB
+      // Speed (Mbps) = (50 * 8) / (avgMs / 1000) / 1000
+      const fileSizeKb = 50
       const mbps = Math.round(
-        (fileSizeInBits / durationInSeconds) / 1_000_000
+        (fileSizeKb * 8) / (avgMs / 1000) / 1000
       )
 
-      setResult(getQuality(Math.min(mbps, 500)))
+      const cappedMbps = Math.min(Math.max(mbps, 1), 500)
+      setResult(getQuality(cappedMbps))
       setStatus('done')
     } catch {
-      // Fallback: use navigator.connection if available
-      const conn = (navigator as any).connection
-      if (conn?.downlink) {
-        const mbps = Math.round(conn.downlink)
-        setResult(getQuality(mbps))
-        setStatus('done')
-      } else {
-        setStatus('error')
-      }
+      // Method 3: Graceful fallback
+      setStatus('done')
+      setResult({
+        mbps: 0,
+        quality: 'fair' as const,
+        message: 'Could not measure automatically. UK average is 79 Mbps — most connections support 4K.',
+        color: '#f59e0b',
+      })
     }
   }
 

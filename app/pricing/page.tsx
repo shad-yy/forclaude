@@ -114,6 +114,44 @@ export default function PricingPage() {
         seller: {
           '@id': `${ENV.BASE_URL}/#organization`,
         },
+        'hasMerchantReturnPolicy': {
+          '@type': 'MerchantReturnPolicy',
+          '@id': 'https://smartlivetv.co.uk/pricing#return-policy',
+          'applicableCountry': 'GB',
+          'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+          'merchantReturnDays': 7,
+          'returnMethod': 'https://schema.org/ReturnByMail',
+          'returnFees': 'https://schema.org/FreeReturn',
+          'refundType': 'https://schema.org/FullRefund',
+        },
+        'shippingDetails': {
+          '@type': 'OfferShippingDetails',
+          '@id': 'https://smartlivetv.co.uk/pricing#shipping',
+          'shippingRate': {
+            '@type': 'MonetaryAmount',
+            'value': 0,
+            'currency': 'GBP',
+          },
+          'deliveryTime': {
+            '@type': 'ShippingDeliveryTime',
+            'handlingTime': {
+              '@type': 'QuantitativeValue',
+              'minValue': 0,
+              'maxValue': 0,
+              'unitCode': 'MIN',
+            },
+            'transitTime': {
+              '@type': 'QuantitativeValue',
+              'minValue': 5,
+              'maxValue': 30,
+              'unitCode': 'MIN',
+            },
+          },
+          'shippingDestination': {
+            '@type': 'DefinedRegion',
+            'addressCountry': 'GB',
+          },
+        },
       },
       {
         '@type': 'Offer',
@@ -127,6 +165,44 @@ export default function PricingPage() {
         priceValidUntil: '2026-12-31',
         seller: {
           '@id': `${ENV.BASE_URL}/#organization`,
+        },
+        'hasMerchantReturnPolicy': {
+          '@type': 'MerchantReturnPolicy',
+          '@id': 'https://smartlivetv.co.uk/pricing#return-policy',
+          'applicableCountry': 'GB',
+          'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+          'merchantReturnDays': 7,
+          'returnMethod': 'https://schema.org/ReturnByMail',
+          'returnFees': 'https://schema.org/FreeReturn',
+          'refundType': 'https://schema.org/FullRefund',
+        },
+        'shippingDetails': {
+          '@type': 'OfferShippingDetails',
+          '@id': 'https://smartlivetv.co.uk/pricing#shipping',
+          'shippingRate': {
+            '@type': 'MonetaryAmount',
+            'value': 0,
+            'currency': 'GBP',
+          },
+          'deliveryTime': {
+            '@type': 'ShippingDeliveryTime',
+            'handlingTime': {
+              '@type': 'QuantitativeValue',
+              'minValue': 0,
+              'maxValue': 0,
+              'unitCode': 'MIN',
+            },
+            'transitTime': {
+              '@type': 'QuantitativeValue',
+              'minValue': 5,
+              'maxValue': 30,
+              'unitCode': 'MIN',
+            },
+          },
+          'shippingDestination': {
+            '@type': 'DefinedRegion',
+            'addressCountry': 'GB',
+          },
         },
       },
       {
@@ -142,6 +218,44 @@ export default function PricingPage() {
         seller: {
           '@id': `${ENV.BASE_URL}/#organization`,
         },
+        'hasMerchantReturnPolicy': {
+          '@type': 'MerchantReturnPolicy',
+          '@id': 'https://smartlivetv.co.uk/pricing#return-policy',
+          'applicableCountry': 'GB',
+          'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+          'merchantReturnDays': 7,
+          'returnMethod': 'https://schema.org/ReturnByMail',
+          'returnFees': 'https://schema.org/FreeReturn',
+          'refundType': 'https://schema.org/FullRefund',
+        },
+        'shippingDetails': {
+          '@type': 'OfferShippingDetails',
+          '@id': 'https://smartlivetv.co.uk/pricing#shipping',
+          'shippingRate': {
+            '@type': 'MonetaryAmount',
+            'value': 0,
+            'currency': 'GBP',
+          },
+          'deliveryTime': {
+            '@type': 'ShippingDeliveryTime',
+            'handlingTime': {
+              '@type': 'QuantitativeValue',
+              'minValue': 0,
+              'maxValue': 0,
+              'unitCode': 'MIN',
+            },
+            'transitTime': {
+              '@type': 'QuantitativeValue',
+              'minValue': 5,
+              'maxValue': 30,
+              'unitCode': 'MIN',
+            },
+          },
+          'shippingDestination': {
+            '@type': 'DefinedRegion',
+            'addressCountry': 'GB',
+          },
+        },
       },
       {
         '@type': 'Offer',
@@ -155,6 +269,44 @@ export default function PricingPage() {
         priceValidUntil: '2026-12-31',
         seller: {
           '@id': `${ENV.BASE_URL}/#organization`,
+        },
+        'hasMerchantReturnPolicy': {
+          '@type': 'MerchantReturnPolicy',
+          '@id': 'https://smartlivetv.co.uk/pricing#return-policy',
+          'applicableCountry': 'GB',
+          'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+          'merchantReturnDays': 7,
+          'returnMethod': 'https://schema.org/ReturnByMail',
+          'returnFees': 'https://schema.org/FreeReturn',
+          'refundType': 'https://schema.org/FullRefund',
+        },
+        'shippingDetails': {
+          '@type': 'OfferShippingDetails',
+          '@id': 'https://smartlivetv.co.uk/pricing#shipping',
+          'shippingRate': {
+            '@type': 'MonetaryAmount',
+            'value': 0,
+            'currency': 'GBP',
+          },
+          'deliveryTime': {
+            '@type': 'ShippingDeliveryTime',
+            'handlingTime': {
+              '@type': 'QuantitativeValue',
+              'minValue': 0,
+              'maxValue': 0,
+              'unitCode': 'MIN',
+            },
+            'transitTime': {
+              '@type': 'QuantitativeValue',
+              'minValue': 5,
+              'maxValue': 30,
+              'unitCode': 'MIN',
+            },
+          },
+          'shippingDestination': {
+            '@type': 'DefinedRegion',
+            'addressCountry': 'GB',
+          },
         },
       },
     ],

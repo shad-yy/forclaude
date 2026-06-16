@@ -39,14 +39,14 @@ export function generateMetadata({ params }: Props): Metadata {
 
     if (params.device === 'firestick') {
         return {
-            title: 'Watch Live Sports on Firestick (2026) — Smart Live TV IPTV Guide',
+            title: 'Smart Live TV on Firestick — Setup Guide 2026',
             description:
-                'Set up Smart Live TV on Amazon Firestick in 5 minutes. Stream Premier League, TNT Sports, UFC and 230,000+ live channels. Free 24-hour trial — no card required.',
+                'Official Smart Live TV setup guide for Amazon Firestick. Install in 5 minutes, get 230,000+ channels including Sky Sports Premier League, Netflix and Champions League. No box required.',
             alternates: { canonical },
             openGraph: {
-                title: 'Watch Live Sports on Firestick (2026) — Smart Live TV',
+                title: 'Smart Live TV on Firestick — Setup Guide 2026',
                 description:
-                    'Step-by-step Firestick IPTV setup for live sports, Premier League, and 230,000+ channels.',
+                    'Official Smart Live TV setup guide for Amazon Firestick. Install in 5 minutes, get 230,000+ channels including Sky Sports Premier League, Netflix and Champions League.',
                 type: 'article',
             },
         }
@@ -71,6 +71,17 @@ export default async function SetupDevicePage({ params }: Props) {
         notFound()
     }
 
+    const firestickExtraFaqs = params.device === 'firestick' ? [
+        {
+            question: 'Does Smart Live TV have an official Firestick app?',
+            answer: 'Smart Live TV provides a dedicated setup guide and player app for Amazon Firestick. Installation takes under 5 minutes using the steps below.',
+        },
+        {
+            question: 'Is Smart Live TV different from Axia TV or other IPTV boxes?',
+            answer: 'Yes. Smart Live TV is a subscription streaming service that works on your existing devices — including Amazon Firestick — without requiring any additional hardware or set-top box.',
+        },
+    ] : []
+
     const faqs = [
         {
             question: `Is the SmartLiveTV app free to download on ${deviceParams.name}?`,
@@ -83,7 +94,8 @@ export default async function SetupDevicePage({ params }: Props) {
         {
             question: `Can I use my subscription on multiple devices?`,
             answer: `Yes, depending on the tier you choose during sign-up, you can stream simultaneously on up to 4 devices including your ${deviceParams.name}, smartphones, and computers.`
-        }
+        },
+        ...firestickExtraFaqs,
     ]
 
     const faqSchema = generateFAQSchema(faqs)
@@ -159,10 +171,16 @@ export default async function SetupDevicePage({ params }: Props) {
             <section className="pt-28 md:pt-36 pb-16 md:pb-20 bg-gradient-to-b from-gray-900 to-gray-950 text-center px-4 border-b border-gray-900">
                 <div className="container mx-auto max-w-3xl">
                     <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
-                        How to Watch Live Sports on {deviceParams.name}
+                        {params.device === 'firestick' 
+                          ? 'How to Set Up Smart Live TV on Amazon Firestick (2026)'
+                          : `How to Watch Live Sports on ${deviceParams.name}`
+                        }
                     </h1>
                     <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-                        Turn your {deviceParams.name} into the ultimate sports hub in under 5 minutes. Stream Premier League, UFC, and 230,000+ live channels instantly.
+                        {params.device === 'firestick'
+                          ? 'This guide covers setting up Smart Live TV — the UK IPTV service — on your Amazon Firestick. Stream Premier League, UFC, and 230,000+ live channels in under 5 minutes.'
+                          : `Turn your ${deviceParams.name} into the ultimate sports hub in under 5 minutes. Stream Premier League, UFC, and 230,000+ live channels instantly.`
+                        }
                     </p>
                 </div>
             </section>

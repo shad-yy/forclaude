@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(ENV.BASE_URL),
+  metadataBase: new URL('https://smartlivetv.co.uk'),
   title: {
     default: "Smart Live TV",
     template: "%s",

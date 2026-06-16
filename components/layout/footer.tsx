@@ -29,6 +29,7 @@ const footerLinks = [
       { name: "Buy Now", href: "/buy" },
       { name: "Channels", href: "/channels" },
       { name: "Blog", href: "/blog" },
+      { name: "News", href: "/news" },
     ],
   },
   {
@@ -39,6 +40,7 @@ const footerLinks = [
       { name: "Android", href: "/setup/android" },
       { name: "iPhone", href: "/setup/iphone" },
       { name: "IPTV vs Sky Sports", href: "/iptv-vs-sky-sports" },
+      { name: "IPTV vs Netflix", href: "/iptv-vs-netflix" },
     ],
   },
   {

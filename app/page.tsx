@@ -4,6 +4,7 @@ import { SchemaMarkup } from "@/components/SchemaMarkup"
 
 import { HeroSection } from "@/components/homepage/hero-section"
 import { LiveNowBanner } from '@/components/homepage/LiveNowBanner'
+import { EventCountdown } from '@/components/homepage/EventCountdown'
 import { MatchCard } from "@/components/homepage/match-card"
 import dynamic from "next/dynamic"
 
@@ -16,16 +17,16 @@ import { SiteNavigationLinks } from "@/components/seo/site-navigation-links"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 export const metadata: Metadata = {
-  title: 'Smart Live TV — Official UK IPTV Site | Free 24h Trial from £12/mo',
+  title: 'Smart Live TV — Sky Sports & Netflix for £12/mo | Official Site',
   description:
-    'Smart Live TV (smartlivetv.co.uk) — official UK IPTV replacing Netflix, Sky Sports & Disney+ from £12/month. 230,000+ live channels. Start your free 24-hour trial today.',
+    'Smart Live TV is the official UK IPTV service replacing Sky Sports (£43), Netflix (£18) and Disney+ (£5) with one subscription from £12/month. Free 24-hour trial — no card needed.',
   alternates: {
     canonical: ENV.BASE_URL,
   },
   openGraph: {
-    title: 'Smart Live TV — Official UK IPTV Site | Free 24h Trial',
+    title: 'Smart Live TV — Sky Sports & Netflix for £12/mo | Official Site',
     description:
-      'Replace Netflix, Sky Sports & Disney+ with one Smart Live TV subscription from £12/month. 230,000+ channels. Free 24-hour trial — no card required.',
+      'Smart Live TV is the official UK IPTV service replacing Sky Sports (£43), Netflix (£18) and Disney+ (£5) with one subscription from £12/month. Free 24-hour trial — no card needed.',
   },
 }
 
@@ -73,9 +74,7 @@ export default function HomePage() {
       'UK Television',
     ],
     sameAs: [
-      // Add real URLs when available. For now use placeholder
-      // that will be populated when social accounts are created.
-      // Even an empty array is fine — but the structure must exist.
+      'https://smartlivetv.co.uk',
     ],
     offers: {
       '@type': 'AggregateOffer',
@@ -102,10 +101,50 @@ export default function HomePage() {
     },
   }
 
+  const homepageFAQSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What is Smart Live TV?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Smart Live TV is a UK IPTV subscription service that replaces Sky Sports, Netflix, Disney+ and TNT Sports with a single subscription from £12/month. It includes 230,000+ channels, movies and series, and works on Firestick, Smart TV, Android, iPhone and PC.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'How much does Smart Live TV cost?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Smart Live TV plans start from £12/month (1-month Starter plan). The 3-month Popular plan costs £24 (£8/month effective). The 6-month Standard plan is £36 (£6/month). The 12-month Ultimate plan is £54 (£4.50/month). All plans include identical features.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Does Smart Live TV include Sky Sports?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. Smart Live TV includes all Sky Sports channels: Sky Sports Premier League, Sky Sports Main Event, Sky Sports Football, Sky Sports F1, Sky Sports Cricket and Sky Sports Golf — all for £12/month with no Sky Sports subscription required.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Is there a free trial for Smart Live TV?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. Smart Live TV offers a free 24-hour trial with access to all 230,000+ channels. No credit card is required. Activation is via WhatsApp and typically takes under 5 minutes.',
+        },
+      },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 overflow-x-hidden text-gray-100">
       <SchemaMarkup schema={websiteSchema} />
       <SchemaMarkup schema={organizationSchema} />
+      <SchemaMarkup schema={homepageFAQSchema} />
 
       {/* ─── 1. HERO ─── */}
       <HeroSection />
@@ -144,6 +183,8 @@ export default function HomePage() {
 
       {/* ─── 7. LIVE NOW BANNER ─── */}
       <LiveNowBanner />
+
+      <EventCountdown />
 
       {/* ─── 8. BLOG POSTS (recent posts at bottom) ─── */}
       <ScrollReveal>

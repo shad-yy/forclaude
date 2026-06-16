@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/channels`, priority: 0.9, changeFrequency: 'weekly', lastModified: now },
     { url: `${baseUrl}/pricing`, priority: 0.9, changeFrequency: 'monthly', lastModified: now },
     { url: `${baseUrl}/iptv-vs-sky-sports`, priority: 0.9, changeFrequency: 'monthly' as const, lastModified: now },
+    { url: `${baseUrl}/iptv-vs-netflix`, priority: 0.9, changeFrequency: 'monthly' as const, lastModified: now },
     { url: `${baseUrl}/buy`, priority: 0.9, changeFrequency: 'monthly' as const, lastModified: now },
     { url: `${baseUrl}/free-trial`, priority: 0.9, changeFrequency: 'weekly', lastModified: now },
     { url: `${baseUrl}/watch/premier-league`, priority: 0.9, changeFrequency: 'daily', lastModified: now },
