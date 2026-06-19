@@ -91,7 +91,7 @@ const nextConfig = {
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    unoptimized: true,
+    // unoptimized: false — using Next.js built-in image optimization for LCP
   },
   experimental: {
     instrumentationHook: true,

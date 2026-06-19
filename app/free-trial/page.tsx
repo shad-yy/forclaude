@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: 'Get Your Free 24-Hour IPTV Trial',
   description: 'Claim your free 24-hour trial. No credit card. All 230,000+ channels included. Set up in 5 minutes on any device.',
   alternates: { canonical: `${ENV.BASE_URL}/free-trial` },
+  robots: { index: true, follow: true },
 }
 
 export default function FreeTrialPage() {

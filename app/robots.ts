@@ -1,28 +1,25 @@
 import type { MetadataRoute } from 'next'
-import { ENV } from '@/lib/config/env'
 
 export default function robots(): MetadataRoute.Robots {
-  const isVercelPreview = ENV.BASE_URL.includes('vercel.app')
-  
-  if (isVercelPreview) {
-    // Block all crawlers on Vercel preview URL
-    // We don't want this indexed — it's not our real domain
-    return {
-      rules: {
-        userAgent: '*',
-        disallow: '/',
-      },
-    }
-  }
+  // Hard-code the production domain.
+  // DO NOT use env variables for robots.txt logic —
+  // a missing env variable should NEVER block Google.
+  const baseUrl = 'https://smartlivetv.co.uk'
   
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/admin/', '/dev/', '/login'],
+        disallow: [
+          '/api/',
+          '/admin/',
+          '/dev/',
+        ],
+        // Note: do NOT disallow /login — Google 
+        // should be able to crawl it.
       },
     ],
-    sitemap: `${ENV.BASE_URL}/sitemap.xml`,
+    sitemap: `${baseUrl}/sitemap.xml`,
   }
 }
