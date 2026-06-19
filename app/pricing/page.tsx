@@ -12,15 +12,15 @@ import { SpeedChecker } from '@/components/ui/SpeedChecker'
 
 
 export const metadata: Metadata = {
-  title: 'IPTV Pricing — Replaces Netflix + Sky Sports from £12/mo',
+  title: "IPTV Pricing UK — Sky Sports + Netflix from £12/mo | Smart Live TV",
   description:
-    'One subscription replaces Netflix (£18), Disney+ (£5), Sky Sports (£43) and TNT Sports (£31). Smart Live TV from £12/month. No contract. Free trial.',
+    "4 simple plans from £12/month. Replaces Sky Sports (£43), Netflix (£18), Disney+ and TNT Sports. No contract. Free 24-hour trial. Instant activation.",
   alternates: {
     canonical: `${ENV.BASE_URL}/pricing`,
   },
   openGraph: {
-    title: 'IPTV Pricing — Replaces Netflix + Sky Sports from £12/mo',
-    description: 'One subscription replaces Netflix (£18), Disney+ (£5), Sky Sports (£43) and TNT Sports (£31). Smart Live TV from £12/month. No contract. Free trial.',
+    title: "IPTV Pricing UK — Sky Sports + Netflix from £12/mo | Smart Live TV",
+    description: "4 simple plans from £12/month. Replaces Sky Sports (£43), Netflix (£18), Disney+ and TNT Sports. No contract. Free 24-hour trial. Instant activation.",
     url: `${ENV.BASE_URL}/pricing`,
     siteName: 'Smart Live TV',
     images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],

@@ -67,8 +67,13 @@ export function generateMetadata({ params }: Props): Metadata {
     const league = LEAGUES[params.slug as LeagueSlug]
     if (!league) return { title: 'League Not Found' }
 
-    const title = LEAGUE_TITLES[params.slug] ?? `Watch ${league.name} Live Streaming | Free Trial`
-    const description = `Stream every ${league.name} match live in HD. No blackouts, all devices. Start your free 24-hour trial today.`
+    let title = `Watch ${league.name} Live in 4K — From £12/mo | Smart Live TV`
+    let description = `Stream every ${league.name} match live in HD & 4K. All matches included. Free 24H trial, no credit card required.`
+
+    if (params.slug === 'premier-league') {
+        title = "Watch Premier League Live — Sky Sports Included from £12/mo"
+        description = "Stream every Premier League match live in HD & 4K. All Sky Sports channels included — Sky Sports PL, Main Event, Football. Free 24H trial, no card."
+    }
 
     return {
         title,

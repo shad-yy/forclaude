@@ -23,21 +23,23 @@ export function generateMetadata({ params }: BlogPostPageProps): Metadata {
     }
   }
 
+  const title = post.metaTitle || `${post.title} | Smart Live TV`
+
   return {
-    title: `${post.title} | Smart Live TV Blog`,
+    title,
     description: post.description,
     alternates: {
       canonical: `${ENV.BASE_URL}/blog/${post.slug}`,
     },
     openGraph: {
-      title: post.title,
+      title,
       description: post.description,
       type: "article",
       images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Smart Live TV' }],
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
+      title,
       description: post.description,
       images: ['/og-default.png'],
     },

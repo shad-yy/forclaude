@@ -52,6 +52,21 @@ export function generateMetadata({ params }: Props): Metadata {
         }
     }
 
+    if (params.device === 'smart-tv') {
+        return {
+            title: 'Smart Live TV on Samsung & LG Smart TV — Setup Guide 2026',
+            description:
+                'Install Smart Live TV on your Samsung, LG, or Sony Smart TV in 5 minutes. Get Sky Sports, Netflix, 230,000+ channels. Official setup guide.',
+            alternates: { canonical },
+            openGraph: {
+                title: 'Smart Live TV on Samsung & LG Smart TV — Setup Guide 2026',
+                description:
+                    'Install Smart Live TV on your Samsung, LG, or Sony Smart TV in 5 minutes. Get Sky Sports, Netflix, 230,000+ channels. Official setup guide.',
+                type: 'article',
+            },
+        }
+    }
+
     return {
         title: `How to Watch Live Sports on ${device.name} in 2026 | Smart Live TV`,
         description: `Stream Premier League, La Liga, UFC and more on your ${device.name}. Step-by-step setup guide. Works with all major IPTV apps.`,

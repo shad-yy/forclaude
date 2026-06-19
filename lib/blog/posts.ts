@@ -7,6 +7,7 @@ export interface BlogPost {
   readTime: number
   featured: boolean
   content: string
+  metaTitle?: string
 }
 
 export const BLOG_POSTS: BlogPost[] = [
@@ -19,6 +20,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-03-20",
     readTime: 6,
     featured: true,
+    metaTitle: "Watch Premier League from Morocco Live in 4K (2026 Guide)",
     content: `
 <h2>Can You Watch Premier League from Morocco?</h2>
 <p>Yes — and you don't need a VPN to do it. Most official broadcasters like Sky Sports geo-block their streams outside the UK, but IPTV services like Smart Live TV operate globally, giving you access to every <a href="/watch/premier-league">Premier League</a> match in 4K regardless of where you are.</p>
@@ -56,6 +58,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-03-22",
     readTime: 5,
     featured: true,
+    metaTitle: "How to Watch 3pm Saturday Matches in 2026 — Blackout Guide",
     content: `
 <h2>What Is the 3pm Blackout Rule?</h2>
 <p>In England, <a href="/watch/premier-league">Premier League</a> matches kicking off between 2:45pm and 5:15pm on Saturdays cannot be broadcast live on TV. This rule has existed since 1960, originally designed to protect lower-league football attendance.</p>
@@ -83,6 +86,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-03-24",
     readTime: 7,
     featured: false,
+    metaTitle: "Sky Sports vs IPTV UK (2026): Is It Worth Switching?",
     content: `
 <h2>The Real Cost of Sky Sports in 2026</h2>
 <p>Sky Sports currently costs £43/mo as a standalone add-on, or up to £89/mo as part of a full Sky TV bundle. That's over £500 per year just to watch sport — and you still don't get everything.</p>
@@ -118,6 +122,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-03-26",
     readTime: 4,
     featured: false,
+    metaTitle: "Install Smart Live TV on Firestick in 5 Min (2026 Setup Guide)",
     content: `
 <h2>What You'll Need</h2>
 <ul>
@@ -154,6 +159,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-03-28",
     readTime: 5,
     featured: false,
+    metaTitle: "Watch Champions League Without TNT Sport (2026 Stream Guide)",
     content: `
 <h2>Why Is Champions League Behind a Paywall?</h2>
 <p>TNT Sports (formerly BT Sport) holds exclusive UK broadcasting rights for UEFA <a href="/watch/champions-league">Champions League</a> until 2027. This means the only official way to watch in the UK is a TNT Sports subscription at £29.99/mo — or as part of a Sky bundle for even more.</p>
@@ -180,6 +186,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-04-20",
     readTime: 5,
     featured: true,
+    metaTitle: "Is IPTV Legal in the UK? 2026 Legal & Safety Guide",
     content: `
 <h2>What is IPTV?</h2>
 <p>IPTV is simply a method of delivering television content over the internet, rather than through traditional terrestrial, satellite, or cable formats. If you use BBC iPlayer, Netflix, or Amazon Prime Video, you're already using a form of IPTV. The technology itself is 100% legal.</p>
@@ -209,6 +216,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-05-07",
     readTime: 6,
     featured: true,
+    metaTitle: "IPTV vs Netflix, Disney+ & Sky Sports (2026 UK Comparison)",
     content: `
 <h2>Can IPTV Replace Netflix, Disney+ and Sky Sports?</h2>
 <p>Yes. A quality IPTV subscription in 2026 includes Netflix, Disney+, Amazon Prime Video, Hulu, Shahid, all Sky Sports channels, TNT Sports, and every major streaming platform — for a single monthly fee starting at £12. That compares to £97+ per month when subscribing to each service separately.</p>
@@ -307,6 +315,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-06-09",
     readTime: 10,
     featured: true,
+    metaTitle: "I Cancelled Sky Sports, Netflix & Disney+ — Save £1,000/yr (2026)",
     content: `
 <p>Yes, you can cancel Sky Sports and still watch the Premier League — along with the Champions League, UFC, F1, Netflix and Disney+ — for a fraction of the price. I did exactly that, and my monthly bill dropped from £97 to £12.</p>
 
@@ -465,6 +474,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-06-09",
     readTime: 8,
     featured: false,
+    metaTitle: "Watch Premier League on Firestick Without Sky (2026 Setup)",
     content: `
 <p>Yes, you can watch every Premier League match on your Amazon Firestick without a Sky Sports subscription. There are three realistic options in 2026: the Sky Go app (which still requires a Sky account), a NOW TV Sports Pass, or an IPTV service like <a href="/watch/premier-league">Smart Live TV</a> that gives you all 380 matches from £12/month.</p>
 <p>This guide covers all three options, a full step-by-step Firestick setup, and honest advice on what actually works best for regular Premier League viewing.</p>
@@ -685,6 +695,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-06-09",
     readTime: 8,
     featured: false,
+    metaTitle: "Watch World Cup 2026 Live from Anywhere (2026 Stream Guide)",
     content: `
 <p>If you're in the UK, the World Cup 2026 is completely free to watch. BBC iPlayer and ITVX are sharing coverage of all 104 matches — no subscription, no pay-per-view, no catch. You genuinely don't need to spend a penny.</p>
 <p>But if you're watching from outside the UK — from Morocco, France, the UAE, the US, or anywhere else — those free streams are geoblocked. BBC iPlayer and ITVX simply won't load unless you're on a UK internet connection. This guide covers exactly what works for international viewers, including Arabic and French commentary options.</p>
@@ -838,6 +849,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-06-16",
     readTime: 6,
     featured: true,
+    metaTitle: "Watch Argentina vs Algeria Live Tonight — Free UK & 4K Stream (2026)",
     content: `
 <p>Argentina vs Algeria kicks off tonight at 2am BST at Kansas City Stadium. This is the most watched game of Day 6 — Lionel Messi's title defence begins here. Here is exactly how to watch it.</p>
 

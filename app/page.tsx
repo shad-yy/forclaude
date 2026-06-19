@@ -17,16 +17,16 @@ import { SiteNavigationLinks } from "@/components/seo/site-navigation-links"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 export const metadata: Metadata = {
-  title: 'Smart Live TV — Sky Sports & Netflix for £12/mo | Official Site',
+  title: 'Smart Live TV — Sky Sports & Netflix for £12/mo | Free Trial',
   description:
-    'Smart Live TV is the official UK IPTV service replacing Sky Sports (£43), Netflix (£18) and Disney+ (£5) with one subscription from £12/month. Free 24-hour trial — no card needed.',
+    'Replace Sky Sports (£43), Netflix (£18) & Disney+ with one UK subscription from £12/month. 230,000+ channels, 4K quality. Free 24-hour trial — no card needed.',
   alternates: {
     canonical: ENV.BASE_URL,
   },
   openGraph: {
-    title: 'Smart Live TV — Sky Sports & Netflix for £12/mo | Official Site',
+    title: 'Smart Live TV — Sky Sports & Netflix for £12/mo | Free Trial',
     description:
-      'Smart Live TV is the official UK IPTV service replacing Sky Sports (£43), Netflix (£18) and Disney+ (£5) with one subscription from £12/month. Free 24-hour trial — no card needed.',
+      'Replace Sky Sports (£43), Netflix (£18) & Disney+ with one UK subscription from £12/month. 230,000+ channels, 4K quality. Free 24-hour trial — no card needed.',
   },
 }
 
