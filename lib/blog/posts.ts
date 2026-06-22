@@ -1077,6 +1077,157 @@ ITVX is blocked outside the UK. Smart Live TV includes every England match via I
 <p><strong>Who has England beaten at World Cup 2026?</strong><br />
 England beat Croatia 4-2 in their opening Group L match on Wednesday 17 June.</p>
 `
+  },
+  {
+    slug: "watch-argentina-austria-world-cup-2026",
+    title: "Watch Argentina vs Austria Live Today — World Cup 2026 UK Guide (Monday 6pm BST)",
+    description: "Defending champions Argentina face Austria today, Monday June 22, at 6pm BST. Free on ITV and ITVX in the UK. Here is how to watch Messi's final World Cup match live on any device.",
+    category: "news",
+    publishedAt: "2026-06-22",
+    readTime: 6,
+    featured: true,
+    metaTitle: "Watch Argentina vs Austria Live Today — 6pm BST | World Cup 2026 UK Guide",
+    content: `
+<p>Defending World Cup champions Argentina kick off their second group stage match against Austria <strong>today, Monday 22 June at 6pm BST</strong> in Kansas City.</p>
+
+<p>Following their convincing 3-0 opening win over Algeria, Argentina look to secure qualification to the knockout stages. This tournament marks Lionel Messi's final World Cup appearance, meaning every match is must-watch football.</p>
+
+<p>Here is exactly how to watch the match live.</p>
+
+<h2>How to Watch Argentina vs Austria in the UK (Free)</h2>
+
+<p>This match is completely free on ITV.</p>
+
+<p><strong>ITV1</strong> — Live broadcast from 5pm BST today, Monday 22 June<br />
+<strong>ITVX</strong> — Free live stream from 5pm BST<br />
+Kick-off: 6pm BST</p>
+
+<p>No subscription needed. You need a free ITVX account to stream online. The match is also on regular ITV1 if you have a TV aerial or Freeview.</p>
+
+<h3>On your devices:</h3>
+
+<table>
+<thead>
+  <tr>
+    <th>Device</th>
+    <th>How to Watch</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Smart TV (Samsung/LG/Sony)</td>
+    <td>Download ITVX app (free)</td>
+  </tr>
+  <tr>
+    <td>Amazon Firestick</td>
+    <td>Download ITVX app from Firestick App Store (free)</td>
+  </tr>
+  <tr>
+    <td>iPhone / iPad</td>
+    <td>Download ITVX app from App Store (free)</td>
+  </tr>
+  <tr>
+    <td>Android</td>
+    <td>Download ITVX app from Google Play (free)</td>
+  </tr>
+  <tr>
+    <td>PC / Mac</td>
+    <td><a href="https://itvx.com" target="_blank" rel="noopener noreferrer">itvx.com</a> — free account required</td>
+  </tr>
+</tbody>
+</table>
+
+<h2>Argentina's World Cup Campaign & Messi's Final Dance</h2>
+
+<p>Argentina began their title defence with a 3-0 victory against Algeria. With Lionel Messi confirming this is his final World Cup, the pressure is on Argentina to secure back-to-back titles.</p>
+
+<p>Argentina's next group match after Austria is on Friday 26 June. Winning Group J is vital to secure an easier path through the knockout phases.</p>
+
+<h2>Argentina's Route to the Knockout Stages</h2>
+
+<p>If Argentina top Group J, their potential path includes:</p>
+<ul>
+  <li>Round of 32 (June 30): vs third-place team from Group G/H/I/K/L</li>
+  <li>Round of 16 (July 5): possible clash with Germany or Belgium</li>
+  <li>Quarter-Final onwards: potential semi-final against Brazil or England</li>
+</ul>
+
+<p>Every knockout match will be broadcast free in the UK on BBC or ITV.</p>
+
+<h2>Argentina vs Austria — Team News & Context</h2>
+
+<p><strong>Argentina squad news:</strong><br />
+Lionel Scaloni is expected to start Lionel Messi, who is the creative hub of the team, with Julian Alvarez leading the line. Argentina's midfield looks solid after an impressive opening performance.</p>
+
+<p><strong>Austria team news:</strong><br />
+Austria are a disciplined side under Ralf Rangnick. They will look to defend compactly and strike on the counter-attack, though containing Messi tonight will be their toughest test yet.</p>
+
+<h2>Will ITVX Buffer During Messi's Match Tonight?</h2>
+
+<p>With millions of UK fans tuning in to watch Lionel Messi's final World Cup, ITVX servers will experience massive traffic. Buffer issues and stream delays are common during high-profile World Cup matches.</p>
+
+<p>If you need a reliable backup stream that routes independently of the national network surge, Smart Live TV includes the ITV World Cup feed via a dedicated stream. No buffering, no lag.</p>
+
+<p><a href="/free-trial">Free 24-hour trial — no card needed →</a></p>
+
+<h2>Watching Argentina vs Austria From Abroad</h2>
+
+<p>ITVX is geoblocked outside the UK. If you are watching from France, Spain, Morocco, UAE, the USA, or anywhere else, it will not work without a VPN.</p>
+
+<p><a href="/pricing">Smart Live TV</a> includes all ITV and BBC World Cup matches with no geo-restrictions and no VPN required. Works from any country. From £12/month with a free 24-hour trial.</p>
+
+<h2>Today's Full World Cup Schedule (June 22, UK Times)</h2>
+
+<table>
+<thead>
+  <tr>
+    <th>Match</th>
+    <th>UK Time</th>
+    <th>Channel</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><strong>Argentina vs Austria</strong></td>
+    <td><strong>6pm BST</strong></td>
+    <td><strong>ITV</strong></td>
+  </tr>
+  <tr>
+    <td>France vs Saudi Arabia</td>
+    <td>9pm BST</td>
+    <td>BBC</td>
+  </tr>
+  <tr>
+    <td>Germany vs Japan</td>
+    <td>midnight BST</td>
+    <td>ITV</td>
+  </tr>
+</tbody>
+</table>
+
+<h2>Next Up: England vs Ghana Tomorrow</h2>
+
+<p>If you are following the home nation's progress, England's second match is tomorrow:</p>
+<p><strong>England vs Ghana</strong> — Tuesday 23 June at 9pm BST (Live on ITV1 & ITVX)</p>
+<p>Check out our full <a href="/blog/watch-england-ghana-world-cup-2026">England vs Ghana Watch Guide</a> for kick-off times, team news, and TV channels.</p>
+
+<h2>Frequently Asked Questions</h2>
+
+<p><strong>What channel is Argentina vs Austria on?</strong><br />
+ITV1 and ITVX. Free in the UK. Kick-off is 6pm BST today, Monday 22 June 2026.</p>
+
+<p><strong>Is Argentina vs Austria free to watch?</strong><br />
+Yes. ITVX streams it free online, and ITV1 is free-to-air on Freeview, Sky, and Virgin.</p>
+
+<p><strong>What time is Argentina vs Austria UK?</strong><br />
+6pm BST today. Pre-match coverage starts at 5pm BST on ITV.</p>
+
+<p><strong>Can I watch Messi's World Cup matches on Firestick?</strong><br />
+Yes. Download the free ITVX app from the Firestick App Store or use <a href="/pricing">Smart Live TV</a> for a buffer-free stream. See our <a href="/setup/firestick">Firestick setup guide</a> for full details.</p>
+
+<p><strong>How can I watch the World Cup from abroad?</strong><br />
+ITVX is geoblocked outside the UK. Smart Live TV streams every match via ITV and BBC feeds with no VPN and no block. Works in Morocco, France, UAE, USA and worldwide. <a href="/free-trial">Free 24-hour trial →</a></p>
+`
   }
 ]
 
