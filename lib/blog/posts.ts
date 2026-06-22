@@ -922,6 +922,161 @@ export const BLOG_POSTS: BlogPost[] = [
 <p><strong>Is the World Cup in 4K this year?</strong><br />Selected matches are broadcast in 4K by BBC iPlayer. Smart Live TV delivers 4K quality on all channels where the broadcast supports it, including beIN Sports 4K.</p>
 <p><strong>Will iPlayer buffer during Argentina vs Algeria?</strong><br />Potentially. High-profile World Cup matches drive simultaneous viewership that strains BBC iPlayer's infrastructure. A dedicated IPTV stream routes your connection independently of the national audience.</p>
 `
+  },
+  {
+    slug: "watch-england-ghana-world-cup-2026",
+    title: "Watch England vs Ghana Live — World Cup 2026 UK Guide (Tuesday 9pm BST)",
+    description: "England face Ghana in Boston tomorrow, Tuesday June 23, at 9pm BST. Free on ITV in the UK. Here is how to watch England's second World Cup 2026 match live on every device.",
+    category: "news",
+    publishedAt: "2026-06-22",
+    readTime: 6,
+    featured: true,
+    metaTitle: "Watch England vs Ghana Live — World Cup 2026 | Tuesday 9pm BST on ITV",
+    content: `
+<p>England's second World Cup 2026 match kicks off <strong>Tuesday 23 June at 9pm BST</strong> in Boston, Massachusetts.</p>
+
+<p>Following their 4-2 opening win over Croatia, England need a result against Ghana to strengthen their position in Group L and keep their route to the knockout stages straightforward.</p>
+
+<p>Here is exactly how to watch it.</p>
+
+<h2>How to Watch England vs Ghana in the UK (Free)</h2>
+
+<p>This match is completely free on ITV.</p>
+
+<p><strong>ITV1</strong> — Live broadcast from 8pm BST Tuesday 23 June<br />
+<strong>ITVX</strong> — Free live stream from 8pm BST<br />
+Kick-off: 9pm BST</p>
+
+<p>No subscription needed. You need a free ITVX account to stream online. The match is also on regular ITV1 if you have a TV aerial or Freeview.</p>
+
+<h3>On your devices:</h3>
+
+<table>
+<thead>
+  <tr>
+    <th>Device</th>
+    <th>How to Watch</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Smart TV (Samsung/LG/Sony)</td>
+    <td>Download ITVX app (free)</td>
+  </tr>
+  <tr>
+    <td>Amazon Firestick</td>
+    <td>Download ITVX app from Firestick App Store (free)</td>
+  </tr>
+  <tr>
+    <td>iPhone / iPad</td>
+    <td>Download ITVX app from App Store (free)</td>
+  </tr>
+  <tr>
+    <td>Android</td>
+    <td>Download ITVX app from Google Play (free)</td>
+  </tr>
+  <tr>
+    <td>PC / Mac</td>
+    <td><a href="https://itvx.com" target="_blank" rel="noopener noreferrer">itvx.com</a> — free account required</td>
+  </tr>
+</tbody>
+</table>
+
+<h2>England's World Cup Form</h2>
+
+<p>England beat Croatia 4-2 in their opening match, with Jude Bellingham justifying his selection in an impressive display. England's next group match after Ghana is against Panama on Saturday 27 June.</p>
+
+<p>Topping Group L is crucial for England — if they finish second, the knockout route becomes significantly harder.</p>
+
+<h2>England's Route to the World Cup Final</h2>
+
+<p>If England top Group L, their potential route includes:</p>
+<ul>
+  <li>Round of 32 (July 1): vs Group E/H/I/J/K third-place</li>
+  <li>Round of 16 (July 6): possible clash with Spain or Mexico</li>
+  <li>Quarter-Final onwards: potential Brazil or Argentina ties</li>
+</ul>
+
+<p>Every knockout match will be on BBC or ITV in the UK, free to watch.</p>
+
+<h2>England vs Ghana — What You Need to Know</h2>
+
+<p><strong>Ghana at World Cup 2026:</strong><br />
+Ghana opened with a 1-0 win over Panama. Mohammed Kudus is unavailable for Ghana which weakens their attacking options, though Antoine Semenyo and Inaki Williams remain threats.</p>
+
+<p><strong>England team news:</strong><br />
+Thomas Tuchel's squad have looked sharp in their opener. Bellingham is the key creative force with Kane leading the line.</p>
+
+<h2>Will ITVX Buffer During England's Match?</h2>
+
+<p>This is the most searched question for every England World Cup match.</p>
+
+<p>The honest answer: potentially, yes. During England games, millions of UK viewers simultaneously load ITVX. The platform has experienced buffering during peak concurrent viewership at previous tournaments.</p>
+
+<p>If you want a backup that routes independently of the national audience surge, Smart Live TV includes the ITV World Cup feed via a dedicated stream. No buffering during England goals.</p>
+
+<p><a href="/free-trial">Free 24-hour trial — no card needed →</a></p>
+
+<h2>Watching England vs Ghana From Abroad</h2>
+
+<p>ITVX is geoblocked outside the UK. If you are watching from France, Morocco, UAE, the USA, or anywhere else, it will not work without a VPN.</p>
+
+<p><a href="/pricing">Smart Live TV</a> includes all ITV World Cup matches with no geo-restriction and no VPN required. Works from any country. From £12/month with a free 24-hour trial.</p>
+
+<h2>Tomorrow's Full World Cup Schedule (June 23, UK Times)</h2>
+
+<table>
+<thead>
+  <tr>
+    <th>Match</th>
+    <th>UK Time</th>
+    <th>Channel</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Portugal vs Uzbekistan</td>
+    <td>6pm BST</td>
+    <td>BBC</td>
+  </tr>
+  <tr>
+    <td><strong>England vs Ghana</strong></td>
+    <td><strong>9pm BST</strong></td>
+    <td><strong>ITV</strong></td>
+  </tr>
+  <tr>
+    <td>Panama vs Croatia</td>
+    <td>midnight BST</td>
+    <td>ITV</td>
+  </tr>
+  <tr>
+    <td>Colombia vs DR Congo</td>
+    <td>3am BST</td>
+    <td>BBC</td>
+  </tr>
+</tbody>
+</table>
+
+<h2>Frequently Asked Questions</h2>
+
+<p><strong>What channel is England vs Ghana on?</strong><br />
+ITV1 and ITVX. Free in the UK. Kick-off is 9pm BST on Tuesday 23 June 2026.</p>
+
+<p><strong>Is England vs Ghana free to watch?</strong><br />
+Yes. ITVX streams it free with a free account. ITV1 is free on Freeview, Sky, and Virgin.</p>
+
+<p><strong>What time is England vs Ghana UK?</strong><br />
+9pm BST Tuesday 23 June. Pre-match coverage starts at 8pm BST on ITV.</p>
+
+<p><strong>Can I watch England vs Ghana on Firestick?</strong><br />
+Yes. Download the free ITVX app from the Firestick App Store. Create a free ITV account and stream live. See our <a href="/setup/firestick">Firestick setup guide</a> for full instructions.</p>
+
+<p><strong>How can I watch England's World Cup matches from abroad?</strong><br />
+ITVX is blocked outside the UK. Smart Live TV includes every England match via ITV and BBC feeds with no VPN and no geo-block. Works in Morocco, France, UAE, USA and worldwide. <a href="/free-trial">Free 24-hour trial →</a></p>
+
+<p><strong>Who has England beaten at World Cup 2026?</strong><br />
+England beat Croatia 4-2 in their opening Group L match on Wednesday 17 June.</p>
+`
   }
 ]
 
