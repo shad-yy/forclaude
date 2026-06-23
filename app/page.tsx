@@ -140,11 +140,49 @@ export default function HomePage() {
     ],
   }
 
+  // VideoObject schema — ready for your homepage video
+  // Replace the placeholder URL with your actual YouTube/video URL when ready
+  const videoSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    '@id': `${ENV.BASE_URL}/#video`,
+    name: 'How Smart Live TV Works — Replace Sky Sports, Netflix & Disney+ for £12/mo',
+    description: 'See how Smart Live TV replaces Sky Sports (£43/mo), Netflix (£18/mo) and Disney+ with one UK IPTV subscription from £12/month. 230,000+ channels, 4K quality, free 24-hour trial.',
+    // TODO: Replace these with actual video URLs when your HuggingFace video is ready
+    // thumbnailUrl: `${ENV.BASE_URL}/video-thumbnail.jpg`,
+    // uploadDate: '2026-06-24',
+    // contentUrl: 'https://www.youtube.com/watch?v=YOUR_VIDEO_ID',
+    // embedUrl: 'https://www.youtube.com/embed/YOUR_VIDEO_ID',
+    // duration: 'PT1M',
+    publisher: {
+      '@id': `${ENV.BASE_URL}/#organization`,
+    },
+  }
+
+  // SpeakableSpecification for voice assistants (AEO)
+  const speakableSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${ENV.BASE_URL}/#webpage`,
+    name: 'Smart Live TV — Sky Sports & Netflix for £12/mo | Free Trial',
+    url: `${ENV.BASE_URL}/`,
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', '.hero-speakable', '.faq-speakable'],
+    },
+    mainEntity: {
+      '@id': `${ENV.BASE_URL}/#organization`,
+    },
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 overflow-x-hidden text-gray-100">
       <SchemaMarkup schema={websiteSchema} />
       <SchemaMarkup schema={organizationSchema} />
       <SchemaMarkup schema={homepageFAQSchema} />
+      <SchemaMarkup schema={speakableSchema} />
+      {/* Uncomment the line below when your video is ready */}
+      {/* <SchemaMarkup schema={videoSchema} /> */}
 
       {/* ─── 1. HERO ─── */}
       <HeroSection />

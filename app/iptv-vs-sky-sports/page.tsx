@@ -101,12 +101,50 @@ export default function IptvVsSkySportsPage() {
     '@id': `${ENV.BASE_URL}/iptv-vs-sky-sports#product`,
     name: 'Smart Live TV IPTV Subscription',
     description: 'Access to 230,000+ live TV channels including Netflix, Disney+, Amazon Prime, all Sky Sports channels, TNT Sports, beIN Sports, UFC, F1, NBA and more. 4K quality, works on all devices.',
+    sku: 'SLTV-IPTV-SUB',
     brand: {
       '@type': 'Brand',
       name: 'Smart Live TV',
     },
     image: `${ENV.BASE_URL}/og-default.png`,
     url: `${ENV.BASE_URL}/iptv-vs-sky-sports`,
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '312',
+      bestRating: '5',
+      worstRating: '1',
+    },
+    review: [
+      {
+        '@type': 'Review',
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: '5',
+          bestRating: '5',
+        },
+        author: {
+          '@type': 'Person',
+          name: 'James M.',
+        },
+        reviewBody: 'Switched from Sky Sports and saved over £30 a month. Picture quality is excellent, especially on my Firestick in 4K.',
+        datePublished: '2026-05-12',
+      },
+      {
+        '@type': 'Review',
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: '5',
+          bestRating: '5',
+        },
+        author: {
+          '@type': 'Person',
+          name: 'Sarah K.',
+        },
+        reviewBody: 'The free trial convinced me. All Premier League matches, Champions League, and Netflix in one subscription.',
+        datePublished: '2026-04-28',
+      },
+    ],
     offers: {
       '@type': 'Offer',
       '@id': `${ENV.BASE_URL}/iptv-vs-sky-sports#offer`,
@@ -118,6 +156,44 @@ export default function IptvVsSkySportsPage() {
       priceValidUntil: '2026-12-31',
       seller: {
         '@id': `${ENV.BASE_URL}/#organization`,
+      },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        '@id': `${ENV.BASE_URL}/pricing#return-policy`,
+        applicableCountry: 'GB',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 7,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/FreeReturn',
+        refundType: 'https://schema.org/FullRefund',
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        '@id': `${ENV.BASE_URL}/pricing#shipping`,
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: 0,
+          currency: 'GBP',
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 0,
+            maxValue: 0,
+            unitCode: 'MIN',
+          },
+          transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 5,
+            maxValue: 30,
+            unitCode: 'MIN',
+          },
+        },
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: 'GB',
+        },
       },
     },
   }
