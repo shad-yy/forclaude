@@ -4,8 +4,8 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { FaqAccordion } from '@/components/pricing/faq-accordion'
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | Smart Live TV',
-  description: 'Got questions? We have answers. Learn more about Smart Live TV channels, setup, billing, and support.',
+  title: 'Smart Live TV FAQ — Channels, Setup, Billing & Support Answered',
+  description: 'Answers to every question about Smart Live TV: what channels are included, how to set up on Firestick & Smart TV, billing options, free trial details, and 24/7 support.',
   alternates: { canonical: `${ENV.BASE_URL}/faq` },
 }
 

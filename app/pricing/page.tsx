@@ -664,6 +664,16 @@ export default function PricingPage() {
       </section>
       </FadeIn>
 
+      {/* COMPARISON CALLOUT */}
+      <div className="text-center py-8 px-4 max-w-2xl mx-auto">
+        <p className="text-sm text-gray-400">
+          Wondering how we compare to traditional TV?{' '}
+          <Link href="/iptv-vs-sky-sports" className="text-[#00e676] hover:underline font-semibold">
+            See our honest IPTV vs Sky Sports comparison →
+          </Link>
+        </p>
+      </div>
+
       {/* TRUST BADGES */}
       <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 py-8 max-w-2xl mx-auto">
         {([

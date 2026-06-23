@@ -19,6 +19,7 @@ const SECTIONS = [
       { href: '/free-trial', label: 'Free 24-hour trial' },
       { href: '/buy', label: 'Buy subscription' },
       { href: '/channels', label: '230,000+ channels' },
+      { href: '/iptv-vs-sky-sports', label: 'IPTV vs Sky Sports comparison' },
     ],
   },
   {
@@ -26,6 +27,8 @@ const SECTIONS = [
     links: [
       { href: '/setup/firestick', label: 'Firestick setup' },
       { href: '/setup/smart-tv', label: 'Smart TV setup' },
+      { href: '/setup/android', label: 'Android setup' },
+      { href: '/setup/iphone', label: 'iPhone setup' },
       { href: '/blog/how-to-install-iptv-firestick', label: 'IPTV Firestick guide' },
       { href: '/blog/is-iptv-legal-uk', label: 'Is IPTV legal in the UK?' },
       { href: '/faq', label: 'FAQ' },
