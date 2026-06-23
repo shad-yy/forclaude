@@ -2,7 +2,7 @@ name: Auto-Index New URLs
 
 on:
   push:
-    branches: [main]
+    branches: [Version-3]
     paths:
       - 'content/**'
       - 'app/**/page.tsx'
