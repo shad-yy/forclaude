@@ -76,6 +76,7 @@ export const metadata: Metadata = {
 
 import { SportThemeProvider } from "@/components/sport-theme-provider"
 import { ThemeProvider } from 'next-themes'
+import { Analytics } from '@vercel/analytics/next'
 
 // ... imports
 
@@ -119,6 +120,7 @@ export default function RootLayout({
         <WebVitals />
         <CookieBanner />
         <WhatsAppFloat />
+        <Analytics />
       </body>
     </html>
   )
