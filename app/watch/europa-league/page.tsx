@@ -198,6 +198,24 @@ export default async function EuropaLeaguePage() {
 
       <div className="container mx-auto px-4 md:px-6 lg:px-8 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12 max-w-7xl">
         <div className="lg:col-span-2 space-y-0">
+          {/* ANSWER-FIRST GEO BLOCK */}
+          <FadeIn direction="up">
+            <section className="mb-12 p-6 border-l-4 border-[#f97316] bg-[#12121a] rounded-r-2xl">
+              <h2 className="text-xl font-bold text-white mb-3">Direct Answer: How to Watch UEFA Europa League Live</h2>
+              <p className="text-gray-300 leading-relaxed text-sm md:text-base">
+                You can watch every UEFA Europa League match live in the UK on <strong>TNT Sports</strong> and discovery+. However, for full 4K UHD streaming without blackouts, multiple language options, or the ability to stream from abroad without a VPN, use <strong><Link href="/pricing" className="text-orange-400 hover:underline">Smart Live TV</Link></strong> from <strong>£12/month</strong> with a 24-hour free trial.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link href="/pricing" className="px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-xs font-bold text-black transition-colors">
+                  Claim Free 24H Trial
+                </Link>
+                <Link href="/setup/firestick" className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-semibold text-white border border-gray-700 transition">
+                  Firestick Setup Guide
+                </Link>
+              </div>
+            </section>
+          </FadeIn>
+
           {/* UPCOMING MATCHES */}
           {upcomingMatches.length > 0 && (
             <section className="pb-16 md:pb-20">

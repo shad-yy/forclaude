@@ -1,9 +1,9 @@
 import { MetadataRoute } from "next"
 import { BLOG_POSTS } from "@/lib/blog/posts"
-import { ENV } from "@/lib/config/env"
+
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = ENV.BASE_URL
+  const baseUrl = 'https://smartlivetv.co.uk'
   // Use a fixed date string for build-time consistency
   const now = new Date().toISOString()
 
