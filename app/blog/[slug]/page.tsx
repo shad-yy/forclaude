@@ -5,6 +5,34 @@ import { BLOG_POSTS } from "@/lib/blog/posts"
 import { ENV } from "@/lib/config/env"
 import { BlogPostLayout } from "@/components/blog/BlogPostLayout"
 
+/**
+ * Extract FAQ pairs from HTML content by finding <h3> headings
+ * followed by <p> answer text within FAQ sections.
+ */
+function extractFaqFromHtml(html: string): { question: string; answer: string }[] {
+  const faqs: { question: string; answer: string }[] = []
+
+  // Find the FAQ section - look for content after "Frequently Asked Questions" heading
+  const faqSectionMatch = html.match(/(<h[23][^>]*>\s*Frequently Asked Questions\s*<\/h[23]>)(.*)/is)
+  if (!faqSectionMatch) return faqs
+
+  const faqHtml = faqSectionMatch[2]
+
+  // Match <h3>Question</h3> followed by <p>Answer</p> patterns
+  const pairRegex = /<h3[^>]*>([^<]+)<\/h3>\s*<p>([\s\S]*?)(?=<h[23]|$)/gi
+  let match
+  while ((match = pairRegex.exec(faqHtml)) !== null) {
+    const question = match[1].trim()
+    // Strip HTML tags from the answer, keep text only
+    const answer = match[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    if (question && answer) {
+      faqs.push({ question, answer })
+    }
+  }
+
+  return faqs
+}
+
 type BlogPostPageProps = {
   params: { slug: string }
 }
@@ -50,7 +78,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   const post = BLOG_POSTS.find((item) => item.slug === params.slug)
   if (!post) notFound()
 
-  const dateModified = new Date().toISOString()
+  // Use the post's published date as dateModified (stable across builds)
+  const dateModified = new Date(post.publishedAt).toISOString()
 
   const articleSchema = {
     "@context": "https://schema.org",
@@ -71,6 +100,21 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     },
     url: `${ENV.BASE_URL}/blog/${post.slug}`,
   }
+
+  // Auto-extract FAQ pairs for FAQPage schema (rich results)
+  const faqs = extractFaqFromHtml(post.content)
+  const faqSchema = faqs.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(faq => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  } : null
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -95,6 +139,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     <>
       <SchemaMarkup schema={articleSchema} />
       <SchemaMarkup schema={breadcrumbSchema} />
+      {faqSchema && <SchemaMarkup schema={faqSchema} />}
 
       <BlogPostLayout
         title={post.title}
@@ -102,7 +147,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         author="James Harper"
         authorTitle="Sports Streaming Expert"
         date={post.publishedAt}
-        lastModified={dateModified.slice(0, 10)}
+        lastModified={post.publishedAt}
         readingTime={`${post.readTime} min read`}
         category={post.category}
         tags={categoryTagMap[post.category] ?? []}
