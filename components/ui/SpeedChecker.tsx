@@ -58,19 +58,7 @@ export function SpeedChecker() {
     }, 100)
 
     try {
-      // Method 1: navigator.connection — browser estimate
-      // Fast but imprecise — use as a quick indicator only
-      const conn = (navigator as any).connection
-
-      if (conn?.downlink && conn.downlink > 0 && conn.downlink < 10000) {
-        // Valid range check — browser sometimes returns absurd values
-        await new Promise(r => setTimeout(r, 2000)) // Simulate test time
-        clearInterval(progressInterval)
-        setProgress(100)
-        setResult(classify(Math.round(conn.downlink), true))
-        setStatus('done')
-        return
-      }
+      // Proceed directly to real download measurement since navigator.connection returns instant estimates rather than real performance.
 
       // Method 2: Download timing with own API endpoint
       // This measures real throughput but is affected by CDN

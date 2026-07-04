@@ -35,15 +35,15 @@ function pad(n: number): string {
 /** Knockout fixtures during World Cup 2026 — used when live APIs have no near-term event. */
 const WORLD_CUP_KNOCKOUT: CountdownEvent[] = [
   {
-    name: 'Morocco vs Canada — Round of 16',
-    date: new Date('2026-07-04T22:00:00+01:00'),
+    name: 'Canada vs Morocco — Round of 16',
+    date: new Date('2026-07-04T18:00:00+01:00'),
     href: '/watch/world-cup-2026',
     sport: 'World Cup',
     badge: '/leagues/world-cup.png',
   },
   {
     name: 'France vs Paraguay — Round of 16',
-    date: new Date('2026-07-05T02:00:00+01:00'),
+    date: new Date('2026-07-04T22:00:00+01:00'),
     href: '/watch/world-cup-2026',
     sport: 'World Cup',
     badge: '/leagues/world-cup.png',
@@ -58,6 +58,34 @@ const WORLD_CUP_KNOCKOUT: CountdownEvent[] = [
   {
     name: 'Mexico vs England — Round of 16',
     date: new Date('2026-07-06T01:00:00+01:00'),
+    href: '/watch/world-cup-2026',
+    sport: 'World Cup',
+    badge: '/leagues/world-cup.png',
+  },
+  {
+    name: 'Portugal vs Spain — Round of 16',
+    date: new Date('2026-07-06T20:00:00+01:00'),
+    href: '/watch/world-cup-2026',
+    sport: 'World Cup',
+    badge: '/leagues/world-cup.png',
+  },
+  {
+    name: 'USA vs Belgium — Round of 16',
+    date: new Date('2026-07-07T01:00:00+01:00'),
+    href: '/watch/world-cup-2026',
+    sport: 'World Cup',
+    badge: '/leagues/world-cup.png',
+  },
+  {
+    name: 'Argentina vs Egypt — Round of 16',
+    date: new Date('2026-07-07T17:00:00+01:00'),
+    href: '/watch/world-cup-2026',
+    sport: 'World Cup',
+    badge: '/leagues/world-cup.png',
+  },
+  {
+    name: 'Switzerland vs Colombia — Round of 16',
+    date: new Date('2026-07-07T21:00:00+01:00'),
     href: '/watch/world-cup-2026',
     sport: 'World Cup',
     badge: '/leagues/world-cup.png',
