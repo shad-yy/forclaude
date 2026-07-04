@@ -20,11 +20,21 @@ on:
 jobs:
   index-urls:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: read
+      statuses: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 2  # Need previous commit to diff
+
+      - name: Wait for Vercel Deployment
+        uses: vercel/wait-for-deployment-action@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: production
 
       - name: Setup Node
         uses: actions/setup-node@v4
