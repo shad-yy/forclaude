@@ -10,6 +10,7 @@ import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics"
 import { WebVitals } from "@/components/analytics/WebVitals"
 import { CookieBanner } from "@/components/consent/CookieBanner"
 import { WhatsAppFloat } from "@/components/chat/WhatsAppFloat"
+import { LiveEventFloat } from "@/components/ui/LiveEventFloat"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -185,6 +186,7 @@ export default function RootLayout({
         <WebVitals />
         <CookieBanner />
         <WhatsAppFloat />
+        <LiveEventFloat />
       </body>
     </html>
   )

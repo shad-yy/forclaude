@@ -8,6 +8,7 @@ import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { SpeedChecker } from '@/components/ui/SpeedChecker'
+import { FirestickWizard } from '@/components/setup/FirestickWizard'
 
 const DEVICES = {
     'firestick': { name: 'Firestick' },
@@ -252,6 +253,16 @@ export default async function SetupDevicePage({ params }: Props) {
                         </div>
                     </section>
                     </FadeIn>
+
+                    {params.device === 'firestick' && (
+                      <FadeIn direction="up">
+                      <section className="mt-16 md:mt-20 mb-16 md:mb-20">
+                        <h2 className="text-3xl font-bold text-white mb-3">Having trouble?</h2>
+                        <p className="text-gray-400 mb-6">Use our interactive troubleshooter to diagnose and fix common Firestick setup issues in under 2 minutes.</p>
+                        <FirestickWizard />
+                      </section>
+                      </FadeIn>
+                    )}
 
                     <div className="max-w-sm mt-10">
                         <SpeedChecker />
