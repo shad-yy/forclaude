@@ -3,6 +3,7 @@
 
 ## Core Pages
 - [Home](https://smartlivetv.co.uk/): Overview of Smart Live TV IPTV service, channel counts, and features.
+- [Buy Subscription](https://smartlivetv.co.uk/buy): Direct checkout page for IPTV plans starting from £12/month.
 - [Pricing Plans](https://smartlivetv.co.uk/pricing): Subscription tiers (1, 3, 6, and 12-month packages) starting from £12/month.
 - [Channels Directory](https://smartlivetv.co.uk/channels): Full list of available international channels, premium sports networks, and VIP categories.
 - [Free Trial](https://smartlivetv.co.uk/free-trial): Direct sign-up page for the free 24-hour trial.
@@ -29,6 +30,7 @@
 - [World Cup 2026 Firestick Guide](https://smartlivetv.co.uk/blog/world-cup-2026-firestick-complete-guide): Niche guide for streaming World Cup on Amazon devices.
 
 ## World Cup 2026 Knockout Stage Guides
+- [World Cup 2026 Round of 32 Guide](https://smartlivetv.co.uk/blog/world-cup-2026-round-of-32-guide): Knockout stage schedule, UK free-to-air channels (BBC/ITV), and IPTV options for 4K and abroad.
 - [World Cup 2026 Quarter-Finals Guide](https://smartlivetv.co.uk/blog/watch-world-cup-2026-quarter-finals): How to watch the QFs live (July 9-12), BBC/ITV schedule, 4K streaming, and international viewing options.
 - [World Cup 2026 Semi-Finals Guide](https://smartlivetv.co.uk/blog/watch-world-cup-2026-semi-finals): How to watch the SFs live (July 14-15), UK channel assignments, and streaming from abroad.
 - [World Cup 2026 Final Guide](https://smartlivetv.co.uk/blog/watch-world-cup-2026-final): How to watch the Final live (July 19), free on ITV, 4K alternatives, and worldwide streaming.

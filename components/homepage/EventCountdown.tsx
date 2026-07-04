@@ -32,6 +32,44 @@ function pad(n: number): string {
   return String(n).padStart(2, '0')
 }
 
+/** Knockout fixtures during World Cup 2026 — used when live APIs have no near-term event. */
+const WORLD_CUP_KNOCKOUT: CountdownEvent[] = [
+  {
+    name: 'Morocco vs Canada — Round of 16',
+    date: new Date('2026-07-04T22:00:00+01:00'),
+    href: '/watch/world-cup-2026',
+    sport: 'World Cup',
+    badge: '/leagues/world-cup.png',
+  },
+  {
+    name: 'France vs Paraguay — Round of 16',
+    date: new Date('2026-07-05T02:00:00+01:00'),
+    href: '/watch/world-cup-2026',
+    sport: 'World Cup',
+    badge: '/leagues/world-cup.png',
+  },
+  {
+    name: 'Brazil vs Norway — Round of 16',
+    date: new Date('2026-07-05T21:00:00+01:00'),
+    href: '/watch/world-cup-2026',
+    sport: 'World Cup',
+    badge: '/leagues/world-cup.png',
+  },
+  {
+    name: 'Mexico vs England — Round of 16',
+    date: new Date('2026-07-06T01:00:00+01:00'),
+    href: '/watch/world-cup-2026',
+    sport: 'World Cup',
+    badge: '/leagues/world-cup.png',
+  },
+]
+
+function nextWorldCupKnockout(): CountdownEvent | null {
+  const now = Date.now()
+  const upcoming = WORLD_CUP_KNOCKOUT.find(e => e.date.getTime() > now)
+  return upcoming ?? null
+}
+
 export function EventCountdown() {
   const [upcomingEvent, setUpcomingEvent] = useState<CountdownEvent | null>(null)
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
@@ -40,6 +78,14 @@ export function EventCountdown() {
   // Fetch upcoming events from our API
   useEffect(() => {
     const loadEvent = async () => {
+      // World Cup knockout stage takes priority during live tournament
+      const wcEvent = nextWorldCupKnockout()
+      if (wcEvent) {
+        setUpcomingEvent(wcEvent)
+        setLoading(false)
+        return
+      }
+
       try {
         // Try UFC first
         const ufcRes = await fetch('/api/espn/mma/ufc/scoreboard', {
@@ -102,7 +148,7 @@ export function EventCountdown() {
           }
         }
       } catch {
-        // No event found — component will not render
+        // No live API event found
       }
       setLoading(false)
     }

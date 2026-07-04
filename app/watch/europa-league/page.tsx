@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   title: 'Watch UEFA Europa League Live | Free Trial',
   description:
     'Stream every UEFA Europa League match in 4K. Watch from anywhere with a free 24-hour trial.',
+  robots: {
+    index: false,
+    follow: true,
+  },
   alternates: {
     canonical: `${ENV.BASE_URL}/watch/europa-league`,
   },
