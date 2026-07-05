@@ -31,10 +31,24 @@ jobs:
           fetch-depth: 2  # Need previous commit to diff
 
       - name: Wait for Vercel Deployment
-        uses: vercel/wait-for-deployment-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          environment: production
+        run: |
+          echo "⏳ Waiting for Vercel deployment to go live..."
+          MAX_ATTEMPTS=30
+          ATTEMPT=0
+          SITE_URL="https://smartlivetv.co.uk"
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL" || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Site is live (HTTP $STATUS) after $((ATTEMPT * 10))s"
+              break
+            fi
+            echo "  Attempt $((ATTEMPT+1))/$MAX_ATTEMPTS — HTTP $STATUS, retrying in 10s..."
+            sleep 10
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "⚠️ Timed out waiting for deployment, proceeding anyway..."
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
