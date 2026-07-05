@@ -56,7 +56,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm ci && npm install googleapis --no-save
+        run: npm install googleapis --no-save
 
       - name: Detect new pages & submit for indexing
         env:
@@ -73,60 +73,59 @@ jobs:
           const MANUAL_URLS = '${{ github.event.inputs.urls }}'.split(',').filter(Boolean).map(u => u.trim());
           
           async function main() {
+            let urlsToSubmit = [];
+            
             // 1. If manual URLs were provided, use those
             if (MANUAL_URLS.length > 0) {
               console.log(`📋 Manual submission: ${MANUAL_URLS.length} URLs`);
               for (const url of MANUAL_URLS) {
                 console.log(`  → ${url}`);
               }
-              // Submit via sitemap ping (no service account needed)
-              await pingSitemap();
-              return;
-            }
-            
-            // 2. Auto-detect changed files
-            const { execSync } = require('child_process');
-            let changedFiles = [];
-            try {
-              changedFiles = execSync('git diff --name-only HEAD~1 HEAD')
-                .toString()
-                .split('\n')
-                .filter(Boolean);
-            } catch (e) {
-              console.log('⚠️ Could not diff commits, submitting sitemap ping');
-            }
-            
-            // 3. Map changed files to URLs
-            const newUrls = [];
-            for (const file of changedFiles) {
-              // Blog posts in content/
-              const blogMatch = file.match(/content\/blog\/(.+)\.mdx?$/);
-              if (blogMatch) {
-                newUrls.push(`${SITE_URL}/blog/${blogMatch[1]}`);
+              urlsToSubmit = MANUAL_URLS;
+            } else {
+              // 2. Auto-detect changed files
+              const { execSync } = require('child_process');
+              let changedFiles = [];
+              try {
+                changedFiles = execSync('git diff --name-only HEAD~1 HEAD')
+                  .toString()
+                  .split('\n')
+                  .filter(Boolean);
+              } catch (e) {
+                console.log('⚠️ Could not diff commits, using empty list');
               }
               
-              // App pages
-              const pageMatch = file.match(/app\/(.+)\/page\.tsx?$/);
-              if (pageMatch) {
-                const path = pageMatch[1]
-                  .replace(/\[.*?\]/g, '')  // Remove dynamic segments
-                  .replace(/\/+/g, '/');
-                if (!path.includes('[')) {
-                  newUrls.push(`${SITE_URL}/${path}`);
+              // 3. Map changed files to URLs
+              for (const file of changedFiles) {
+                // Blog posts in content/
+                const blogMatch = file.match(/content\/blog\/(.+)\.mdx?$/);
+                if (blogMatch) {
+                  urlsToSubmit.push(`${SITE_URL}/blog/${blogMatch[1]}`);
+                }
+                
+                // App pages
+                const pageMatch = file.match(/app\/(.+)\/page\.tsx?$/);
+                if (pageMatch) {
+                  const path = pageMatch[1]
+                    .replace(/\[.*?\]/g, '')  // Remove dynamic segments
+                    .replace(/\/+/g, '/');
+                  if (!path.includes('[')) {
+                    urlsToSubmit.push(`${SITE_URL}/${path}`);
+                  }
+                }
+                
+                // If blog posts.ts changed, sitemap changed
+                if (file.includes('lib/blog/posts.ts')) {
+                  urlsToSubmit.push(`${SITE_URL}/blog`);
                 }
               }
               
-              // If blog posts.ts changed, sitemap changed
-              if (file.includes('lib/blog/posts.ts')) {
-                newUrls.push(`${SITE_URL}/blog`);
+              if (urlsToSubmit.length === 0) {
+                console.log('ℹ️ No new URLs detected.');
+              } else {
+                console.log(`🔍 Detected ${urlsToSubmit.length} changed URL(s):`);
+                urlsToSubmit.forEach(url => console.log(`  → ${url}`));
               }
-            }
-            
-            if (newUrls.length === 0) {
-              console.log('ℹ️ No new URLs detected. Pinging sitemap anyway.');
-            } else {
-              console.log(`🔍 Detected ${newUrls.length} changed URL(s):`);
-              newUrls.forEach(url => console.log(`  → ${url}`));
             }
             
             // 4. Always ping the sitemap
@@ -135,7 +134,7 @@ jobs:
             // 5. Try Indexing API if service account is available
             if (process.env.GSC_SERVICE_ACCOUNT_JSON) {
               try {
-                await submitViaIndexingAPI(newUrls);
+                await submitViaIndexingAPI(urlsToSubmit);
               } catch (err) {
                 console.log(`⚠️ Indexing API failed: ${err.message}`);
                 console.log('   Sitemap ping was sent — Google will discover pages naturally.');
