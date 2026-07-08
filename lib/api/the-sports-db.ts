@@ -3,7 +3,7 @@
 // Documentation source: Sportsdb API documentation.json
 
 import { errorLogger } from "@/lib/admin/error-logger"
-import { getCache, setCache, cache } from "@/lib/cache"
+import { getCache, setCache, cache, swrGet } from "@/lib/cache"
 
 const API_KEY = process.env.THESPORTSDB_API_KEY || "123"
 const typeofWindow = typeof window !== "undefined"
@@ -109,21 +109,21 @@ interface SportsDBFetchResult {
   ok: boolean
   status: number
   url: string
-  body: any
+  body: unknown
   error?: string
 }
 
 // Caching TTLs optimized for free tier API usage
 const TTL = {
-  leagueInfo: 3600, // 1 hour per requirements
-  standings: 3600, // 1 hour
-  teamInfo: 3600, // 1 hour per requirements
-  playerInfo: 3600, // 1 hour per requirements
-  events: 300,
-  search: 3600,
-  list: 3600, // 1 hour per requirements
+  leagueInfo: 86400, // 24 hours
+  standings: 300,    // 5 minutes
+  teamInfo: 86400,   // 24 hours
+  playerInfo: 86400, // 24 hours
+  events: 30,        // 30 seconds
+  search: 300,       // 5 minutes
+  list: 300,         // 5 minutes
   misc: 3600,
-  eventsDay: 60, // 1 min per requirements (scores)
+  eventsDay: 30,     // 30 seconds
 }
 
 function getCached<T>(key: string): T | null {
@@ -188,12 +188,12 @@ async function sportsdbFetch(
     }
   }
 
-  // Mask API key in logs
-  const masked = url.toString().replace(/(json\/).+?(\/)/, `$1***${API_KEY.charAt(API_KEY.length - 1)}***$2`)
+  // Mask API key in logs — full redaction, do not leak any key characters
+  const masked = url.toString().replace(/(json\/).+?(\/)/, '$1***REDACTED***$2')
   if (retryCount === 0) {
-    console.warn('[TheSportsDB] REQUEST', masked)
+    console.log('[TheSportsDB] REQUEST', masked)
   } else {
-    console.warn(`[TheSportsDB] RETRY ${retryCount + 1}/2`, masked)
+    console.log(`[TheSportsDB] RETRY ${retryCount + 1}/2`, masked)
   }
 
   try {
@@ -207,31 +207,16 @@ async function sportsdbFetch(
     })
 
     const text = await res.text()
-    let body: any
+    let body: unknown
     try {
       body = JSON.parse(text)
     } catch {
-      // Not JSON - log unexpected response (server-side only)
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-      if (typeof window === 'undefined' && typeof process !== 'undefined' && process.versions?.node) {
-        try {
-          const fs = await import('fs')
-          const path = await import('path')
-          const logDir = path.join(process.cwd(), 'logs')
-          if (!fs.existsSync(logDir)) {
-            fs.mkdirSync(logDir, { recursive: true })
-          }
-          const logFile = path.join(logDir, `sportsdb-unexpected-${timestamp}.log`)
-          fs.writeFileSync(logFile, `URL: ${url.toString()}\nStatus: ${res.status}\nResponse:\n${text.substring(0, 10000)}`)
-          console.warn(`[TheSportsDB] Non-JSON response logged to ${logFile}`)
-        } catch (err) {
-          // Fallback to console only if fs import fails
-          console.warn(`[TheSportsDB] Non-JSON response from ${url.toString()}: ${text.substring(0, 200)}`)
-        }
-      } else {
-        // Client-side: just log to console
-        console.warn(`[TheSportsDB] Non-JSON response from ${url.toString()}: ${text.substring(0, 200)}`)
-      }
+      // Not JSON — log via errorLogger (async, non-blocking)
+      errorLogger.logWarning(
+        `Non-JSON response from ${url.toString()}: ${text.substring(0, 200)}`,
+        'TheSportsDB',
+        { endpoint, status: res.status },
+      )
       body = text.substring(0, 2000)
     }
 
@@ -286,6 +271,68 @@ interface RequestOptions {
   validateShape?: boolean
 }
 
+async function fetchFreshData<T>(
+  endpoint: string,
+  options: RequestOptions = {},
+): Promise<T[]> {
+  const { expectedKey, validateShape = true } = options
+  const result = await sportsdbFetch(endpoint)
+
+  if (!result.ok) {
+    const startTime = Date.now()
+    errorLogger.logApiCall(endpoint, result.status, Date.now() - startTime, { error: result.error })
+
+    if (result.status === 429) {
+      requestStats.rateLimited++
+      errorLogger.logWarning(`Rate limit exceeded for ${endpoint}`, "TheSportsDB", { endpoint, status: 429 })
+      throw new RateLimitError(`Rate limit exceeded for ${endpoint}. Please wait before retrying.`)
+    }
+    if (result.status === 404) {
+      errorLogger.logWarning(`404 Not Found: ${endpoint}`, "TheSportsDB", { endpoint, status: 404 })
+      console.warn(`[TheSportsDB] 404 Not Found: ${endpoint}`)
+      return []
+    }
+    errorLogger.logError(
+      new Error(`HTTP ${result.status}: ${result.error || 'Unknown error'}`),
+      "TheSportsDB",
+      { endpoint, status: result.status, error: result.error }
+    )
+    console.warn(`[TheSportsDB] Error ${result.status} for ${endpoint}: ${result.error || 'Unknown error'}`)
+    return []
+  }
+
+  const startTime = Date.now()
+  errorLogger.logApiCall(endpoint, result.status || 200, Date.now() - startTime)
+
+  const json = result.body as TheSportsDBResponse<T>
+  if (!json || typeof json !== 'object') {
+    console.warn(`[TheSportsDB] Unexpected response shape for ${endpoint}`)
+    return []
+  }
+
+  if (validateShape && expectedKey) {
+    if (!(expectedKey in json)) {
+      // Log via errorLogger — async, does not block the event loop
+      errorLogger.logWarning(
+        `Invalid response shape for ${endpoint}. Expected key '${expectedKey}' not found. Actual keys: ${Object.keys(json).join(', ')}`,
+        'TheSportsDB',
+        { endpoint, expectedKey, actualKeys: Object.keys(json) },
+      )
+      return []
+    }
+  }
+
+  let resultArray: T[] | null = null
+  if (expectedKey && expectedKey in json) {
+    resultArray = json[expectedKey] as T[] | null
+  } else {
+    const firstKey = Object.keys(json)[0]
+    resultArray = json[firstKey] ?? null
+  }
+
+  return Array.isArray(resultArray) ? resultArray : []
+}
+
 async function makeRequest<T>(
   endpoint: string,
   ttlSeconds = 0,
@@ -296,109 +343,22 @@ async function makeRequest<T>(
   logRequestStats()
 
   const cacheKey = `api:${endpoint}`
-  const { expectedKey, validateShape = true } = options
 
-  // Check cache FIRST (before deduplication)
-  if (ttlSeconds > 0) {
-    const cached = getCached<T[]>(cacheKey)
-    if (cached) {
-      requestStats.cached++
-      console.warn(`[TheSportsDB] CACHE HIT: ${endpoint}`)
-      return cached
-    }
+  if (ttlSeconds <= 0) {
+    return deduplicateRequest(cacheKey, async () => {
+      return fetchFreshData<T>(endpoint, options)
+    })
   }
 
-  // Deduplicate concurrent requests to same endpoint
-  return deduplicateRequest(cacheKey, async () => {
-    const result = await sportsdbFetch(endpoint)
-
-    if (!result.ok) {
-      // Log API call with error
-      const startTime = Date.now()
-      errorLogger.logApiCall(endpoint, result.status, Date.now() - startTime, { error: result.error })
-
-      if (result.status === 429) {
-        requestStats.rateLimited++
-        errorLogger.logWarning(`Rate limit exceeded for ${endpoint}`, "TheSportsDB", { endpoint, status: 429 })
-        throw new RateLimitError(`Rate limit exceeded for ${endpoint}. Please wait before retrying.`)
-      }
-      if (result.status === 404) {
-        errorLogger.logWarning(`404 Not Found: ${endpoint}`, "TheSportsDB", { endpoint, status: 404 })
-        console.warn(`[TheSportsDB] 404 Not Found: ${endpoint}`)
-        // Return empty array on 404 (graceful fallback)
-        return []
-      }
-      // Log error and return empty array on other errors (graceful fallback)
-      errorLogger.logError(
-        new Error(`HTTP ${result.status}: ${result.error || 'Unknown error'}`),
-        "TheSportsDB",
-        { endpoint, status: result.status, error: result.error }
-      )
-      console.warn(`[TheSportsDB] Error ${result.status} for ${endpoint}: ${result.error || 'Unknown error'}`)
-      return []
-    }
-
-    // Log successful API call
-    const startTime = Date.now()
-    errorLogger.logApiCall(endpoint, result.status || 200, Date.now() - startTime)
-
-    // Parse response - TheSportsDB wraps arrays in object keys
-    const json = result.body as TheSportsDBResponse<T>
-    if (!json || typeof json !== 'object') {
-      console.warn(`[TheSportsDB] Unexpected response shape for ${endpoint}`)
-      return []
-    }
-
-    // Validate response shape if expected key is provided
-    if (validateShape && expectedKey) {
-      if (!(expectedKey in json)) {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-        // Only log to file on server-side (Node.js environment)
-        if (typeof window === 'undefined' && typeof process !== 'undefined' && process.versions?.node) {
-          try {
-            const fs = await import('fs')
-            const path = await import('path')
-            const logDir = path.join(process.cwd(), 'logs')
-            if (!fs.existsSync(logDir)) {
-              fs.mkdirSync(logDir, { recursive: true })
-            }
-            const logFile = path.join(logDir, `sportsdb-invalid-shape-${timestamp}.log`)
-            fs.writeFileSync(
-              logFile,
-              `URL: ${result.url}\nExpected key: ${expectedKey}\nActual keys: ${Object.keys(json).join(', ')}\nResponse:\n${JSON.stringify(json, null, 2).substring(0, 5000)}`,
-            )
-            console.warn(`[TheSportsDB] Invalid response shape for ${endpoint}. Expected key '${expectedKey}' not found. Logged to ${logFile}`)
-          } catch (err) {
-            // Fallback to console only if fs import fails
-            console.warn(`[TheSportsDB] Invalid response shape for ${endpoint}. Expected key '${expectedKey}' not found. Actual keys: ${Object.keys(json).join(', ')}`)
-          }
-        } else {
-          // Client-side: just log to console
-          console.warn(`[TheSportsDB] Invalid response shape for ${endpoint}. Expected key '${expectedKey}' not found. Actual keys: ${Object.keys(json).join(', ')}`)
-        }
-        return []
-      }
-    }
-
-    // Get data from response
-    let resultArray: T[] | null = null
-    if (expectedKey && expectedKey in json) {
-      resultArray = json[expectedKey] as T[] | null
-    } else {
-      // Fallback: use first key
-      const firstKey = Object.keys(json)[0]
-      resultArray = json[firstKey] ?? null
-    }
-
-    const data = Array.isArray(resultArray) ? resultArray : []
-
-    // Cache successful responses
-    if (ttlSeconds > 0 && data.length > 0) {
-      setCached(cacheKey, data, ttlSeconds)
-    }
-
-    return data
-  })
+  return swrGet<T[]>(
+    cacheKey,
+    async () => {
+      return deduplicateRequest(cacheKey, async () => {
+        return fetchFreshData<T>(endpoint, options)
+      })
+    },
+    ttlSeconds
+  )
 }
 
 // Normalization utilities
