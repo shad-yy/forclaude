@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import SubscribeClient from "./buy-client"
+import SubscribeClient from "./subscribe-client"
 
 export const metadata: Metadata = {
   title: "Subscribe",
