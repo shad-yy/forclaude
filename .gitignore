@@ -58,3 +58,10 @@ test-credentials.*
 
 # firecrawl
 .firecrawl/
+
+# ignore installed skills folder
+/skills/
+# or wherever it actually lives, e.g.:
+.claude/skills/
+.cursor/
+

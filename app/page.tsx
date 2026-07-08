@@ -8,6 +8,8 @@ import { EventCountdown } from '@/components/homepage/EventCountdown'
 import { MatchCard } from "@/components/homepage/match-card"
 import dynamic from "next/dynamic"
 
+const ServicePillars = dynamic(() => import("@/components/homepage/service-pillars").then(mod => ({ default: mod.ServicePillars })))
+const SpotlightEvents = dynamic(() => import("@/components/homepage/spotlight-events").then(mod => ({ default: mod.SpotlightEvents })))
 const LeagueTables = dynamic(() => import("@/components/homepage/league-tables").then(mod => ({ default: mod.LeagueTables })))
 const WhyIPTV = dynamic(() => import("@/components/homepage/why-iptv").then(mod => ({ default: mod.WhyIPTV })))
 const PricingPreview = dynamic(() => import("@/components/homepage/pricing-preview").then(mod => ({ default: mod.PricingPreview })))
@@ -17,16 +19,16 @@ import { SiteNavigationLinks } from "@/components/seo/site-navigation-links"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 export const metadata: Metadata = {
-  title: 'Smart Live TV | IPTV UK from £12/mo — Sky Sports, Netflix & Free Trial',
+  title: 'Smart Live TV | IPTV UK from £12/mo — Free Trial',
   description:
-    'Smart Live TV is UK IPTV from £12/month — Sky Sports, TNT Sports, Netflix, Disney+ and 230,000+ live channels. Free 24-hour trial, no card required. Works on Firestick and Smart TV.',
+    'Smart Live TV is the premium UK IPTV service from £12/mo. Stream Sky Sports, TNT Sports, Netflix, Disney+ and 230k+ channels. Get a free 24-hour trial.',
   alternates: {
     canonical: ENV.BASE_URL,
   },
   openGraph: {
-    title: 'Smart Live TV | IPTV UK from £12/mo — Sky Sports, Netflix & Free Trial',
+    title: 'Smart Live TV | IPTV UK from £12/mo — Free Trial',
     description:
-      'Smart Live TV is UK IPTV from £12/month — Sky Sports, TNT Sports, Netflix, Disney+ and 230,000+ live channels. Free 24-hour trial, no card required.',
+      'Smart Live TV is the premium UK IPTV service from £12/mo. Stream Sky Sports, TNT Sports, Netflix, Disney+ and 230k+ channels. Get a free 24-hour trial.',
   },
 }
 
@@ -186,6 +188,12 @@ export default function HomePage() {
 
       {/* ─── 1. HERO ─── */}
       <HeroSection />
+
+      {/* Service Pillars (clarity strip) */}
+      <ServicePillars />
+
+      {/* Spotlight Events (wow section) */}
+      <SpotlightEvents />
 
       {/* ─── 2. NEWS (above match cards) ─── */}
       <section className="py-12 md:py-16 bg-[#0a0a0f] border-t border-[#1a1a2a] relative overflow-hidden">

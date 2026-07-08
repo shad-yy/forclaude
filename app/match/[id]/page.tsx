@@ -3,17 +3,35 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { ENV } from '@/lib/config/env'
+import { theSportsDB } from '@/lib/api/the-sports-db'
+import { MatchTabs } from '@/components/match/match-tabs'
 
-async function getMatch(id: string) {
+async function getMatchData(id: string) {
   try {
-    const res = await fetch(
-      `https://www.thesportsdb.com/api/v1/json/123/lookupevent.php?id=${id}`,
-      { next: { revalidate: 3600 } }
-    )
-    if (!res.ok) return null
-    const data = await res.json()
-    return data?.events?.[0] || null
-  } catch { return null }
+    const match = await theSportsDB.lookupEvent(id)
+    if (!match) return null
+
+    // Parallel fetch lineups, timeline, stats, and team details (for fallback badges)
+    const [lineup, timeline, stats, homeTeamData, awayTeamData] = await Promise.all([
+      theSportsDB.lookupLineup(id).catch(() => []),
+      theSportsDB.lookupTimeline(id).catch(() => []),
+      theSportsDB.lookupEventStats(id).catch(() => []),
+      match.idHomeTeam ? theSportsDB.lookupTeam(match.idHomeTeam).catch(() => null) : Promise.resolve(null),
+      match.idAwayTeam ? theSportsDB.lookupTeam(match.idAwayTeam).catch(() => null) : Promise.resolve(null),
+    ])
+
+    return {
+      match,
+      lineup,
+      timeline,
+      stats,
+      homeTeamBadge: match.strHomeTeamBadge || homeTeamData?.strTeamBadge || homeTeamData?.strTeamLogo || null,
+      awayTeamBadge: match.strAwayTeamBadge || awayTeamData?.strTeamBadge || awayTeamData?.strTeamLogo || null,
+    }
+  } catch (err) {
+    console.error(`[Match Detail Loader] Error loading match ${id}:`, err)
+    return null
+  }
 }
 
 function safeDateFormat(dateStr: string): string {
@@ -32,9 +50,10 @@ function safeDateFormat(dateStr: string): string {
 export async function generateMetadata(
   { params }: { params: { id: string } }
 ): Promise<Metadata> {
-  const match = await getMatch(params.id)
-  if (!match) return { title: 'Match Preview' }
+  const data = await getMatchData(params.id)
+  if (!data || !data.match) return { title: 'Match Preview' }
   
+  const match = data.match
   const title = `How to Watch ${match.strHomeTeam} vs ${match.strAwayTeam} Live`
   const desc = `Watch ${match.strHomeTeam} vs ${match.strAwayTeam} live in 4K. ${match.strLeague}. Free 24-hour trial — no card needed.`
   
@@ -44,22 +63,23 @@ export async function generateMetadata(
     alternates: {
       canonical: `${ENV.BASE_URL}/match/${params.id}`,
     },
-    openGraph: { title, description: desc, images: ['/og-default.png'] },
+    openGraph: { title, description: desc, images: [match.strThumb || '/og-default.png'] },
   }
 }
 
 export default async function MatchPage(
   { params }: { params: { id: string } }
 ) {
-  const match = await getMatch(params.id)
-  if (!match) notFound()
+  const data = await getMatchData(params.id)
+  if (!data) notFound()
 
+  const { match, lineup, timeline, stats, homeTeamBadge, awayTeamBadge } = data
   const homeTeam = match.strHomeTeam
   const awayTeam = match.strAwayTeam
   const league = match.strLeague
   const date = safeDateFormat(match.dateEvent)
   const venue = match.strVenue || ''
-  const isCompleted = match.strStatus?.toLowerCase() === 'match finished'
+  const isCompleted = ['match finished', 'ft', 'finished', 'aet'].some(s => match.strStatus?.toLowerCase()?.includes(s))
   
   // Determine watch page for this league
   const leagueWatchMap: Record<string, string> = {
@@ -125,24 +145,77 @@ export default async function MatchPage(
       <SchemaMarkup schema={faqSchema} />
 
       {/* Hero */}
-      <section className="pt-28 md:pt-36 pb-16 px-4 text-center border-b border-[#2a2a3a]" style={{ background: 'linear-gradient(135deg, #001a3a 0%, #0a0a0f 100%)' }}>
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xs font-bold text-[#00e676] uppercase tracking-widest mb-4">
+      <section 
+        className="relative pt-32 pb-20 px-4 text-center border-b border-[#1a1a2a] overflow-hidden bg-[#0d0d14]"
+      >
+        {/* Background Event Image Overlay */}
+        {match.strThumb && (
+          <>
+            <img 
+              src={match.strThumb} 
+              alt="" 
+              className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/80 via-[#0d0d14]/95 to-[#0a0a0f]" />
+          </>
+        )}
+
+        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+          <p className="text-xs font-bold text-[#00e676] uppercase tracking-[0.2em] mb-4 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
             {league}
           </p>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4">
-            {homeTeam} vs {awayTeam}
-          </h1>
+
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 my-6 w-full">
+            {/* Home Team Badge & Name */}
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#1a1a24]/80 border border-white/10 flex items-center justify-center p-2 backdrop-blur-sm shadow-xl">
+                {homeTeamBadge ? (
+                  <img src={homeTeamBadge} alt={homeTeam} className="w-full h-full object-contain" />
+                ) : (
+                  <span className="text-xl font-bold text-gray-400">{homeTeam.substring(0, 3).toUpperCase()}</span>
+                )}
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white mt-3 text-center">{homeTeam}</h2>
+            </div>
+
+            {/* Score or VS */}
+            <div className="flex flex-col items-center justify-center">
+              {isCompleted && match.intHomeScore !== null ? (
+                <div className="text-4xl md:text-6xl font-black text-white tracking-widest bg-white/5 border border-white/5 px-6 py-3 rounded-2xl">
+                  {match.intHomeScore} - {match.intAwayScore}
+                </div>
+              ) : (
+                <div className="text-2xl md:text-3xl font-black text-gray-500 bg-white/5 border border-white/5 px-5 py-2.5 rounded-xl tracking-wider">
+                  VS
+                </div>
+              )}
+              {match.strStatus && (
+                <span className="text-xs text-[#00e676] font-bold uppercase tracking-wider mt-2.5">
+                  {match.strStatus}
+                </span>
+              )}
+            </div>
+
+            {/* Away Team Badge & Name */}
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#1a1a24]/80 border border-white/10 flex items-center justify-center p-2 backdrop-blur-sm shadow-xl">
+                {awayTeamBadge ? (
+                  <img src={awayTeamBadge} alt={awayTeam} className="w-full h-full object-contain" />
+                ) : (
+                  <span className="text-xl font-bold text-gray-400">{awayTeam.substring(0, 3).toUpperCase()}</span>
+                )}
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white mt-3 text-center">{awayTeam}</h2>
+            </div>
+          </div>
+
           <div className="flex items-center justify-center gap-6 text-gray-400 text-sm mb-8 flex-wrap">
             <span>📅 {date}</span>
+            {match.strTime && <span>⏰ {match.strTime.split('+')[0]} BST</span>}
             {venue && <span>📍 {venue}</span>}
           </div>
 
-          {isCompleted && match.intHomeScore !== null ? (
-            <div className="text-5xl font-extrabold text-white mb-8">
-              {match.intHomeScore} — {match.intAwayScore}
-            </div>
-          ) : (
+          {!isCompleted && (
             <div className="flex gap-4 justify-center flex-wrap">
               <Link
                 href="/buy"
@@ -150,12 +223,32 @@ export default async function MatchPage(
               >
                 Watch This Match Live →
               </Link>
-              <Link href="/free-trial" className="border border-[#2a2a3a] hover:border-[#00e676]/30 text-gray-300 font-bold px-8 py-4 rounded-xl text-base">
+              <Link href="/free-trial" className="border border-[#2a2a3a] hover:border-[#00e676]/30 text-gray-300 font-bold px-8 py-4 rounded-xl text-base bg-white/5">
                 Free 24H Trial
               </Link>
             </div>
           )}
         </div>
+      </section>
+
+      {/* Tabs / Match Center Section */}
+      <section className="bg-[#0a0a0f] border-b border-[#1a1a2a]">
+        <MatchTabs
+          homeTeam={homeTeam}
+          awayTeam={awayTeam}
+          homeTeamBadge={homeTeamBadge}
+          awayTeamBadge={awayTeamBadge}
+          homeTeamId={match.idHomeTeam}
+          awayTeamId={match.idAwayTeam}
+          venue={venue}
+          date={date}
+          time={match.strTime || ''}
+          league={league}
+          lineup={lineup}
+          timeline={timeline}
+          stats={stats}
+          watchHref={watchHref}
+        />
       </section>
 
       {/* How to Watch */}
@@ -168,7 +261,7 @@ export default async function MatchPage(
             <strong className="text-white">{homeTeam} vs {awayTeam}</strong>
             {' '}is broadcast live in the UK. Smart Live TV includes every 
             channel showing this{' '}
-            <Link href={watchHref} className="text-[#00e676] hover:underline">
+            <Link href={watchHref} className="text-[#00e676] hover:underline font-semibold">
               {league}
             </Link>
             {' '}fixture — Sky Sports, TNT Sports, beIN Sports — all in 
