@@ -174,7 +174,7 @@ export default function SubscribeClient() {
               Get weekly sports insights, breaking news, and exclusive content delivered to your inbox.
             </p>
           </div>
-          <form action="/api/subscribe" method="POST" className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+          <form action="/api/buy" method="POST" className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
             <div className="flex-1">
               <label htmlFor="newsletter-email" className="sr-only">
                 Email address for newsletter subscription

@@ -225,7 +225,7 @@ export function MatchPopup({ match, onClose }: MatchPopupProps) {
                 {/* CTA */}
                 <div className="px-6 pb-6">
                     <a
-                        href="/subscribe"
+                        href="/buy"
                         className="block w-full py-3 text-center bg-accent-primary text-black font-bold text-sm rounded-lg hover:bg-accent-primary/90 transition-colors"
                         onClick={onClose}
                     >
