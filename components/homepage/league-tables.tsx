@@ -158,7 +158,12 @@ export function LeagueTables() {
                 </div>
 
                 {/* Table Content */}
-                <div className="bg-surface rounded-2xl border border-border overflow-hidden mb-8 shadow-xl">
+                <div className="bg-surface rounded-2xl border border-border overflow-hidden mb-8 shadow-xl relative">
+                    {!loading && standings.length > 0 && (
+                        <div className="md:hidden absolute right-3 top-3 bg-black/80 backdrop-blur-sm border border-[#2a2a3a] text-[10px] font-bold text-[#00e676] px-2.5 py-1 rounded-full animate-pulse z-20 pointer-events-none flex items-center gap-1">
+                            Swipe Table <span>→</span>
+                        </div>
+                    )}
                     {loading ? (
                         <div className="p-4 space-y-4">
                             {[1, 2, 3, 4, 5].map((i) => (
@@ -166,7 +171,7 @@ export function LeagueTables() {
                             ))}
                         </div>
                     ) : standings.length > 0 ? (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto hide-scrollbar">
                             <table className="w-full text-sm">
                                 <thead className="sticky top-0 bg-surface-elevated z-10">
                                     <tr className="text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border">

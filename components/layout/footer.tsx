@@ -61,8 +61,8 @@ export const Footer = memo(function Footer() {
   return (
     <footer className="bg-background border-t border-border pt-16 pb-8 transition-colors duration-500 relative z-10">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-10 mb-12">
-          <div className="space-y-6 lg:col-span-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 lg:gap-10 mb-12">
+          <div className="space-y-6 col-span-2 sm:col-span-3 md:col-span-2 lg:col-span-2">
             <Link href="/" className="flex items-center">
               <img
                 src="/logo.svg"

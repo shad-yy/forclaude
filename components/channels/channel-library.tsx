@@ -87,7 +87,7 @@ export default function ChannelLibrary() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* FILTER BAR  */}
-        <div className="sticky top-[64px] z-40 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#2a2a3a] py-4 mb-8 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+        <div className="sticky top-[56px] md:top-[64px] z-40 bg-[#0a0a0f]/95 backdrop-blur border-b border-[#2a2a3a] py-3 mb-8 flex flex-col gap-3 justify-between items-start">
           <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto flex-1">
             <input
               type="text"
@@ -159,10 +159,10 @@ export default function ChannelLibrary() {
                     
                     <Link
                       href="/buy"
-                      className="text-xs font-bold text-black bg-[#00e676] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                      className="text-xs font-bold text-black bg-[#00e676] px-3 py-1.5 rounded-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity whitespace-nowrap"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      Watch This Channel →
+                      Watch →
                     </Link>
                   </div>
                 </div>

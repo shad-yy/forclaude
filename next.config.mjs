@@ -188,26 +188,7 @@ const nextConfig = {
         destination: '/watch/premier-league',
         permanent: true,
       },
-      {
-        source: '/scores',
-        destination: '/',
-        permanent: true,
-      },
-      {
-        source: '/teams',
-        destination: '/watch/premier-league',
-        permanent: true,
-      },
-      {
-        source: '/players',
-        destination: '/watch/premier-league',
-        permanent: true,
-      },
-      {
-        source: '/events',
-        destination: '/',
-        permanent: true,
-      },
+
     ]
   },
   webpack: (config, { isServer }) => {

@@ -128,7 +128,7 @@ export default function EventsPage({ searchParams }: EventsPageProps) {
   const currentLeague = searchParams.league || "all"
 
   return (
-    <div className="container mx-auto px-4 py-12 pt-20 min-h-screen" style={{ paddingTop: '80px' }}>
+    <div className="container mx-auto px-4 pt-24 md:pt-32 pb-12 min-h-screen">
       {/* Header with Motion */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <MotionWrapper>

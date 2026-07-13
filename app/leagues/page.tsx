@@ -50,7 +50,7 @@ async function LeaguesContent({ onLeagueClick }: { onLeagueClick: (league: Unifi
     }
 
     return (
-      <div className="container mx-auto px-4 py-8 pt-20" style={{ paddingTop: '80px' }}>
+      <div className="container mx-auto px-4 pt-24 md:pt-32 pb-8">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -191,35 +191,35 @@ async function LeaguesContent({ onLeagueClick }: { onLeagueClick: (league: Unifi
 
         {/* Browse More */}
         <div className="text-center mt-12">
-          <Card className="bg-gray-900/50 border-gray-800">
+          <Card className="bg-[#12121a]/80 border-[#1a1a2a] backdrop-blur-sm">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4">Explore More Football</h3>
-              <p className="text-gray-400 mb-6">
+              <h3 className="text-2xl font-bold mb-2 text-white">Explore More Sports</h3>
+              <p className="text-gray-400 mb-6 text-sm">
                 Discover teams, players, and live scores from leagues around the world
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button asChild variant="outline" className="bg-transparent">
+              <div className="flex flex-wrap justify-center gap-3">
+                <Button asChild variant="outline" className="bg-transparent border-[#2a2a3a] text-gray-300 hover:text-white hover:border-emerald-500/50">
                   <Link href="/teams">
                     <Users className="w-4 h-4 mr-2" />
                     Browse Teams
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="bg-transparent">
+                <Button asChild variant="outline" className="bg-transparent border-[#2a2a3a] text-gray-300 hover:text-white hover:border-blue-500/50">
                   <Link href="/players">
                     <Users className="w-4 h-4 mr-2" />
                     View Players
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="bg-transparent">
+                <Button asChild variant="outline" className="bg-transparent border-[#2a2a3a] text-gray-300 hover:text-white hover:border-purple-500/50">
                   <Link href="/scores">
                     <Trophy className="w-4 h-4 mr-2" />
                     Live Scores
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="bg-transparent">
-                  <Link href="/events">
+                <Button asChild className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold">
+                  <Link href="/buy">
                     <Calendar className="w-4 h-4 mr-2" />
-                    Match Events
+                    Stream Live
                   </Link>
                 </Button>
               </div>
@@ -231,7 +231,7 @@ async function LeaguesContent({ onLeagueClick }: { onLeagueClick: (league: Unifi
   } catch (error) {
     console.error("Error fetching leagues:", error)
     return (
-      <div className="container mx-auto px-4 py-8 pt-20">
+      <div className="container mx-auto px-4 pt-24 md:pt-32 pb-8">
         <Card className="bg-gray-900/50 border-gray-800">
           <CardContent className="p-8 text-center">
             <div className="text-red-400 mb-4">Failed to load leagues</div>
@@ -250,7 +250,7 @@ async function LeaguesContent({ onLeagueClick }: { onLeagueClick: (league: Unifi
 
 function LeaguesLoadingSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8 pt-20">
+    <div className="container mx-auto px-4 pt-24 md:pt-32 pb-8">
       <Skeleton className="h-12 w-64 mx-auto mb-12" />
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
         {Array.from({ length: 4 }).map((_, i) => (

@@ -4,7 +4,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button"
 import Link from "next/link"
 import { Check } from "lucide-react"
 import { LiveStats } from "@/components/homepage/LiveStats"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 
 // Curated high-quality sports imagery from TheSportsDB league fanart
 // These are fallback images — we also try to load dynamic event images
@@ -16,10 +16,67 @@ const FALLBACK_HERO_IMAGES = [
   "https://r2.thesportsdb.com/images/media/league/fanart/yvsuqp1421853038.jpg",   // Champions League
 ]
 
+// Video sources — multiple fallbacks for reliability
+// Using royalty-free sports/stadium atmosphere videos
+const HERO_VIDEO_SOURCES = [
+  "https://cdn.coverr.co/videos/coverr-football-players-on-the-field/1080p.mp4",
+  "https://cdn.coverr.co/videos/coverr-crowd-at-a-soccer-match-7710/1080p.mp4",
+]
+
+/**
+ * Checks if the user's connection supports video playback.
+ * Falls back to image carousel on slow connections or when data saver is on.
+ */
+function useCanPlayVideo() {
+  const [canPlay, setCanPlay] = useState(false)
+
+  useEffect(() => {
+    // Server-side: default to false
+    if (typeof window === 'undefined') return
+
+    const nav = navigator as any
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection
+
+    if (connection) {
+      // Skip video on slow connections or data saver
+      if (connection.saveData) {
+        setCanPlay(false)
+        return
+      }
+      const effectiveType = connection.effectiveType
+      if (effectiveType === 'slow-2g' || effectiveType === '2g') {
+        setCanPlay(false)
+        return
+      }
+    }
+
+    // Check for reduced motion preference
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setCanPlay(false)
+      return
+    }
+
+    // On mobile, skip video by default for performance
+    const isMobile = window.innerWidth < 768
+    if (isMobile && connection?.effectiveType === '3g') {
+      setCanPlay(false)
+      return
+    }
+
+    setCanPlay(true)
+  }, [])
+
+  return canPlay
+}
+
 export function HeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [heroImages, setHeroImages] = useState<string[]>(FALLBACK_HERO_IMAGES)
   const [imagesLoaded, setImagesLoaded] = useState(false)
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canPlayVideo = useCanPlayVideo()
 
   // Try to load dynamic event images from the spotlight API
   useEffect(() => {
@@ -40,54 +97,103 @@ export function HeroSection() {
     loadDynamicImages()
   }, [])
 
-  // Rotate images every 6 seconds
+  // Rotate images every 6 seconds (only when video isn't playing)
   useEffect(() => {
+    if (videoLoaded && !videoError) return // Video is playing, skip carousel
     if (heroImages.length <= 1) return
     const interval = setInterval(() => {
       setCurrentImageIndex(prev => (prev + 1) % heroImages.length)
     }, 6000)
     return () => clearInterval(interval)
-  }, [heroImages.length])
+  }, [heroImages.length, videoLoaded, videoError])
+
+  // Handle video events
+  const handleVideoCanPlay = useCallback(() => {
+    setVideoLoaded(true)
+  }, [])
+
+  const handleVideoError = useCallback(() => {
+    setVideoError(true)
+    setVideoLoaded(false)
+  }, [])
+
+  const showVideo = canPlayVideo && !videoError
 
   return (
     <section className="relative w-full min-h-[600px] md:min-h-[700px] overflow-hidden bg-[#0a0a0f] flex flex-col items-center justify-center">
-      {/* ─── Dynamic Background Image Carousel ─── */}
-      <div className="absolute inset-0 z-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentImageIndex}
-            className="absolute inset-0"
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
+      {/* ─── Video Background (when supported) ─── */}
+      {showVideo && (
+        <div className="absolute inset-0 z-0">
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster={heroImages[0]}
+            onCanPlay={handleVideoCanPlay}
+            onError={handleVideoError}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms] ${
+              videoLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ willChange: 'opacity' }}
           >
-            <img
-              src={heroImages[currentImageIndex]}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              onLoad={() => setImagesLoaded(true)}
-              onError={(e) => {
-                // Skip broken images
-                const img = e.target as HTMLImageElement
-                img.style.display = 'none'
-              }}
-            />
-          </motion.div>
-        </AnimatePresence>
+            {HERO_VIDEO_SOURCES.map((src, i) => (
+              <source key={i} src={src} type="video/mp4" />
+            ))}
+          </video>
+        </div>
+      )}
 
-        {/* Dark gradient overlays — ensure text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0f]/95 via-[#0a0a0f]/80 to-[#0a0a0f]/60 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/40 to-transparent z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/80 via-transparent to-transparent z-[1]" />
+      {/* ─── Fallback Image Carousel (when video isn't available or loading) ─── */}
+      {(!showVideo || !videoLoaded) && (
+        <div className="absolute inset-0 z-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentImageIndex}
+              className="absolute inset-0"
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+            >
+              <img
+                src={heroImages[currentImageIndex]}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                onLoad={() => setImagesLoaded(true)}
+                onError={(e) => {
+                  // Skip broken images
+                  const img = e.target as HTMLImageElement
+                  img.style.display = 'none'
+                }}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      )}
 
-        {/* Subtle grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30 z-[2]" />
-
-        {/* Animated ambient glow particles */}
-        <div className="absolute top-[20%] left-[10%] w-32 h-32 bg-[#00e676]/15 rounded-full blur-[60px] animate-pulse-slow z-[2]" />
-        <div className="absolute bottom-[30%] right-[10%] w-40 h-40 bg-blue-500/10 rounded-full blur-[80px] animate-pulse-slow z-[2]" style={{ animationDelay: '1s' }} />
+      {/* ─── Cinematic Gradient Overlays ─── */}
+      <div className="absolute inset-0 z-[1] pointer-events-none">
+        {/* Primary left-to-right readability gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0f]/95 via-[#0a0a0f]/75 to-[#0a0a0f]/50" />
+        {/* Bottom fade for seamless section transition */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/30 to-transparent" />
+        {/* Top fade for header integration */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f]/70 via-transparent to-transparent" />
+        {/* Cinematic vignette */}
+        <div className="absolute inset-0" style={{
+          background: 'radial-gradient(ellipse at 30% 50%, transparent 40%, rgba(10,10,15,0.6) 100%)'
+        }} />
       </div>
+
+      {/* Subtle grid pattern overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30 z-[2]" />
+
+      {/* Animated ambient glow particles */}
+      <div className="absolute top-[20%] left-[10%] w-32 h-32 bg-[#00e676]/15 rounded-full blur-[60px] animate-pulse-slow z-[2]" />
+      <div className="absolute bottom-[30%] right-[10%] w-40 h-40 bg-blue-500/10 rounded-full blur-[80px] animate-pulse-slow z-[2]" style={{ animationDelay: '1s' }} />
 
       {/* ─── Content ─── */}
       <div className="container relative z-10 mx-auto px-4 md:px-6 lg:px-8 max-w-7xl pt-32 pb-20 md:pt-40 md:pb-28">
@@ -106,14 +212,14 @@ export function HeroSection() {
             </div>
 
             <h1
-              className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1] drop-shadow-lg hero-speakable"
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1] drop-shadow-lg hero-speakable"
             >
-              Replace Netflix, Sky Sports & Disney+ <br />
+              Replace Netflix, Sky Sports & Disney+ <br className="hidden sm:inline" />
               <span className="text-[#00e676]">With One £12 Subscription</span>
             </h1>
 
             <p
-              className="text-lg md:text-xl text-gray-300 max-w-xl font-normal leading-relaxed"
+              className="text-base sm:text-lg md:text-xl text-gray-300 max-w-xl font-normal leading-relaxed"
             >
               Watch every Premier League match, Champions League, UFC, Formula 1, NBA — plus Netflix, Disney+, Amazon Prime, Hulu, Shahid and every streaming service. One subscription. All devices. Cancel anytime.
             </p>
@@ -122,11 +228,11 @@ export function HeroSection() {
               className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-2"
             >
               <ShimmerButton href="/buy" variant="primary"
-                className="w-full sm:w-auto px-8 py-4 text-lg rounded-lg">
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 text-base sm:text-lg rounded-lg">
                 Get Instant Access →
               </ShimmerButton>
               <ShimmerButton href="/free-trial" variant="ghost"
-                className="w-full sm:w-auto px-8 py-4 text-lg rounded-lg">
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 text-base sm:text-lg rounded-lg">
                 Try Free for 24H ↓
               </ShimmerButton>
             </div>
@@ -146,7 +252,7 @@ export function HeroSection() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.45 }}
-              className="pt-2 w-full flex flex-wrap items-center gap-x-4 gap-y-3 text-sm lg:text-base text-gray-400 font-semibold"
+              className="pt-2 w-full flex flex-wrap items-center justify-start gap-x-4 gap-y-3 text-xs sm:text-sm lg:text-base text-gray-400 font-semibold"
             >
               <span className="flex items-center gap-1.5 text-gray-300"><Check className="w-4 h-4 text-[#00e676]" strokeWidth={3} /> Sky Sports Included</span>
               <span className="hidden sm:inline text-gray-600">|</span>
@@ -163,11 +269,10 @@ export function HeroSection() {
           {/* RIGHT COLUMN (40%) */}
           <div className="w-full lg:w-[40%] flex flex-col items-center lg:items-end">
             <motion.div
-              initial={{ opacity: 0, x: 20, rotate: -2 }}
-              animate={{ opacity: 1, x: 0, rotate: -2 }}
+              initial={{ opacity: 0, x: 0, y: 10 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
               whileHover={{ rotate: 0 }}
-              transition={{ duration: 0.7, delay: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
-              className="w-full max-w-sm bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-6 shadow-2xl"
+              className="w-full max-w-sm bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-6 shadow-2xl lg:rotate-[-2deg]"
             >
               <div className="flex items-center justify-between mb-5">
                 <span className="text-sm font-semibold text-gray-400 uppercase tracking-widest">Platform Highlights</span>
@@ -216,7 +321,7 @@ export function HeroSection() {
               </div>
             </motion.div>
 
-            <div className="mt-8 flex items-center gap-3 bg-black/30 backdrop-blur-sm border border-white/10 px-4 py-2 rounded-full text-sm text-gray-400">
+            <div className="mt-8 flex items-center gap-3 bg-black/30 backdrop-blur-sm border border-white/10 px-4 py-2 rounded-full text-xs sm:text-sm text-gray-400">
               <span className="w-2 h-2 rounded-full bg-[#00e676] animate-pulse" />
               <span>
                 Free 24H Trial · No Card · Works Worldwide
@@ -226,8 +331,8 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Image rotation indicators */}
-      {heroImages.length > 1 && (
+      {/* Image rotation indicators — only shown when using image fallback */}
+      {(!showVideo || !videoLoaded) && heroImages.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
           {heroImages.slice(0, 5).map((_, i) => (
             <button

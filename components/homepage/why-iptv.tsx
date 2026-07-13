@@ -80,54 +80,54 @@ export function WhyIPTV() {
                 </StaggerChildren>
 
                 {/* Stats Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto">
-                    {[
-                        { 
-                            value: "£372", 
-                            label: "Average annual saving vs Sky Sports",
-                            sub: "Based on Sky's 2026 pricing"
-                        },
-                        { 
-                            value: "5 min", 
-                            label: "Average setup time",
-                            sub: "Firestick, Smart TV, Android, iPhone"
-                        },
-                        { 
-                            value: "230K+", 
-                            label: "Live channels included",
-                            sub: "Every plan, no extras"
-                        },
-                        { 
-                            value: "99.9%", 
-                            label: "Service uptime target",
-                            sub: "Anti-buffer technology"
-                        },
-                    ].map(stat => (
-                        <div key={stat.value} 
-                            className="relative bg-[#0c0c14] border border-[#1a1a2a] rounded-2xl p-5 text-center overflow-hidden group hover:border-[#00e676]/20 transition-all duration-300">
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#00e676]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <div className="relative z-10">
-                                <div className="text-2xl font-extrabold text-[#00e676] mb-1">
-                                    {stat.value}
-                                </div>
-                                <div className="text-white font-bold text-xs mb-1">
-                                    {stat.label}
-                                </div>
-                                <div className="text-gray-600 text-[10px]">{stat.sub}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* CTA */}
-                <div className="mt-16 text-center">
-                    <Link
-                        href="/free-trial"
-                        className="inline-flex items-center justify-center px-10 py-4 bg-[#00e676] hover:bg-[#00ff87] text-black font-bold rounded-xl text-lg transition-all duration-300 hover:-translate-y-1 shadow-lg shadow-[#00e676]/20 hover:shadow-[#00e676]/30"
-                    >
-                        Try Free For 24 Hours — No Card Required
-                    </Link>
-                </div>
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto">
+                     {[
+                         { 
+                             value: "£372", 
+                             label: "Average annual saving vs Sky Sports",
+                             sub: "Based on Sky's 2026 pricing"
+                         },
+                         { 
+                             value: "5 min", 
+                             label: "Average setup time",
+                             sub: "Firestick, Smart TV, Android, iPhone"
+                         },
+                         { 
+                             value: "230K+", 
+                             label: "Live channels included",
+                             sub: "Every plan, no extras"
+                         },
+                         { 
+                             value: "99.9%", 
+                             label: "Service uptime target",
+                             sub: "Anti-buffer technology"
+                         },
+                     ].map(stat => (
+                         <div key={stat.value} 
+                             className="relative bg-[#0c0c14] border border-[#1a1a2a] rounded-2xl p-3.5 sm:p-5 text-center overflow-hidden group hover:border-[#00e676]/20 transition-all duration-300">
+                             <div className="absolute inset-0 bg-gradient-to-br from-[#00e676]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                             <div className="relative z-10">
+                                 <div className="text-2xl font-extrabold text-[#00e676] mb-1">
+                                     {stat.value}
+                                 </div>
+                                 <div className="text-white font-bold text-[10px] sm:text-xs mb-1 leading-tight">
+                                     {stat.label}
+                                 </div>
+                                 <div className="text-gray-600 text-[9px] sm:text-[10px] leading-tight">{stat.sub}</div>
+                             </div>
+                         </div>
+                     ))}
+                 </div>
+ 
+                 {/* CTA */}
+                 <div className="mt-16 text-center px-4">
+                     <Link
+                         href="/free-trial"
+                         className="inline-flex items-center justify-center px-6 sm:px-10 py-3.5 sm:py-4 bg-[#00e676] hover:bg-[#00ff87] text-black font-bold rounded-xl text-sm sm:text-lg transition-all duration-300 hover:-translate-y-1 shadow-lg shadow-[#00e676]/20 hover:shadow-[#00e676]/30 max-w-full text-center"
+                     >
+                         Try Free For 24 Hours — No Card Required
+                     </Link>
+                 </div>
 
                 {/* Infrastructure Stats */}
                 <div className="mt-20 border-t border-[#1a1a2a] pt-14">

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, ChevronDown, Heart } from "lucide-react"
+import { Menu, X, Heart } from "lucide-react"
 import { useState, useEffect, memo, useRef } from "react"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
@@ -87,6 +87,15 @@ const WATCH_LINKS = {
   ]
 }
 
+// Navigation links with path matching
+const NAV_LINKS = [
+  { name: "News", href: "/news" },
+  { name: "Channels", href: "/channels" },
+  { name: "Blog", href: "/blog" },
+  { name: "UFC", href: "/ufc" },
+  { name: "Pricing", href: "/pricing" },
+]
+
 export const Header = memo(function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -136,42 +145,57 @@ export const Header = memo(function Header() {
     }, 150) // slight delay to make it feel natural
   }
 
+  // Check if a link is active based on pathname
+  const isLinkActive = (href: string) => {
+    if (href === '/') return pathname === '/'
+    return pathname.startsWith(href)
+  }
+
+  const isWatchActive = pathname.startsWith('/watch')
+
   return (
     <>
       <header
         className={cn(
-          "fixed top-0 z-50 w-full transition-all duration-300",
+          "fixed top-0 z-50 w-full transition-all duration-500 ease-out",
           isMobileMenuOpen
-            ? "bg-[#0a0a0f] border-b border-[#2a2a3a]/60 py-3"
+            ? "bg-[#0a0a0f]/95 backdrop-blur-2xl border-b border-[#2a2a3a]/60 py-3"
             : isScrolled
-              ? "bg-[#0a0a0f]/90 backdrop-blur-xl border-b border-[#2a2a3a]/60 shadow-[0_1px_0_0_rgba(255,255,255,0.04)] py-3"
-              : "bg-transparent border-transparent py-4"
+              ? "bg-[#0a0a0f]/80 backdrop-blur-2xl border-b border-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.4)] py-2.5"
+              : "bg-gradient-to-b from-black/40 to-transparent border-b border-transparent py-4"
         )}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             {/* LEFT: Logo */}
-            <Link href="/" className="flex items-center">
-              <img
+            <Link href="/" className="flex items-center group">
+              <motion.img
                 src="/logo.svg"
                 alt="Smart Live TV"
                 width={180}
                 height={40}
-                className="h-8 w-auto"
+                className="h-8 w-auto transition-opacity duration-200 group-hover:opacity-90"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
               />
             </Link>
 
             {/* CENTER: Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
+            <nav className="hidden lg:flex items-center gap-1">
+              {/* Watch Live Dropdown */}
               <div
                 className="relative"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
                 <motion.button
-                  className="flex items-center gap-2 text-sm font-semibold
-                    text-gray-300 hover:text-white transition-colors py-2"
-                  whileHover={{ scale: 1.02 }}
+                  className={cn(
+                    "relative flex items-center gap-2 text-sm font-semibold px-3 py-2 rounded-lg transition-all duration-200",
+                    isWatchActive || isDropdownOpen
+                      ? "text-white bg-white/[0.08]"
+                      : "text-gray-400 hover:text-white hover:bg-white/[0.04]"
+                  )}
+                  whileHover={{ scale: 1.01 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 >
                   <motion.span
@@ -185,39 +209,53 @@ export const Header = memo(function Header() {
                     transition={{ duration: 0.2 }}
                     className="flex-shrink-0"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" 
+                    <svg width="12" height="12" viewBox="0 0 24 24" 
                       fill="none" stroke="currentColor" strokeWidth="2.5"
                       strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </motion.span>
+
+                  {/* Active indicator pill */}
+                  {isWatchActive && (
+                    <motion.div
+                      layoutId="activeNavIndicator"
+                      className="absolute -bottom-1 left-3 right-3 h-[2px] rounded-full bg-[#00e676]"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </motion.button>
 
-                {/* Desktop Dropdown */}
+                {/* Desktop Dropdown — Enhanced glassmorphism */}
                 <AnimatePresence>
                   {isDropdownOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.15, ease: [0.21, 0.47, 0.32, 0.98] }}
+                      initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                      transition={{ duration: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
                       className="absolute top-full left-1/2 -translate-x-1/2 mt-3
-                        w-[500px] rounded-2xl border border-[#2a2a3a]
-                        bg-[#0d0d14] shadow-[0_16px_48px_rgba(0,0,0,0.6)]
+                        w-[520px] rounded-2xl
+                        bg-[#0d0d14]/95 backdrop-blur-2xl
+                        border border-white/[0.08]
+                        shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.03)_inset]
                         overflow-hidden z-50"
                       style={{ willChange: 'transform, opacity' }}
                     >
-                      {/* Header band */}
-                      <div className="px-5 py-3 border-b border-[#2a2a3a] 
-                        flex items-center justify-between">
+                      {/* Header band with neon accent */}
+                      <div className="px-5 py-3 border-b border-white/[0.06] 
+                        flex items-center justify-between
+                        bg-gradient-to-r from-[#00e676]/[0.04] to-transparent">
                         <span className="text-[11px] font-bold text-gray-500 
                           uppercase tracking-widest">
                           Live Sports
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full 
-                            bg-[#ff1744] animate-ping inline-block" />
-                          <span className="text-[11px] font-semibold text-[#ff1744]">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff1744] opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff1744]" />
+                          </span>
+                          <span className="text-[11px] font-bold text-[#ff1744] tracking-wide">
                             LIVE
                           </span>
                         </span>
@@ -241,13 +279,19 @@ export const Header = memo(function Header() {
                             >
                               <Link
                                 href={link.href}
-                                className="flex items-center gap-3 px-3 py-2.5 
-                                  rounded-xl hover:bg-white/5 transition-colors group"
+                                className={cn(
+                                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group/item",
+                                  isLinkActive(link.href)
+                                    ? "bg-[#00e676]/10 border border-[#00e676]/20"
+                                    : "hover:bg-white/[0.05] border border-transparent"
+                                )}
                               >
-                                <div className="w-8 h-8 rounded-lg bg-[#12121a] 
-                                  border border-[#2a2a3a] flex items-center 
-                                  justify-center flex-shrink-0 overflow-hidden
-                                  group-hover:border-[#00e676]/30 transition-colors">
+                                <div className={cn(
+                                  "w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 overflow-hidden transition-all duration-200",
+                                  isLinkActive(link.href)
+                                    ? "bg-[#00e676]/10 border-[#00e676]/30"
+                                    : "bg-[#12121a] border-[#2a2a3a] group-hover/item:border-white/20 group-hover/item:bg-white/[0.04]"
+                                )}>
                                   <img
                                     src={link.badge}
                                     alt={link.name}
@@ -261,13 +305,14 @@ export const Header = memo(function Header() {
                                   />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-gray-200 
-                                    group-hover:text-white transition-colors 
-                                    truncate leading-tight">
+                                  <p className={cn(
+                                    "text-sm font-semibold transition-colors truncate leading-tight",
+                                    isLinkActive(link.href) ? "text-[#00e676]" : "text-gray-200 group-hover/item:text-white"
+                                  )}>
                                     {link.name}
                                   </p>
                                   <p className="text-[11px] text-gray-600 
-                                    group-hover:text-gray-400 transition-colors 
+                                    group-hover/item:text-gray-400 transition-colors 
                                     leading-tight">
                                     {link.desc}
                                   </p>
@@ -278,7 +323,7 @@ export const Header = memo(function Header() {
                         </div>
 
                         {/* Divider */}
-                        <div className="h-px bg-[#2a2a3a] mx-2 mb-3" />
+                        <div className="h-px bg-white/[0.06] mx-2 mb-3" />
 
                         {/* More sports */}
                         <p className="text-[10px] font-bold text-gray-600 
@@ -286,17 +331,23 @@ export const Header = memo(function Header() {
                           More Sports
                         </p>
                         <div className="grid grid-cols-2 gap-1 mb-3">
-                          {WATCH_LINKS.more.map((link, i) => (
+                          {WATCH_LINKS.more.map((link) => (
                             <Link
                               key={link.name}
                               href={link.href}
-                              className="flex items-center gap-3 px-3 py-2.5 
-                                rounded-xl hover:bg-white/5 transition-colors group"
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group/item",
+                                isLinkActive(link.href)
+                                  ? "bg-[#00e676]/10 border border-[#00e676]/20"
+                                  : "hover:bg-white/[0.05] border border-transparent"
+                              )}
                             >
-                              <div className="w-8 h-8 rounded-lg bg-[#12121a] 
-                                border border-[#2a2a3a] flex items-center 
-                                justify-center flex-shrink-0 overflow-hidden
-                                group-hover:border-[#00e676]/30 transition-colors">
+                              <div className={cn(
+                                "w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 overflow-hidden transition-all duration-200",
+                                isLinkActive(link.href)
+                                  ? "bg-[#00e676]/10 border-[#00e676]/30"
+                                  : "bg-[#12121a] border-[#2a2a3a] group-hover/item:border-white/20"
+                              )}>
                                 <img
                                   src={link.badge}
                                   alt={link.name}
@@ -310,12 +361,14 @@ export const Header = memo(function Header() {
                                 />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-sm font-semibold text-gray-200 
-                                  group-hover:text-white transition-colors truncate">
+                                <p className={cn(
+                                  "text-sm font-semibold transition-colors truncate",
+                                  isLinkActive(link.href) ? "text-[#00e676]" : "text-gray-200 group-hover/item:text-white"
+                                )}>
                                   {link.name}
                                 </p>
                                 <p className="text-[11px] text-gray-600 
-                                  group-hover:text-gray-400 transition-colors">
+                                  group-hover/item:text-gray-400 transition-colors">
                                   {link.desc}
                                 </p>
                               </div>
@@ -324,19 +377,19 @@ export const Header = memo(function Header() {
                         </div>
 
                         {/* Footer CTA */}
-                        <div className="px-2 pt-2 border-t border-[#2a2a3a]">
+                        <div className="px-2 pt-2 border-t border-white/[0.06]">
                           <Link
                             href="/buy"
                             className="flex items-center justify-between w-full 
-                              px-4 py-3 bg-[#00e676]/10 hover:bg-[#00e676]/20 
+                              px-4 py-3 bg-[#00e676]/[0.08] hover:bg-[#00e676]/[0.15] 
                               border border-[#00e676]/20 hover:border-[#00e676]/40 
-                              rounded-xl transition-all group"
+                              rounded-xl transition-all duration-200 group/cta"
                           >
                             <span className="text-sm font-bold text-[#00e676]">
                               Get instant access to all channels
                             </span>
                             <span className="text-[#00e676] text-sm 
-                              group-hover:translate-x-1 transition-transform">
+                              group-hover/cta:translate-x-1 transition-transform duration-200">
                               →
                             </span>
                           </Link>
@@ -347,21 +400,41 @@ export const Header = memo(function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href="/news" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">News</Link>
-              <Link href="/channels" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">Channels</Link>
-              <Link href="/blog" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">Blog</Link>
-              <Link href="/ufc" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">UFC</Link>
-              <Link href="/pricing" className="text-sm font-semibold text-text-primary hover:text-accent-primary transition-colors">Pricing</Link>
+              {/* Standard nav links with active indicator */}
+              {NAV_LINKS.map((link) => {
+                const active = isLinkActive(link.href)
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className={cn(
+                      "relative text-sm font-semibold px-3 py-2 rounded-lg transition-all duration-200",
+                      active
+                        ? "text-white bg-white/[0.08]"
+                        : "text-gray-400 hover:text-white hover:bg-white/[0.04]"
+                    )}
+                  >
+                    {link.name}
+                    {active && (
+                      <motion.div
+                        layoutId="activeNavIndicator"
+                        className="absolute -bottom-1 left-3 right-3 h-[2px] rounded-full bg-[#00e676]"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                )
+              })}
             </nav>
 
             {/* RIGHT: Desktop Auth / CTA */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-3">
               <CommandPalette />
-              <Link href="/favorites" className="p-2 rounded-lg text-text-muted hover:text-red-400 transition-colors" aria-label="Favorites">
+              <Link href="/favorites" className="p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-white/[0.04] transition-all duration-200" aria-label="Favorites">
                 <Heart className="w-4 h-4" />
               </Link>
 
-              <Link href="/contact" className="text-sm font-semibold text-text-muted hover:text-text-primary transition-colors">
+              <Link href="/contact" className="text-sm font-semibold text-gray-500 hover:text-white px-3 py-2 rounded-lg hover:bg-white/[0.04] transition-all duration-200">
                 Support
               </Link>
               <ShimmerButton href="/buy" className="text-sm px-6 py-2.5">
@@ -371,11 +444,33 @@ export const Header = memo(function Header() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2 text-text-primary hover:text-accent-primary transition-colors"
+              className="lg:hidden p-2 text-white hover:bg-white/[0.08] rounded-lg transition-all duration-200"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <AnimatePresence mode="wait">
+                {isMobileMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ opacity: 0, rotate: -90 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: 90 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <X className="w-6 h-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ opacity: 0, rotate: 90 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: -90 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Menu className="w-6 h-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </button>
           </div>
         </div>
@@ -405,13 +500,18 @@ export const Header = memo(function Header() {
         <div className="flex flex-col h-full p-6 overflow-y-auto pb-24 bg-[#0a0a0f] relative z-10">
           <div className="space-y-6">
             <div>
-              <div className="text-xs font-bold text-text-muted uppercase tracking-widest mb-3">Watch Live</div>
+              <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Watch Live</div>
               <div className="grid gap-2">
                 {[...WATCH_LINKS.football, ...WATCH_LINKS.more].map((link) => (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className="flex items-center gap-3 py-3.5 px-3 touch-manipulation rounded-lg bg-surface border border-border text-text-primary hover:border-accent-primary transition-colors"
+                    className={cn(
+                      "flex items-center gap-3 py-3.5 px-3 touch-manipulation rounded-lg border transition-all duration-200",
+                      isLinkActive(link.href)
+                        ? "bg-[#00e676]/10 border-[#00e676]/30 text-[#00e676]"
+                        : "bg-[#12121a] border-[#1a1a2a] text-white hover:border-white/20"
+                    )}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="w-8 h-8 rounded-lg bg-[#12121a] border 
@@ -435,17 +535,25 @@ export const Header = memo(function Header() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-border flex flex-col gap-2">
-              <Link href="/favorites" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}><Heart className="w-4 h-4 text-red-400" /> Favorites</Link>
-              <Link href="/news" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>News</Link>
-              <Link href="/channels" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Channels</Link>
-              <Link href="/blog" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
-              <Link href="/ufc" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>UFC</Link>
-              <Link href="/pricing" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
-              <Link href="/about" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
-              <Link href="/contact" className="py-3.5 touch-manipulation active:bg-white/5 text-lg font-bold text-text-primary" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
-              <div className="pt-2 flex items-center gap-2">
-              </div>
+            <div className="pt-4 border-t border-[#1a1a2a] flex flex-col gap-1">
+              <Link href="/favorites" className="py-3.5 px-3 touch-manipulation rounded-lg hover:bg-white/[0.04] active:bg-white/[0.08] text-lg font-bold text-white flex items-center gap-2 transition-all" onClick={() => setIsMobileMenuOpen(false)}><Heart className="w-4 h-4 text-red-400" /> Favorites</Link>
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={cn(
+                    "py-3.5 px-3 touch-manipulation rounded-lg text-lg font-bold transition-all",
+                    isLinkActive(link.href)
+                      ? "text-[#00e676] bg-[#00e676]/10"
+                      : "text-white hover:bg-white/[0.04] active:bg-white/[0.08]"
+                  )}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <Link href="/about" className="py-3.5 px-3 touch-manipulation rounded-lg hover:bg-white/[0.04] active:bg-white/[0.08] text-lg font-bold text-white transition-all" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+              <Link href="/contact" className="py-3.5 px-3 touch-manipulation rounded-lg hover:bg-white/[0.04] active:bg-white/[0.08] text-lg font-bold text-white transition-all" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
             </div>
           </div>
 
@@ -461,7 +569,7 @@ export const Header = memo(function Header() {
             </div>
             <Link
               href="/contact"
-              className="w-full flex justify-center text-sm font-semibold text-text-secondary py-2"
+              className="w-full flex justify-center text-sm font-semibold text-gray-500 py-2 hover:text-gray-300 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Need help? Contact Support

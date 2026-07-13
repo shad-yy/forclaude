@@ -1,20 +1,28 @@
-import { defineConfig, devices } from "@playwright/test"
+// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
-  testDir: "e2e",
-  timeout: 30_000,
-  fullyParallel: true,
-  reporter: "list",
+  testDir: './tests',
+  timeout: 30000,
+  retries: 1,
+  reporter: [['html'], ['list']],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
-    headless: true,
+    baseURL: 'https://smartlivetv.co.uk',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
-    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+    {
+      name: 'Desktop Chrome',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 14 Pro'] },
+    },
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 7'] },
+    },
   ],
 })
-
-
-

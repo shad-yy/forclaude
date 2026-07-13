@@ -22,7 +22,7 @@ function TodayMatchesSection() {
       .then((res) => res.json())
       .then((json) => {
         if (!cancelled) {
-          setFixtures(Array.isArray(json.data) ? json.data : [])
+          setFixtures(Array.isArray(json.matches) ? json.matches : Array.isArray(json.data) ? json.data : [])
           setError(!!json.error)
         }
       })
@@ -190,11 +190,11 @@ export default function ScoresPageClient() {
   }, [])
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-20" style={{ paddingTop: '80px' }}>
+    <div className="container mx-auto px-4 pt-24 md:pt-32 pb-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Scores & Results</h1>
-        <p className="text-xl text-muted-foreground">Stay updated with today's matches and recent results</p>
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">Scores &amp; Results</h1>
+        <p className="text-base md:text-xl text-muted-foreground">Stay updated with today&apos;s matches and recent results</p>
       </div>
 
       {/* Filters */}

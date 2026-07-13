@@ -14,8 +14,10 @@ const pillars = [
     href: "/buy",
     gradient: "from-emerald-500/20 to-emerald-500/5",
     iconColor: "text-emerald-400",
-    borderHover: "hover:border-emerald-500/50",
+    subtitleColor: "text-emerald-400/80",
+    borderHover: "hover:border-emerald-500/40",
     glowColor: "group-hover:shadow-emerald-500/10",
+    accentRing: "group-hover:ring-emerald-500/20",
   },
   {
     icon: Newspaper,
@@ -26,8 +28,10 @@ const pillars = [
     href: "/scores",
     gradient: "from-blue-500/20 to-blue-500/5",
     iconColor: "text-blue-400",
-    borderHover: "hover:border-blue-500/50",
+    subtitleColor: "text-blue-400/80",
+    borderHover: "hover:border-blue-500/40",
     glowColor: "group-hover:shadow-blue-500/10",
+    accentRing: "group-hover:ring-blue-500/20",
   },
   {
     icon: BarChart3,
@@ -38,8 +42,10 @@ const pillars = [
     href: "/leagues",
     gradient: "from-purple-500/20 to-purple-500/5",
     iconColor: "text-purple-400",
-    borderHover: "hover:border-purple-500/50",
+    subtitleColor: "text-purple-400/80",
+    borderHover: "hover:border-purple-500/40",
     glowColor: "group-hover:shadow-purple-500/10",
+    accentRing: "group-hover:ring-purple-500/20",
   },
 ]
 
@@ -91,13 +97,18 @@ export function ServicePillars() {
               <motion.div key={pillar.title} variants={cardVariants}>
                 <Link
                   href={pillar.href}
-                  className={`group relative flex flex-col items-center text-center p-6 rounded-xl border border-[#1a1a2a] bg-[#12121a]/80 backdrop-blur-sm transition-all duration-300 ${pillar.borderHover} hover:-translate-y-1 hover:shadow-xl ${pillar.glowColor}`}
+                  className={`group relative flex flex-col items-center text-center p-6 rounded-xl 
+                    border border-[#1a1a2a] bg-[#12121a]/80 backdrop-blur-sm 
+                    transition-all duration-300 
+                    ${pillar.borderHover} 
+                    hover:-translate-y-1 hover:shadow-xl ${pillar.glowColor}
+                    ring-1 ring-transparent ${pillar.accentRing}`}
                 >
                   {/* Gradient overlay */}
                   <div className={`absolute inset-0 rounded-xl bg-gradient-to-b ${pillar.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
                   {/* Icon */}
-                  <div className={`relative z-10 w-12 h-12 rounded-xl bg-[#1a1a24] border border-[#2a2a3a] flex items-center justify-center mb-4 group-hover:border-opacity-50 transition-all ${pillar.iconColor}`}>
+                  <div className={`relative z-10 w-12 h-12 rounded-xl bg-[#1a1a24] border border-[#2a2a3a] flex items-center justify-center mb-4 group-hover:border-opacity-50 group-hover:scale-110 transition-all duration-300 ${pillar.iconColor}`}>
                     <Icon className="w-6 h-6" strokeWidth={1.5} />
                   </div>
 
@@ -106,7 +117,7 @@ export function ServicePillars() {
                     <h3 className="text-white font-bold text-lg mb-1">
                       {pillar.title}
                     </h3>
-                    <p className="text-sm font-semibold text-emerald-400/80 mb-2">
+                    <p className={`text-sm font-semibold ${pillar.subtitleColor} mb-2`}>
                       {pillar.subtitle}
                     </p>
                     <p className="text-xs text-gray-500 leading-relaxed mb-4">

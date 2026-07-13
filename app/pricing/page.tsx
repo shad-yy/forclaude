@@ -9,6 +9,7 @@ import { VisaLogo, MastercardLogo, PayPalLogo, CryptoIcon, BankTransferIcon } fr
 import { FirestickIcon, SmartTVIcon, AndroidIcon, IPhoneIcon } from '@/components/ui/DeviceIcons'
 import { Lock, RotateCcw, Zap, Ban, Headphones, Film, Trophy, Tv, Globe, Swords } from 'lucide-react'
 import { SpeedChecker } from '@/components/ui/SpeedChecker'
+import { PricingCardsSlider } from '@/components/pricing/PricingCardsSlider'
 
 
 export const metadata: Metadata = {
@@ -397,6 +398,8 @@ export default function PricingPage() {
       {/* SECTION 2 — PRICING CARDS */}
       <FadeIn direction="up">
       <section className="bg-[#0a0a0f] pb-16 md:pb-20 px-4 md:px-6 container mx-auto max-w-7xl">
+
+        {/* Stats bar */}
         <div className="flex flex-wrap items-center justify-center gap-6 mb-10">
           <div className="text-center">
             <div className="text-2xl font-extrabold text-[#00e676]">24H</div>
@@ -424,202 +427,16 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <StaggerIn className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto py-6 pb-16">
-          
-          {/* CARD 1 — 1 MONTH */}
-          <div className="bg-[#12121a] border border-[#2a2a3a] rounded-3xl p-8 flex flex-col">
-            <div className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Basic</div>
-            <div>
-              <span className="text-5xl font-extrabold text-white">£12</span>
-            </div>
-            <div className="text-xs text-[#00e676] font-bold mt-1 mb-6">1 Month</div>
-            
-            <div className="border-t border-[#2a2a3a] mb-6"></div>
-            
-            <ul className="space-y-3 flex-grow">
-              {[
-                "230,000+ Channels, Movies & Series",
-                "Netflix, Disney+, Amazon Prime Included",
-                "Hulu, Apple TV+, Paramount+, Shahid Included",
-                "All Sky Sports Channels in 4K",
-                "TNT Sports — Champions League Included",
-                "UFC, F1, NBA, NFL — All Sports Live",
-                "Anti-Buffer Technology",
-                "Electronic Program Guide (EPG)",
-                "Catch-Up TV — Watch Last 7 Days",
-                "Works on ALL Devices",
-                "24/7 Customer Support",
-                "Free 24-Hour Trial — No Card Needed",
-                "7-Day Money Back Guarantee",
-                "No Contract — Cancel Anytime",
-                "Instant Activation After Payment"
-              ].map((text, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="text-[#00e676] font-bold flex-shrink-0">✓</span>
-                  <span className="text-sm text-gray-300">{text}</span>
-                </li>
-              ))}
-            </ul>
-            
-            <Link 
-              href="/buy"
-              className="block text-center w-full mt-8 py-4 rounded-xl font-bold text-sm border border-[#2a2a3a] hover:border-[#00e676] text-white transition-all"
-            >
-              Get Access Now →
-            </Link>
-            <p className="text-center text-xs text-gray-500 mt-3">
-              or <Link href="/free-trial" className="hover:underline text-gray-400">try free for 24h →</Link>
-            </p>
-          </div>
 
-          {/* CARD 2 — 3 MONTHS (RECOMMENDED) */}
-          <div className="bg-[#12121a] border-2 border-[#00e676] rounded-3xl p-8 relative shadow-[0_0_40px_rgba(0,230,118,0.15)] flex flex-col z-10 md:scale-105">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#00e676] text-black text-xs font-extrabold px-6 py-1.5 rounded-full whitespace-nowrap">
-              BEST VALUE
-            </div>
-            
-            <div className="text-sm font-bold uppercase tracking-widest text-[#00e676] mb-2">Popular</div>
-            <div>
-              <span className="text-5xl font-extrabold text-white">£24</span>
-            </div>
-            <div className="text-xs text-[#00e676] font-bold mt-1 mb-6">3 Months <span className="text-gray-400 font-normal ml-2">Only £8/mo</span></div>
-            
-            <div className="border-t border-[#2a2a3a] mb-6"></div>
-            
-            <ul className="space-y-3 flex-grow">
-              {[
-                "230,000+ Channels, Movies & Series",
-                "Netflix, Disney+, Amazon Prime Included",
-                "Hulu, Apple TV+, Paramount+, Shahid Included",
-                "All Sky Sports Channels in 4K",
-                "TNT Sports — Champions League Included",
-                "UFC, F1, NBA, NFL — All Sports Live",
-                "Anti-Buffer Technology",
-                "Electronic Program Guide (EPG)",
-                "Catch-Up TV — Watch Last 7 Days",
-                "Works on ALL Devices",
-                "24/7 Customer Support",
-                "Free 24-Hour Trial — No Card Needed",
-                "7-Day Money Back Guarantee",
-                "No Contract — Cancel Anytime",
-                "Instant Activation After Payment"
-              ].map((text, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="text-[#00e676] font-bold flex-shrink-0">✓</span>
-                  <span className="text-sm text-gray-300">{text}</span>
-                </li>
-              ))}
-            </ul>
-            
-            <Link 
-              href="/buy"
-              className="block text-center w-full mt-8 py-4 rounded-xl font-bold text-sm bg-[#00e676] hover:bg-[#00ff87] text-black shadow-[0_0_20px_rgba(0,230,118,0.3)] transition-all"
-            >
-              Get Access Now →
-            </Link>
-            <Link 
-              href="/free-trial"
-              className="block text-center w-full mt-3 py-3 rounded-xl font-bold text-xs border border-transparent text-gray-400 hover:text-white hover:bg-white/5 transition-all"
-            >
-              Try Free First
-            </Link>
-          </div>
+        {/* Pricing cards — snap-scroll slider on mobile, 4-col grid on desktop */}
+        <div className="py-6 pb-10">
+          <PricingCardsSlider fullFeatures showTrialCta />
+        </div>
 
-          {/* CARD 3 — 6 MONTHS */}
-          <div className="bg-[#12121a] border border-[#2a2a3a] rounded-3xl p-8 flex flex-col pt-8 md:pt-8 mt-4 lg:mt-0">
-            <div className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Standard</div>
-            <div>
-              <span className="text-5xl font-extrabold text-white">£36</span>
-            </div>
-            <div className="text-xs text-[#00e676] font-bold mt-1 mb-6">6 Months <span className="text-gray-400 font-normal ml-2">Only £6/mo</span></div>
-            
-            <div className="border-t border-[#2a2a3a] mb-6"></div>
-            
-            <ul className="space-y-3 flex-grow">
-              {[
-                "230,000+ Channels, Movies & Series",
-                "Netflix, Disney+, Amazon Prime Included",
-                "Hulu, Apple TV+, Paramount+, Shahid Included",
-                "All Sky Sports Channels in 4K",
-                "TNT Sports — Champions League Included",
-                "UFC, F1, NBA, NFL — All Sports Live",
-                "Anti-Buffer Technology",
-                "Electronic Program Guide (EPG)",
-                "Catch-Up TV — Watch Last 7 Days",
-                "Works on ALL Devices",
-                "24/7 Customer Support",
-                "Free 24-Hour Trial — No Card Needed",
-                "7-Day Money Back Guarantee",
-                "No Contract — Cancel Anytime",
-                "Instant Activation After Payment"
-              ].map((text, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="text-[#00e676] font-bold flex-shrink-0">✓</span>
-                  <span className="text-sm text-gray-300">{text}</span>
-                </li>
-              ))}
-            </ul>
-            
-            <Link 
-              href="/buy"
-              className="block text-center w-full mt-8 py-4 rounded-xl font-bold text-sm border border-[#2a2a3a] hover:border-[#00e676] text-white transition-all"
-            >
-              Get Access Now →
-            </Link>
-            <p className="text-center text-xs text-gray-500 mt-3">
-              or <Link href="/free-trial" className="hover:underline text-gray-400">try free for 24h →</Link>
-            </p>
-          </div>
 
-          {/* CARD 4 — 12 MONTHS */}
-          <div className="bg-[#12121a] border border-[#2a2a3a] rounded-3xl p-8 flex flex-col pt-8 md:pt-8 mt-4 lg:mt-0">
-            <div className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Premium</div>
-            <div>
-              <span className="text-5xl font-extrabold text-white">£54</span>
-            </div>
-            <div className="text-xs text-[#00e676] font-bold mt-1 mb-6">12 Months <span className="text-gray-400 font-normal ml-2">Only £4.50/mo</span></div>
-            
-            <div className="border-t border-[#2a2a3a] mb-6"></div>
-            
-            <ul className="space-y-3 flex-grow">
-              {[
-                "230,000+ Channels, Movies & Series",
-                "Netflix, Disney+, Amazon Prime Included",
-                "Hulu, Apple TV+, Paramount+, Shahid Included",
-                "All Sky Sports Channels in 4K",
-                "TNT Sports — Champions League Included",
-                "UFC, F1, NBA, NFL — All Sports Live",
-                "Anti-Buffer Technology",
-                "Electronic Program Guide (EPG)",
-                "Catch-Up TV — Watch Last 7 Days",
-                "Works on ALL Devices",
-                "24/7 Customer Support",
-                "Free 24-Hour Trial — No Card Needed",
-                "7-Day Money Back Guarantee",
-                "No Contract — Cancel Anytime",
-                "Instant Activation After Payment"
-              ].map((text, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="text-[#00e676] font-bold flex-shrink-0">✓</span>
-                  <span className="text-sm text-gray-300">{text}</span>
-                </li>
-              ))}
-            </ul>
-            
-            <Link 
-              href="/buy"
-              className="block text-center w-full mt-8 py-4 rounded-xl font-bold text-sm border border-[#2a2a3a] hover:border-[#00e676] text-white transition-all"
-            >
-              Get Access Now →
-            </Link>
-            <p className="text-center text-xs text-gray-500 mt-3">
-              or <Link href="/free-trial" className="hover:underline text-gray-400">try free for 24h →</Link>
-            </p>
-          </div>
 
-        </StaggerIn>
+        <div className="max-w-sm mx-auto mt-4">
 
-        <div className="max-w-sm mx-auto mt-10">
           <SpeedChecker />
         </div>
 
@@ -700,7 +517,7 @@ export default function PricingPage() {
           Every channel is included in your plan — no add-ons, no hidden fees, no blackouts.
         </p>
 
-        <StaggerIn className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <StaggerIn className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           <div className="bg-[#0a0a0f] rounded-2xl p-6 border border-[#2a2a3a]">
             <div className="w-10 h-10 rounded-xl bg-[#00e676]/10 flex items-center justify-center mb-4"><Film className="w-5 h-5 text-[#00e676]" /></div>
             <div className="font-bold text-white text-sm mb-2">Netflix, Disney+ & More</div>

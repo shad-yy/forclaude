@@ -106,7 +106,7 @@ async function PlayersList({ searchParams }: { searchParams: PlayersPageProps["s
 
 export default function PlayersPage({ searchParams }: PlayersPageProps) {
   return (
-    <div className="container mx-auto px-4 py-8 pt-20" style={{ paddingTop: '80px' }}>
+    <div className="container mx-auto px-4 pt-24 md:pt-32 pb-8">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">Football Players</h1>

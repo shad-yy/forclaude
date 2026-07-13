@@ -126,7 +126,7 @@ export function NewsPageClient({ initialArticles }: NewsPageClientProps) {
           </p>
           <div className="flex items-end justify-between gap-6 flex-wrap">
             <div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-text-primary mb-2">
+              <h2 className="text-2xl md:text-5xl font-bold tracking-tight text-text-primary mb-2">
                 Latest Sports Headlines
               </h2>
               <p className="text-sm text-gray-400 leading-relaxed max-w-2xl">

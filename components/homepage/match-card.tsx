@@ -279,7 +279,7 @@ export function MatchCard() {
                                                             <span className="text-[8px] font-bold text-white">{getTeamInitials(match.strHomeTeam)}</span>
                                                         )}
                                                     </div>
-                                                    <span className="text-xs mt-1 line-clamp-2 max-w-[80px] leading-tight text-text-primary font-semibold">
+                                                    <span className="text-xs mt-1 line-clamp-2 max-w-[80px] sm:max-w-[120px] md:max-w-none leading-tight text-text-primary font-semibold">
                                                         {match.strHomeTeam}
                                                     </span>
                                                 </div>
@@ -327,7 +327,7 @@ export function MatchCard() {
                                                             <span className="text-[8px] font-bold text-white">{getTeamInitials(match.strAwayTeam)}</span>
                                                         )}
                                                     </div>
-                                                    <span className="text-xs mt-1 line-clamp-2 max-w-[80px] leading-tight text-text-primary font-semibold">
+                                                    <span className="text-xs mt-1 line-clamp-2 max-w-[80px] sm:max-w-[120px] md:max-w-none leading-tight text-text-primary font-semibold">
                                                         {match.strAwayTeam}
                                                     </span>
                                                 </div>
@@ -361,7 +361,7 @@ export function MatchCard() {
                       <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">
                         More Live Sport
                       </h3>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                           {
                             sport: 'UFC / MMA',

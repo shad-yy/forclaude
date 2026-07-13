@@ -15,6 +15,16 @@ body {
 /* ── Mobile scroll & touch fixes ── */
 html {
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar utility (for swipeable tab rows, etc.) */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -68,6 +78,26 @@ body.menu-open {
   @apply border-t border-[#2a2a3a];
 }
 
+/* iOS Safe Area bottom padding — used by sticky mobile CTAs */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Hide scrollbar utility */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
+/* Fluid mobile images — prevent overflow */
+img {
+  max-width: 100%;
+}
+
 /* ── Prevent layout shift during animation ── */
 
 * {
@@ -93,7 +123,8 @@ button {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 /* Button fallbacks */
