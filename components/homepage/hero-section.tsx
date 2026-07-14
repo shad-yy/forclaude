@@ -70,6 +70,7 @@ function useCanPlayVideo() {
 }
 
 export function HeroSection() {
+  const [mounted, setMounted] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [heroImages, setHeroImages] = useState<string[]>(FALLBACK_HERO_IMAGES)
   const [imagesLoaded, setImagesLoaded] = useState(false)
@@ -77,6 +78,11 @@ export function HeroSection() {
   const [videoError, setVideoError] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canPlayVideo = useCanPlayVideo()
+
+  // Mount guard — prevents SSR/client DOM mismatch for dynamic backgrounds
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Try to load dynamic event images from the spotlight API
   useEffect(() => {
@@ -121,57 +127,69 @@ export function HeroSection() {
 
   return (
     <section className="relative w-full min-h-[600px] md:min-h-[700px] overflow-hidden bg-[#0a0a0f] flex flex-col items-center justify-center">
-      {/* ─── Video Background (when supported) ─── */}
-      {showVideo && (
-        <div className="absolute inset-0 z-0">
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster={heroImages[0]}
-            onCanPlay={handleVideoCanPlay}
-            onError={handleVideoError}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms] ${
-              videoLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{ willChange: 'opacity' }}
-          >
-            {HERO_VIDEO_SOURCES.map((src, i) => (
-              <source key={i} src={src} type="video/mp4" />
-            ))}
-          </video>
-        </div>
+      {/* ─── Dynamic backgrounds — only render after client hydration to prevent SSR mismatch ─── */}
+      {mounted && (
+        <>
+          {/* Video Background (when supported) */}
+          {showVideo && (
+            <div className="absolute inset-0 z-0">
+              <video
+                ref={videoRef}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                poster={heroImages[0]}
+                onCanPlay={handleVideoCanPlay}
+                onError={handleVideoError}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms] ${
+                  videoLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                style={{ willChange: 'opacity' }}
+              >
+                {HERO_VIDEO_SOURCES.map((src, i) => (
+                  <source key={i} src={src} type="video/mp4" />
+                ))}
+              </video>
+            </div>
+          )}
+
+          {/* Fallback Image Carousel (when video isn't playing) */}
+          {(!showVideo || !videoLoaded) && (
+            <div className="absolute inset-0 z-0">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentImageIndex}
+                  className="absolute inset-0"
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.5, ease: "easeInOut" }}
+                >
+                  <img
+                    src={heroImages[currentImageIndex]}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onLoad={() => setImagesLoaded(true)}
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement
+                      img.style.display = 'none'
+                    }}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          )}
+        </>
       )}
 
-      {/* ─── Fallback Image Carousel (when video isn't available or loading) ─── */}
-      {(!showVideo || !videoLoaded) && (
-        <div className="absolute inset-0 z-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentImageIndex}
-              className="absolute inset-0"
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-            >
-              <img
-                src={heroImages[currentImageIndex]}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-                onLoad={() => setImagesLoaded(true)}
-                onError={(e) => {
-                  // Skip broken images
-                  const img = e.target as HTMLImageElement
-                  img.style.display = 'none'
-                }}
-              />
-            </motion.div>
-          </AnimatePresence>
-        </div>
+      {/* Static fallback background shown during SSR and before hydration */}
+      {!mounted && (
+        <div
+          className="absolute inset-0 z-0"
+          style={{ backgroundImage: `url(${FALLBACK_HERO_IMAGES[0]})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        />
       )}
 
       {/* ─── Cinematic Gradient Overlays ─── */}
@@ -331,8 +349,8 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Image rotation indicators — only shown when using image fallback */}
-      {(!showVideo || !videoLoaded) && heroImages.length > 1 && (
+      {/* Image rotation indicators — only shown after hydration when using image fallback */}
+      {mounted && (!showVideo || !videoLoaded) && heroImages.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
           {heroImages.slice(0, 5).map((_, i) => (
             <button

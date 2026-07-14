@@ -43,14 +43,20 @@ const ALWAYS_ON = [
 ]
 
 export function LiveNowBanner() {
+  const [mounted, setMounted] = useState(false)
   const [current, setCurrent] = useState(0)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     const timer = setInterval(() => {
       setCurrent(i => (i + 1) % ALWAYS_ON.length)
     }, 3500)
     return () => clearInterval(timer)
-  }, [])
+  }, [mounted])
 
   return (
     <div className="bg-gradient-to-r from-[#0d0d14] via-[#0f0f1a] to-[#0d0d14] border-y border-[#1a1a2a] 
@@ -79,34 +85,55 @@ export function LiveNowBanner() {
 
           {/* Rotating content */}
           <div className="flex-1 overflow-hidden h-7 relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex items-center gap-3 absolute inset-0"
-              >
+            {mounted ? (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -20, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-3 absolute inset-0"
+                >
+                  <img
+                    src={ALWAYS_ON[current].badge}
+                    alt={ALWAYS_ON[current].title}
+                    width={24}
+                    height={24}
+                    className="w-6 h-6 object-contain flex-shrink-0"
+                  />
+                  <Link
+                    href={ALWAYS_ON[current].href}
+                    className="text-white font-bold text-sm 
+                      hover:text-[#00e676] transition-colors"
+                  >
+                    {ALWAYS_ON[current].title}
+                  </Link>
+                  <span className="text-gray-500 text-xs hidden sm:block">
+                    — {ALWAYS_ON[current].sub}
+                  </span>
+                </motion.div>
+              </AnimatePresence>
+            ) : (
+              <div className="flex items-center gap-3 absolute inset-0">
                 <img
-                  src={ALWAYS_ON[current].badge}
-                  alt={ALWAYS_ON[current].title}
+                  src={ALWAYS_ON[0].badge}
+                  alt={ALWAYS_ON[0].title}
                   width={24}
                   height={24}
                   className="w-6 h-6 object-contain flex-shrink-0"
                 />
                 <Link
-                  href={ALWAYS_ON[current].href}
-                  className="text-white font-bold text-sm 
-                    hover:text-[#00e676] transition-colors"
+                  href={ALWAYS_ON[0].href}
+                  className="text-white font-bold text-sm hover:text-[#00e676] transition-colors"
                 >
-                  {ALWAYS_ON[current].title}
+                  {ALWAYS_ON[0].title}
                 </Link>
                 <span className="text-gray-500 text-xs hidden sm:block">
-                  — {ALWAYS_ON[current].sub}
+                  — {ALWAYS_ON[0].sub}
                 </span>
-              </motion.div>
-            </AnimatePresence>
+              </div>
+            )}
           </div>
 
           {/* Dot indicators */}
