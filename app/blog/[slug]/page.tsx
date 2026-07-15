@@ -13,7 +13,7 @@ function extractFaqFromHtml(html: string): { question: string; answer: string }[
   const faqs: { question: string; answer: string }[] = []
 
   // Find the FAQ section - look for content after "Frequently Asked Questions" heading
-  const faqSectionMatch = html.match(/(<h[23][^>]*>\s*Frequently Asked Questions\s*<\/h[23]>)(.*)/is)
+  const faqSectionMatch = html.match(/(<h[23][^>]*>\s*Frequently Asked Questions\s*<\/h[23]>)([\s\S]*)/i)
   if (!faqSectionMatch) return faqs
 
   const faqHtml = faqSectionMatch[2]

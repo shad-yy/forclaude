@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
-import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
+
+const TODAY_SCORES_TTL = 30 // 30 seconds — fresh enough for live scores, saves API quota
 
 export async function GET(_request: NextRequest) {
   try {
     const today = new Date().toISOString().split('T')[0]
-    const url = `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${today}&s=Soccer`
+    const apiKey = process.env.THESPORTSDB_API_KEY || "123"
+    const url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsday.php?d=${today}&s=Soccer`
 
-    // Instead of using unifiedSportsAPI.getTodayFixtures(), we fetch directly per requirements
-    // to strictly control the parsing and avoid rate limit error throws for empty arrays.
-    const res = await fetch(url)
+    // Use next.js fetch cache for server-side deduplication (30s revalidation)
+    const res = await fetch(url, { next: { revalidate: TODAY_SCORES_TTL } })
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`)
     }
@@ -17,10 +18,12 @@ export async function GET(_request: NextRequest) {
     const events = data.events || []
 
     if (events.length === 0) {
-      return NextResponse.json({ matches: [], message: "No matches scheduled today" })
+      return NextResponse.json(
+        { matches: [], message: "No matches scheduled today" },
+        { headers: { 'Cache-Control': `public, s-maxage=${TODAY_SCORES_TTL}, stale-while-revalidate=90` } }
+      )
     }
 
-    // Pass through unified transformations for the frontend
     const matches = events.map((event: any) => ({
       id: event.idEvent,
       homeTeam: event.strHomeTeam,
@@ -39,11 +42,7 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json(
       { matches, message: "Success" },
-      { headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-      } }
+      { headers: { 'Cache-Control': `public, s-maxage=${TODAY_SCORES_TTL}, stale-while-revalidate=90` } }
     )
   } catch (error) {
     console.warn("[API] GET /api/scores/today error:", error)

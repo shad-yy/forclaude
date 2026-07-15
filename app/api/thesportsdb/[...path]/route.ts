@@ -1,10 +1,31 @@
 import { NextRequest, NextResponse } from "next/server"
 import { API_CONFIG } from "@/lib/config"
 
+// Long-lived endpoints — league/team/player data changes at most once a day
+const LONG_CACHE_PATTERNS = [
+  'lookupleague', 'search_all_leagues', 'searchleagues',
+  'lookupteam', 'search_all_teams', 'searchteams',
+  'lookupplayer', 'searchplayers',
+  'lookuptable',
+]
+// Short-lived — scores and events update frequently
+const SHORT_CACHE_PATTERNS = [
+  'eventsnow', 'eventstv', 'eventsday',
+  'eventsnextleague', 'eventspastleague',
+]
+
+function getRevalidateTtl(path: string): number {
+  const lower = path.toLowerCase()
+  if (LONG_CACHE_PATTERNS.some(p => lower.includes(p))) return 86_400  // 24 hours
+  if (SHORT_CACHE_PATTERNS.some(p => lower.includes(p))) return 30      // 30 seconds
+  return 300 // default 5 minutes
+}
+
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
     try {
         const pathBytes = params.path.join('/')
         const url = new URL(request.url)
+        const ttl = getRevalidateTtl(pathBytes)
 
         // Construct the private authenticated URL
         const apiKey = API_CONFIG.thesportsdb.apiKey || "123"
@@ -14,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
             headers: {
                 'Accept': 'application/json'
             },
-            next: { revalidate: 60 } // Default cache
+            next: { revalidate: ttl }
         })
 
         if (!res.ok) {
@@ -30,9 +51,10 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
             return NextResponse.json({ error: "Invalid JSON from proxy" }, { status: 500 })
         }
 
+        const staleWhileRevalidate = Math.min(ttl * 2, 86_400)
         return NextResponse.json(data, {
             headers: {
-                "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300"
+                "Cache-Control": `public, s-maxage=${ttl}, stale-while-revalidate=${staleWhileRevalidate}`
             }
         })
     } catch (error) {

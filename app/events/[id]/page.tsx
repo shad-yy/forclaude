@@ -115,7 +115,7 @@ export default async function EventPage({ params }: EventPageProps) {
   const { date: formattedDate, time: formattedTime } = formatDateTime(unifiedEvent.date, unifiedEvent.time)
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 pt-24 md:pt-28 pb-8">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Event Header */}
         <Card>
@@ -207,8 +207,8 @@ export default async function EventPage({ params }: EventPageProps) {
               id: params.id,
               homeTeam: unifiedEvent.homeTeam,
               awayTeam: unifiedEvent.awayTeam,
-              homeLogo: unifiedEvent.homeLogo,
-              awayLogo: unifiedEvent.awayLogo
+              homeLogo: unifiedEvent.homeLogo ?? undefined,
+              awayLogo: unifiedEvent.awayLogo ?? undefined
             }}
             additionalInfo={sportsDbEvent}
           />

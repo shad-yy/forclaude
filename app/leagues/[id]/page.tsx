@@ -54,9 +54,41 @@ async function LeagueContent({ leagueId }: { leagueId: string }) {
     return (
       <LeagueDetailView
         league={league}
-        teams={teams}
-        standings={standings}
-        fixtures={fixtures}
+        teams={teams.map((t) => ({
+          id: t.id,
+          name: t.name,
+          country: t.country,
+          logo: t.logo ?? null,
+          founded: t.founded != null ? String(t.founded) : null,
+        }))}
+        standings={standings.map((s) => ({
+          teamId: s.teamId,
+          team: s.team,
+          teamLogo: s.teamLogo ?? null,
+          position: String(s.position),
+          played: String(s.played),
+          won: String(s.won),
+          drawn: String(s.drawn),
+          lost: String(s.lost),
+          goalsFor: String(s.goalsFor),
+          goalsAgainst: String(s.goalsAgainst),
+          goalDifference: String(s.goalDifference),
+          points: String(s.points),
+          form: s.form,
+          description: s.description,
+        }))}
+        fixtures={fixtures.map((f) => ({
+          id: f.id,
+          homeTeam: f.homeTeam,
+          awayTeam: f.awayTeam,
+          homeLogo: f.homeLogo ?? null,
+          awayLogo: f.awayLogo ?? null,
+          date: f.date,
+          time: f.time,
+          status: f.status,
+          isLive: f.isLive,
+          venue: f.venue ?? null,
+        }))}
       />
     )
   } catch (error) {
@@ -95,7 +127,6 @@ export default function LeaguePage({ params }: LeaguePageProps) {
       </div>
 
       <Suspense fallback={<LeagueLoading />}>
-        {/* @ts-expect-error Async Server Component */}
         <LeagueContent leagueId={params.id} />
       </Suspense>
     </main>

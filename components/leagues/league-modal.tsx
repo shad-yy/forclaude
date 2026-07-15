@@ -5,7 +5,7 @@ import { OptimizedImage } from "@/components/ui/optimized-image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Globe, Trophy, Calendar, ExternalLink } from "lucide-react"
-import type { UnifiedLeague } from "@/lib/api/unified-sports-api"
+import { unifiedSportsAPI, type UnifiedLeague } from "@/lib/api/unified-sports-api"
 import Link from "next/link"
 
 interface LeagueModalProps {
@@ -16,6 +16,8 @@ interface LeagueModalProps {
 
 export function LeagueModal({ league, open, onOpenChange }: LeagueModalProps) {
   if (!league) return null
+
+  const currentSeason = unifiedSportsAPI.getSeasonString()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -60,7 +62,7 @@ export function LeagueModal({ league, open, onOpenChange }: LeagueModalProps) {
             <div className="bg-card p-4 rounded-xl border border-border/50 text-center">
               <Calendar className="w-6 h-6 mx-auto mb-2 text-primary" />
               <div className="text-sm text-muted-foreground">Current Season</div>
-              <div className="font-bold">2023-2024</div>
+              <div className="font-bold">{currentSeason}</div>
             </div>
           </div>
 

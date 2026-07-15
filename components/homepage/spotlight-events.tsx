@@ -8,8 +8,8 @@ import { Clock, Zap, ArrowRight } from "lucide-react"
 interface SpotlightEvent {
   idEvent: string
   strEvent: string
-  strHomeTeam: string
-  strAwayTeam: string
+  strHomeTeam: string | null
+  strAwayTeam: string | null
   strHomeTeamBadge: string | null
   strAwayTeamBadge: string | null
   intHomeScore: string | null
@@ -89,10 +89,12 @@ function getStatusConfig(status: SpotlightEvent['eventStatus']) {
   }
 }
 
-function getTeamInitials(name: string) {
+function getTeamInitials(name: string | null) {
+  if (!name) return '?'
   return name.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase()
 }
-function getBgColor(name: string) {
+function getBgColor(name: string | null) {
+  if (!name) return 'hsl(220, 20%, 20%)'
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
   return `hsl(${Math.abs(hash) % 360}, 50%, 25%)`

@@ -864,10 +864,10 @@ test.describe('Performance — Core Web Vitals Protection', () => {
 
         const imagesWithoutDimensions = await page.$$eval(
             'img[src*="thesportsdb"], img[src*="/leagues/"]',
-            (imgs) => imgs
-                .filter((img) => !img.width || !img.height ||
+            (imgs: any[]) => imgs
+                .filter((img: any) => !img.width || !img.height ||
                     (!img.getAttribute('width') && !img.getAttribute('height')))
-                .map((img) => ({
+                .map((img: any) => ({
                     src: img.src,
                     hasWidth: !!img.getAttribute('width'),
                     hasHeight: !!img.getAttribute('height'),

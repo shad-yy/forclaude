@@ -1,4 +1,5 @@
 import { theSportsDB, RateLimitError, allSports as getAllSports } from "./the-sports-db"
+import { swrGet } from "@/lib/cache"
 
 // Safely append /tiny to a TheSportsDB image URL without double-appending
 function safeBadgeUrl(url: string | undefined | null): string | undefined {
@@ -62,8 +63,8 @@ export interface UnifiedFixture {
   time: string
   venue?: string
   league: string
-  homeLogo?: string
-  awayLogo?: string
+  homeLogo?: string | null
+  awayLogo?: string | null
   isLive: boolean
 }
 
@@ -288,7 +289,7 @@ class UnifiedSportsAPI {
 
   // Helper to get season string in TheSportsDB format (YYYY-YYYY)
   // For most leagues, season runs from August to May, so in December 2024, we're in 2024-2025 season
-  private getSeasonString(year?: number): string {
+  getSeasonString(year?: number): string {
     if (year) {
       return `${year}-${year + 1}`
     }
@@ -382,20 +383,26 @@ class UnifiedSportsAPI {
   }
 
   async getLeagues(country?: string, sport?: string): Promise<UnifiedLeague[]> {
+    const cacheKey = `leagues:featured:${country ?? ''}:${sport ?? ''}`
+    const TTL_LEAGUES = 86_400 // 24 hours — league metadata rarely changes
     try {
-      const FEATURED_LEAGUES = [
-        { id: '4328', name: 'English Premier League', country: 'England', sport: 'Soccer' },
-        { id: '4335', name: 'Spanish La Liga', country: 'Spain', sport: 'Soccer' },
-        { id: '4331', name: 'German Bundesliga', country: 'Germany', sport: 'Soccer' },
-        { id: '4332', name: 'Italian Serie A', country: 'Italy', sport: 'Soccer' },
-        { id: '4334', name: 'French Ligue 1', country: 'France', sport: 'Soccer' },
-      ];
-
-      const leaguePromises = FEATURED_LEAGUES.map(l => theSportsDB.lookupLeague(l.id));
-      const fetchedLeagues = await Promise.all(leaguePromises);
-
-      const validLeagues = fetchedLeagues.filter((l): l is NonNullable<typeof l> => l !== null);
-      return validLeagues.map((league) => this.transformLeague(league));
+      return await swrGet<UnifiedLeague[]>(
+        cacheKey,
+        async () => {
+          const FEATURED_LEAGUES = [
+            { id: '4328', name: 'English Premier League', country: 'England', sport: 'Soccer' },
+            { id: '4335', name: 'Spanish La Liga', country: 'Spain', sport: 'Soccer' },
+            { id: '4331', name: 'German Bundesliga', country: 'Germany', sport: 'Soccer' },
+            { id: '4332', name: 'Italian Serie A', country: 'Italy', sport: 'Soccer' },
+            { id: '4334', name: 'French Ligue 1', country: 'France', sport: 'Soccer' },
+          ]
+          const leaguePromises = FEATURED_LEAGUES.map(l => theSportsDB.lookupLeague(l.id))
+          const fetchedLeagues = await Promise.all(leaguePromises)
+          const validLeagues = fetchedLeagues.filter((l): l is NonNullable<typeof l> => l !== null)
+          return validLeagues.map((league) => this.transformLeague(league))
+        },
+        TTL_LEAGUES,
+      )
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching leagues:", error)
       if (error instanceof RateLimitError) {

@@ -849,7 +849,7 @@ export function clearTheSportsDbCache() {
 export function getTheSportsDbCacheSnapshot() {
   const snapshot: Record<string, { expiry: number; data: unknown }> = {}
   for (const [key, value] of cache.entries()) {
-    snapshot[key] = { expiry: value.expires, data: value.data }
+    snapshot[key] = { expiry: (value as any).expires, data: (value as any).data }
   }
   return snapshot
 }
