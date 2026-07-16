@@ -104,7 +104,7 @@ export default function TeamPage({ params }: TeamPageProps) {
   const teamId = params.id
   
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 pt-24 md:pt-28 pb-8">
       <Suspense fallback={<TeamLoading />}>
         <TeamContent key={teamId} teamId={teamId} />
       </Suspense>

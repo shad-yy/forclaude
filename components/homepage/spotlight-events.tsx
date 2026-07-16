@@ -243,7 +243,7 @@ function SpotlightCard({
                 {homeBadge ? (
                   <img
                     src={homeBadge}
-                    alt={event.strHomeTeam}
+                    alt={event.strHomeTeam || ""}
                     className="w-full h-full object-contain p-1"
                     loading="lazy"
                     onError={(e) => {
@@ -287,7 +287,7 @@ function SpotlightCard({
                 {awayBadge ? (
                   <img
                     src={awayBadge}
-                    alt={event.strAwayTeam}
+                    alt={event.strAwayTeam || ""}
                     className="w-full h-full object-contain p-1"
                     loading="lazy"
                     onError={(e) => {
