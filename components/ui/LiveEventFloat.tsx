@@ -18,14 +18,8 @@ interface LiveFixture {
 }
 
 const KNOCKOUT_FIXTURES: LiveFixture[] = [
-  { name: "Canada vs Morocco", date: "2026-07-04T18:00:00+01:00", channel: "BBC One", href: "/watch/world-cup-2026" },
-  { name: "France vs Paraguay", date: "2026-07-04T22:00:00+01:00", channel: "ITV1", href: "/watch/world-cup-2026" },
-  { name: "Brazil vs Norway", date: "2026-07-05T21:00:00+01:00", channel: "ITV1", href: "/watch/world-cup-2026" },
-  { name: "Mexico vs England", date: "2026-07-06T01:00:00+01:00", channel: "BBC One", href: "/watch/world-cup-2026" },
-  { name: "Portugal vs Spain", date: "2026-07-06T20:00:00+01:00", channel: "ITV1", href: "/watch/world-cup-2026" },
-  { name: "USA vs Belgium", date: "2026-07-07T01:00:00+01:00", channel: "ITV1", href: "/watch/world-cup-2026" },
-  { name: "Argentina vs Egypt", date: "2026-07-07T17:00:00+01:00", channel: "ITV1", href: "/watch/world-cup-2026" },
-  { name: "Switzerland vs Colombia", date: "2026-07-07T21:00:00+01:00", channel: "ITV1", href: "/watch/world-cup-2026" },
+  { name: "World Cup Third-Place Play-off", date: "2026-07-18T20:00:00+01:00", channel: "BBC One / ITV1", href: "/watch/world-cup-2026" },
+  { name: "Spain vs Argentina (World Cup Final)", date: "2026-07-19T20:00:00+01:00", channel: "ITV1 & ITVX", href: "/watch/world-cup-2026" },
 ]
 
 type MatchState = "pre" | "live" | null
