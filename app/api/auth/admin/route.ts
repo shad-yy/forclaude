@@ -4,9 +4,7 @@ import { ENV } from "@/lib/config/env"
 import bcrypt from "bcryptjs"
 
 // Admin password hash - securely stored in environment
-// Default hash for password: Shad_yboyee10
-const ADMIN_PASSWORD_HASH =
-  process.env.ADMIN_PASSWORD_HASH || "$2b$12$QXBy8pCCpiPLV4rFJdV0uenwSVmgysvwXe7bFTAFwIN4MbD6UD.3K"
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 
 export async function POST(request: NextRequest) {
   try {
