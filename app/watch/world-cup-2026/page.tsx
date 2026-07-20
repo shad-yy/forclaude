@@ -4,14 +4,14 @@ import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
-  title: 'Watch FIFA World Cup 2026 Live | Stream Every Match',
-  description: 'Stream every FIFA World Cup 2026 match live in 4K. No blackouts. Works on Firestick, Smart TV, Android and iPhone. Free 24-hour trial.',
+  title: 'FIFA World Cup 2026 — Spain Won | Watch Premier League 2026-27 Live',
+  description: 'The 2026 FIFA World Cup is over. Spain beat Argentina 4-1 in the final on 19 July 2026. The Premier League 2026-27 season starts 21 August. Watch every match live from £12/month.',
   alternates: {
     canonical: `${ENV.BASE_URL}/watch/world-cup-2026`,
   },
   openGraph: {
-    title: 'Watch FIFA World Cup 2026 Live in 4K',
-    description: 'Every match. Every goal. No blackouts. Free trial.',
+    title: 'World Cup 2026 — Spain Are Champions | Watch Premier League Next',
+    description: 'Spain beat Argentina 4-1 in the World Cup 2026 final. The Premier League 2026-27 season starts 21 August. Get ready.',
     images: ['/og-default.png'],
   },
 }
@@ -22,34 +22,34 @@ const faqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'How can I watch the World Cup 2026 live?',
+      name: 'Who won the World Cup 2026?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Smart Live TV gives you access to every FIFA World Cup 2026 match live in 4K. Works on Firestick, Smart TV, Android, and iPhone. Start your free 24-hour trial at no cost.',
+        text: 'Spain won the 2026 FIFA World Cup, defeating Argentina 4-1 in the final on 19 July 2026 at MetLife Stadium in New Jersey, USA.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Which channels are showing the World Cup 2026 in the UK?',
+      name: 'Where was the World Cup 2026 final?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'In the UK, the World Cup 2026 is shown on ITV and BBC. Smart Live TV includes both channels plus international coverage from beIN Sports, Fox Sports, and more.',
+        text: 'The FIFA World Cup 2026 final was held at MetLife Stadium in East Rutherford, New Jersey, USA on 19 July 2026.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Can I watch the World Cup 2026 from abroad?',
+      name: 'When does the Premier League 2026-27 season start?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Smart Live TV works worldwide with no regional restrictions or VPN required. Stream every World Cup match from anywhere in the world.',
+        text: 'The 2026-27 Premier League season starts on Friday 21 August 2026, with Arsenal hosting Coventry City at 20:00 BST. All 380 matches are available on Smart Live TV.',
       },
     },
     {
       '@type': 'Question',
-      name: 'Is there a free trial to watch the World Cup?',
+      name: 'How can I watch the Premier League 2026-27 live?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. Smart Live TV offers a free 24-hour trial with full access to all channels. No credit card required. Perfect for watching a World Cup match before deciding.',
+        text: 'Smart Live TV gives you access to every Premier League 2026-27 match live in 4K — Sky Sports, TNT Sports and international feeds all included. Start from £12/month with a free 24-hour trial.',
       },
     },
   ],
@@ -61,21 +61,29 @@ const eventSchema = {
   name: 'FIFA World Cup 2026',
   startDate: '2026-06-11',
   endDate: '2026-07-19',
+  eventStatus: 'https://schema.org/EventScheduled',
   location: {
     '@type': 'Place',
     name: 'USA, Canada, Mexico',
   },
-  description: 'The 23rd FIFA World Cup, hosted across the United States, Canada, and Mexico.',
+  description: 'The 23rd FIFA World Cup. Spain beat Argentina 4-1 in the final on 19 July 2026.',
   url: `${ENV.BASE_URL}/watch/world-cup-2026`,
+  winner: {
+    '@type': 'SportsTeam',
+    name: 'Spain',
+  },
 }
 
-export default function WorldCup2026Page() {
-  const groups = [
-    'Group A', 'Group B', 'Group C', 'Group D',
-    'Group E', 'Group F', 'Group G', 'Group H',
-    'Group I', 'Group J', 'Group K', 'Group L',
-  ]
+const openingFixtures = [
+  { date: 'Fri 21 Aug', time: '20:00', home: 'Arsenal', away: 'Coventry City' },
+  { date: 'Sat 22 Aug', time: '12:30', home: 'Hull City', away: 'Manchester United' },
+  { date: 'Sat 22 Aug', time: '12:30', home: 'Everton', away: 'Crystal Palace' },
+  { date: 'Sat 22 Aug', time: '17:30', home: 'Brentford', away: 'Tottenham Hotspur' },
+  { date: 'Sun 23 Aug', time: '16:30', home: 'Newcastle United', away: 'Liverpool' },
+  { date: 'Mon 24 Aug', time: '20:00', home: 'Fulham', away: 'Chelsea' },
+]
 
+export default function WorldCup2026Page() {
   const faqs = faqSchema.mainEntity.map((item: any) => ({
     question: item.name,
     answer: item.acceptedAnswer.text,
@@ -86,66 +94,130 @@ export default function WorldCup2026Page() {
       <SchemaMarkup schema={faqSchema} />
       <SchemaMarkup schema={eventSchema} />
 
-      {/* HERO */}
+      {/* TOURNAMENT OVER BANNER */}
       <section className="pt-28 md:pt-36 pb-16 text-center px-4 border-b border-[#c8a951]/30"
         style={{
-          background: 'linear-gradient(135deg, #0a2a00 0%, #0a0a0f 60%)',
+          background: 'linear-gradient(135deg, #1a0a2a 0%, #0a0a0f 60%)',
         }}
       >
         <div className="max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-4 py-2 rounded-full text-xs font-bold text-red-400 mb-6">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping inline-block" />
-            LIVE NOW — World Cup 2026 Underway
+          <div className="inline-flex items-center gap-2 bg-[#c8a951]/10 border border-[#c8a951]/40 px-4 py-2 rounded-full text-xs font-bold text-[#c8a951] mb-6">
+            <span className="w-2 h-2 rounded-full bg-[#c8a951] inline-block" />
+            TOURNAMENT COMPLETE — 19 July 2026
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6">
-            Watch FIFA World Cup 2026<br />
-            <span className="text-[#00e676]">Live — Every Single Match</span>
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4">
+            Spain Win the{' '}
+            <span className="text-[#00e676]">World Cup 2026</span>
           </h1>
+          <p className="text-2xl font-bold text-white mb-3">
+            Spain 4 – 1 Argentina
+          </p>
+          <p className="text-gray-400 mb-4">
+            Final — MetLife Stadium, New Jersey — 19 July 2026
+          </p>
           <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-10">
-            The 2026 World Cup is happening right now across the USA, 
-            Canada and Mexico. 48 teams. Every match. Stream it all 
-            in 4K with no blackouts, from any device, anywhere in the world.
+            The 2026 FIFA World Cup is over. Spain are world champions for the fifth time.
+            The next major tournament is the Premier League 2026-27, which begins on 21 August 2026.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/buy"
+            <Link href="/watch/premier-league"
               className="bg-[#00e676] text-black font-extrabold px-10 py-4 rounded-xl text-lg hover:bg-[#00ff87] transition-all shadow-[0_0_30px_rgba(0,230,118,0.3)]">
-              Stream World Cup Live →
+              Watch Premier League 2026-27 Live →
             </Link>
-            <Link href="/pricing"
-              className="border border-[#2a2a3a] hover:border-[#00e676] text-white font-bold px-10 py-4 rounded-xl text-lg">
-              View Pricing Plans
+            <Link href="/free-trial"
+              className="border border-[#2a2a3a] hover:border-[#00e676] text-white font-bold px-10 py-4 rounded-xl text-lg transition-colors">
+              Start Free Trial
             </Link>
-          </div>
-          <div className="flex gap-6 justify-center mt-8 flex-wrap text-sm text-gray-400">
-            <span>✓ No VPN needed</span>
-            <span>✓ Works anywhere worldwide</span>
-            <span>✓ 4K quality</span>
-            <span>✓ No card for trial</span>
           </div>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-20 space-y-20">
 
-        {/* WHERE TO WATCH */}
+        {/* PREMIER LEAGUE NEXT */}
+        <section>
+          <div className="bg-[#12121a] border border-[#00e676]/20 rounded-2xl p-6 md:p-10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+              <div>
+                <div className="text-[#00e676] text-sm font-bold mb-2 uppercase tracking-wider">What is Next</div>
+                <h2 className="text-3xl font-bold text-white">
+                  Premier League 2026-27
+                </h2>
+                <p className="text-gray-400 mt-2">Season starts Friday 21 August 2026</p>
+              </div>
+              <Link href="/watch/premier-league"
+                className="shrink-0 bg-[#00e676] text-black font-extrabold px-8 py-3 rounded-xl hover:bg-[#00ff87] transition-all text-center">
+                See Full Guide →
+              </Link>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#2a2a3a]">
+                    <th className="text-left py-3 pr-6 text-gray-400 font-semibold">Date</th>
+                    <th className="text-left py-3 pr-6 text-gray-400 font-semibold">KO</th>
+                    <th className="text-left py-3 pr-6 text-gray-400 font-semibold">Match</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {openingFixtures.map((f, i) => (
+                    <tr key={i} className="border-b border-[#2a2a3a]/50 hover:bg-[#1a1a2a] transition-colors">
+                      <td className="py-3 pr-6 text-gray-300 whitespace-nowrap">{f.date}</td>
+                      <td className="py-3 pr-6 text-[#00e676] font-bold whitespace-nowrap">{f.time}</td>
+                      <td className="py-3 text-white font-medium">{f.home} vs {f.away}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-gray-500 text-xs mt-4">All times BST. Fixtures subject to broadcast selection changes.</p>
+          </div>
+        </section>
+
+        {/* WORLD CUP FINAL RECAP */}
         <section>
           <h2 className="text-3xl font-bold text-white mb-8">
-            Where to Watch World Cup 2026 in the UK
+            World Cup 2026 Final Result
+          </h2>
+          <div className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl p-8">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 text-center mb-8">
+              <div>
+                <div className="text-5xl font-extrabold text-white mb-2">Spain</div>
+                <div className="text-gray-400 text-sm">World Champions</div>
+              </div>
+              <div className="text-center">
+                <div className="text-6xl font-extrabold text-[#00e676]">4 – 1</div>
+                <div className="text-gray-500 text-sm mt-2">Final Score</div>
+                <div className="text-gray-500 text-xs mt-1">19 July 2026</div>
+              </div>
+              <div>
+                <div className="text-5xl font-extrabold text-white mb-2">Argentina</div>
+                <div className="text-gray-400 text-sm">Runners-up</div>
+              </div>
+            </div>
+            <p className="text-gray-400 text-center max-w-2xl mx-auto">
+              Spain claimed their fifth World Cup title at MetLife Stadium in New Jersey.
+              The 2026 tournament was the largest in history with 48 nations and 104 matches
+              played across the United States, Canada, and Mexico.
+            </p>
+          </div>
+        </section>
+
+        {/* WHERE TO WATCH PREMIER LEAGUE */}
+        <section className="border-t border-[#2a2a3a] pt-20">
+          <h2 className="text-3xl font-bold text-white mb-8">
+            Where to Watch the Premier League 2026-27 in the UK
           </h2>
           <div className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl p-6 md:p-8">
             <p className="text-gray-300 leading-relaxed mb-6">
-              In the UK, the FIFA World Cup 2026 is broadcast on 
-              <strong className="text-white"> ITV</strong> and 
-              <strong className="text-white"> BBC One</strong> 
-              for free-to-air matches. However, not all matches 
-              are available on free TV — some are shown exclusively 
-              on subscription channels. Smart Live TV includes 
-              every broadcast channel showing the World Cup, 
-              including ITV, BBC, beIN Sports, and international 
-              feeds so you never miss a match.
+              The 2026-27 Premier League is broadcast across{' '}
+              <strong className="text-white">Sky Sports</strong> and{' '}
+              <strong className="text-white">TNT Sports</strong> in the UK, with some matches on Amazon Prime Video.
+              Smart Live TV includes all broadcast channels — Sky Sports Main Event, Sky Sports Premier League,
+              TNT Sports 1 and international feeds — so you never miss a fixture.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {['ITV HD', 'BBC One HD', 'beIN Sports 1', 'Fox Sports (US Feed)'].map(ch => (
+              {['Sky Sports PL', 'TNT Sports 1', 'Sky Sports ME', 'Amazon Prime'].map(ch => (
                 <div key={ch} className="bg-[#0a0a0f] border border-[#2a2a3a] rounded-xl p-4 text-center">
                   <div className="text-[#00e676] font-bold text-sm">
                     {ch}
@@ -156,34 +228,6 @@ export default function WorldCup2026Page() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* HOW TO WATCH FROM ANYWHERE */}
-        <section className="border-t border-[#2a2a3a] pt-20">
-          <h2 className="text-3xl font-bold text-white mb-8">
-            How to Watch World Cup 2026 from Anywhere Worldwide
-          </h2>
-          <p className="text-gray-400 mb-8 max-w-3xl">
-            Smart Live TV works in every country with no VPN required. 
-            Whether you're in the UK, Europe, the Middle East, or anywhere 
-            else — simply install the app on your device and all 
-            World Cup matches are available in full HD and 4K.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { n: 1, t: 'Start Free Trial', d: 'Claim your 24-hour trial via WhatsApp. No card needed.' },
-              { n: 2, t: 'Install in 5 Minutes', d: 'We send you a setup guide for your specific device instantly.' },
-              { n: 3, t: 'Watch Every Match', d: 'Full World Cup access in 4K. No blackouts. No restrictions.' },
-            ].map(s => (
-              <div key={s.n} className="bg-[#12121a] border border-[#2a2a3a] rounded-2xl p-6">
-                <div className="w-10 h-10 rounded-full bg-[#00e676] text-black font-extrabold flex items-center justify-center mb-4">
-                  {s.n}
-                </div>
-                <h3 className="font-bold text-white mb-2">{s.t}</h3>
-                <p className="text-gray-400 text-sm">{s.d}</p>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -207,16 +251,26 @@ export default function WorldCup2026Page() {
         {/* BOTTOM CTA */}
         <section className="border-t border-[#00e676]/20 pt-20 text-center">
           <h2 className="text-4xl font-extrabold text-white mb-4">
-            Don't Miss Another World Cup Match
+            Get Ready for the Premier League
           </h2>
-          <p className="text-gray-400 mb-10 text-lg">
-            Free 24-hour trial. No credit card. Works anywhere in the world.
+          <p className="text-gray-400 mb-4 text-lg">
+            Season starts 21 August 2026. Every match. Sky Sports, TNT Sports, and more.
           </p>
-          <Link href="/free-trial"
-            className="inline-flex items-center bg-[#00e676] text-black font-extrabold px-12 py-5 rounded-xl text-xl hover:bg-[#00ff87] transition-all shadow-[0_0_40px_rgba(0,230,118,0.25)]">
-            Start Free Trial →
-          </Link>
+          <p className="text-gray-500 mb-10">
+            Free 24-hour trial. No credit card. Cancel any time.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/free-trial"
+              className="inline-flex items-center bg-[#00e676] text-black font-extrabold px-12 py-5 rounded-xl text-xl hover:bg-[#00ff87] transition-all shadow-[0_0_40px_rgba(0,230,118,0.25)]">
+              Start Free Trial →
+            </Link>
+            <Link href="/pricing"
+              className="border border-[#2a2a3a] hover:border-[#00e676] text-white font-bold px-10 py-4 rounded-xl text-lg transition-colors">
+              View Plans from £12/month
+            </Link>
+          </div>
         </section>
+
       </div>
     </div>
   )

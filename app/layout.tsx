@@ -32,14 +32,14 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Smart Live TV — UK IPTV for live sports, Netflix, Sky Sports & 230,000+ channels. Free 24-hour trial from £12/month.",
+    "Watch 230,000+ channels including Sky Sports, TNT Sports, Netflix & Disney+ from just £12/month. Replaces your full TV package. Free 24-hour trial — no card needed.",
   openGraph: {
     type: "website",
     locale: "en_GB",
     siteName: "SmartLiveTV",
     title: "Smart Live TV — Official UK IPTV Site",
     description:
-      "Smart Live TV — UK IPTV replacing Netflix, Sky Sports & Disney+ from £12/month. Free 24-hour trial.",
+      "230,000+ channels — Sky Sports, TNT Sports, Netflix, Disney+ and more — from £12/month. Free 24-hour trial. No card needed.",
     images: [
       {
         url: "/og-default.png",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@smartlivetv',
     title: 'Smart Live TV — Official UK IPTV | Free 24h Trial from £12/mo',
-    description: 'Smart Live TV UK IPTV — Netflix, Sky Sports & Disney+ replaced from £12/month. Free 24-hour trial.',
+    description: 'Watch Sky Sports, TNT Sports, Netflix & Disney+ from £12/month. Replaces £97/month Sky + Netflix bundle. Free 24h trial — no card needed.',
     images: ['/og-default.png'],
   },
   alternates: {
