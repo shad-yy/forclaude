@@ -7,7 +7,7 @@ This file maintains the active development context, records completed tasks, and
 ## 1. Active Context
 
 *   **Current Objective**: Verify codebase for security vulnerabilities, environment variable leaks, and confirm files safe to push to GitHub.
-*   **Status**: Security audit completed; hardcoded RapidAPI MMA fallback keys successfully removed from codebase. Safe git-push criteria defined.
+*   **Status**: Security audit completed; hardcoded RapidAPI MMA fallback keys and hardcoded admin credential backdoors removed. Safe git-push criteria defined.
 
 ---
 
@@ -68,6 +68,11 @@ Here is the repository of issues encountered, including root causes and their pe
 *   **Symptoms**: live RapidAPI credentials (`e0d3bf230a...`) were hardcoded in code files as fallback strings, posing a security leak risk.
 *   **Root Cause**: Fallback values were left in code to run the MMA integration locally without configuring environment files.
 *   **Permanent Fix**: Removed hardcoded strings in `lib/api/mma-rapidapi.ts` and `lib/config/env.ts` and defaulted them to `""`, relying entirely on environment variables.
+
+### ⚠️ Bug 6: Hardcoded Admin Password Backdoor
+*   **Symptoms**: Next.js admin session routes contained a hardcoded admin password hash and plaintext comment (`Shad_yboyee10`) as a fallback option.
+*   **Root Cause**: Credentials were coded directly in `app/api/auth/admin/route.ts` to allow easy login on development environments without setting Upstash or environment flags.
+*   **Permanent Fix**: Removed the fallback hash and comment entirely, forcing the route to authenticate exclusively against `process.env.ADMIN_PASSWORD_HASH` and return `500` if not set.
 
 ---
 
