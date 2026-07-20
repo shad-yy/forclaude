@@ -5,12 +5,13 @@
   "scripts": {
     "generate-posts": "node scripts/generate-posts.js",
     "dev": "npm run generate-posts && node -r ./polyfill-self.cjs node_modules/next/dist/bin/next dev",
-    "build": "npm run generate-posts && node --max-old-space-size=8192 -r ./polyfill-self.cjs node_modules/next/dist/bin/next build",
+    "build": "npm run generate-posts && node --max-old-space-size=8192 -r ./polyfill-self.cjs node_modules/next/dist/bin/next build && node scripts/ping-indexnow.js",
     "start": "node -r ./polyfill-self.cjs node_modules/next/dist/bin/next start",
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "playwright:test": "playwright test"
+    "playwright:test": "playwright test",
+    "memory": "node scripts/check-memory.mjs"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "^2.0.2",

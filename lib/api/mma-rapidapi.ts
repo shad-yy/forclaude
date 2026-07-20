@@ -1,8 +1,7 @@
 import { cacheGet, cacheSet } from '@/lib/cache/redis'
 
 const MMA_BASE = 'https://mmaapi.p.rapidapi.com'
-const MMA_KEY = process.env.RAPIDAPI_MMA_KEY || 
-  'e0d3bf230amsha7e9bcaa7a18fe2p1fb71cjsn8076650ec333'
+const MMA_KEY = process.env.RAPIDAPI_MMA_KEY || ''
 
 const MMA_HEADERS = {
   'x-rapidapi-host': 'mmaapi.p.rapidapi.com',

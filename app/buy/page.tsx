@@ -21,8 +21,86 @@ const plans = [
 ]
 
 export default function BuyPage() {
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    '@id': `${ENV.BASE_URL}/buy#product`,
+    name: 'Smart Live TV IPTV Subscription',
+    description: 'Get instant access to 230,000+ live TV channels including Netflix, Disney+, Amazon Prime, Sky Sports, TNT Sports, and more. 4K streaming quality, setup in 5 minutes.',
+    sku: 'SLTV-IPTV-SUB-BUY',
+    brand: {
+      '@type': 'Brand',
+      name: 'Smart Live TV',
+    },
+    image: `${ENV.BASE_URL}/og-default.png`,
+    url: `${ENV.BASE_URL}/buy`,
+    offers: [
+      {
+        '@type': 'Offer',
+        '@id': `${ENV.BASE_URL}/buy#offer-1month`,
+        name: 'Basic 1 Month Subscription',
+        price: '12.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        url: `${ENV.BASE_URL}/buy`,
+        validFrom: '2026-01-01',
+        priceValidUntil: '2026-12-31',
+        seller: {
+          '@type': 'Organization',
+          '@id': `${ENV.BASE_URL}/#organization`,
+        },
+      },
+      {
+        '@type': 'Offer',
+        '@id': `${ENV.BASE_URL}/buy#offer-3month`,
+        name: 'Popular 3 Month Subscription',
+        price: '24.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        url: `${ENV.BASE_URL}/buy`,
+        validFrom: '2026-01-01',
+        priceValidUntil: '2026-12-31',
+        seller: {
+          '@type': 'Organization',
+          '@id': `${ENV.BASE_URL}/#organization`,
+        },
+      },
+      {
+        '@type': 'Offer',
+        '@id': `${ENV.BASE_URL}/buy#offer-6month`,
+        name: 'Standard 6 Month Subscription',
+        price: '36.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        url: `${ENV.BASE_URL}/buy`,
+        validFrom: '2026-01-01',
+        priceValidUntil: '2026-12-31',
+        seller: {
+          '@type': 'Organization',
+          '@id': `${ENV.BASE_URL}/#organization`,
+        },
+      },
+      {
+        '@type': 'Offer',
+        '@id': `${ENV.BASE_URL}/buy#offer-12month`,
+        name: 'Premium 12 Month Subscription',
+        price: '54.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        url: `${ENV.BASE_URL}/buy`,
+        validFrom: '2026-01-01',
+        priceValidUntil: '2026-12-31',
+        seller: {
+          '@type': 'Organization',
+          '@id': `${ENV.BASE_URL}/#organization`,
+        },
+      },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-100">
+      <SchemaMarkup schema={productSchema} />
       <div className="max-w-2xl mx-auto px-4 pt-28 md:pt-36 pb-20">
 
         {/* Trust banner */}

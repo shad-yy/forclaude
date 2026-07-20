@@ -39,8 +39,7 @@ export const ENV = {
     return resolveSiteUrl()
   },
   get RAPIDAPI_MMA_KEY() {
-    return process.env.RAPIDAPI_MMA_KEY ||
-      'e0d3bf230amsha7e9bcaa7a18fe2p1fb71cjsn8076650ec333'
+    return process.env.RAPIDAPI_MMA_KEY || ""
   },
   get FOOTBALL_DATA_KEY() {
     return process.env.FOOTBALL_DATA_API_KEY || ''

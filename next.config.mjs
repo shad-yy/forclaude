@@ -201,8 +201,10 @@ const nextConfig = {
 
       config.externals = [...baseExternals, 'cheerio', 'undici']
     }
-    
-    // No hashFunction override needed — use webpack default
+
+    // Override hashFunction to prevent WasmHash crash in Node 22
+    config.output = config.output || {}
+    config.output.hashFunction = 'xxhash64'
 
     return config
   },

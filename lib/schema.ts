@@ -68,8 +68,10 @@ export function generateOrganizationSchema() {
         url: baseUrl,
         logo: `${baseUrl}/icon.png`,
         sameAs: [
+            "https://www.trustpilot.com/review/smartlivetv.co.uk",
             "https://twitter.com/SmartLiveTV",
             "https://facebook.com/SmartLiveTV",
+            "https://www.instagram.com/smartlivetv",
         ],
     }
 }

@@ -77,6 +77,10 @@ export default function HomePage() {
     ],
     sameAs: [
       'https://smartlivetv.co.uk',
+      'https://www.trustpilot.com/review/smartlivetv.co.uk',
+      'https://twitter.com/SmartLiveTV',
+      'https://facebook.com/SmartLiveTV',
+      'https://www.instagram.com/smartlivetv',
     ],
     offers: {
       '@type': 'AggregateOffer',

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description:
     'Stream every UEFA Europa League match in 4K. Watch from anywhere with a free 24-hour trial.',
   robots: {
-    index: false,
+    index: true,
     follow: true,
   },
   alternates: {
@@ -122,20 +122,32 @@ export default async function EuropaLeaguePage() {
 
   const faqs = [
     {
-      question: 'Where can I watch Europa League live?',
+      question: 'How to watch Europa League live in the UK?',
       answer:
-        'Smart Live TV carries all Europa League matches live in 4K, including qualifying rounds and the final.',
+        'In the UK, TNT Sports holds the exclusive rights to broadcast the UEFA Europa League (including the League Phase and Knockout matches). discovery+ is the official streaming platform for TNT Sports. Alternatively, you can use Smart Live TV to stream every single match live in 4K UHD from £12/month.',
     },
     {
-      question: 'Is Europa League on free TV in the UK?',
+      question: 'Where to watch Europa League live stream?',
       answer:
-        'Some Europa League matches may air on free TV, but the vast majority are on paid networks. Smart Live TV covers every match with no blackouts.',
+        'You can stream the UEFA Europa League live on discovery+ with a Premium subscription, or on Smart Live TV, which provides full coverage of all fixtures on any device (Firestick, Smart TV, Android, iOS) without regional blackouts.',
     },
     {
-      question: 'How to watch Europa League abroad?',
-      answer: "Smart Live TV lets you stream from anywhere. Get a free 24-hour trial and watch tonight's match in 4K without needing a VPN.",
+      question: 'How to stream the Europa Cup live stream from abroad?',
+      answer:
+        'If you are traveling outside the UK, discovery+ and TNT Sports are geo-blocked. You can stream the Europa Cup/Europa League live from anywhere worldwide using Smart Live TV, with zero VPN requirements and instant setup.',
+    },
+    {
+      question: 'Which TV channel is the Europa League on in the UK?',
+      answer:
+        'The Europa League is primarily broadcast on TNT Sports channels (TNT Sports 1, 2, 3, etc.) on Sky, Virgin Media, and EE TV. With Smart Live TV, you get all these channels plus international feeds in a single interface from £12/month.',
+    },
+    {
+      question: 'Is there a free trial to watch the Europa League?',
+      answer:
+        'Yes! Smart Live TV offers a 24-hour free trial which lets you watch tonight\'s Europa League matches completely free in 4K. No credit card or contract is required—simply request activation via WhatsApp.',
     },
   ]
+
 
   const faqSchema = generateFAQSchema(faqs)
   const breadcrumbSchema = {
@@ -206,10 +218,49 @@ export default async function EuropaLeaguePage() {
           <FadeIn direction="up">
             <section className="mb-12 p-6 border-l-4 border-[#f97316] bg-[#12121a] rounded-r-2xl">
               <h2 className="text-xl font-bold text-white mb-3">Direct Answer: How to Watch UEFA Europa League Live</h2>
-              <p className="text-gray-300 leading-relaxed text-sm md:text-base">
-                You can watch every UEFA Europa League match live in the UK on <strong>TNT Sports</strong> and discovery+. However, for full 4K UHD streaming without blackouts, multiple language options, or the ability to stream from abroad without a VPN, use <strong><Link href="/pricing" className="text-orange-400 hover:underline">Smart Live TV</Link></strong> from <strong>£12/month</strong> with a 24-hour free trial.
+              <p className="text-gray-300 leading-relaxed text-sm md:text-base mb-6">
+                To watch the <strong>UEFA Europa League live</strong>, you can stream all 189 matches in the UK on <strong>TNT Sports</strong> and discovery+. For a more cost-effective alternative to view every Europa League match live stream in 4K without regional blackouts or a VPN, use <strong><Link href="/pricing" className="text-orange-400 hover:underline">Smart Live TV</Link></strong> from <strong>£12/month</strong> with a 24-hour free trial.
               </p>
-              <div className="mt-4 flex flex-wrap gap-3">
+
+              <h3 className="text-lg font-bold text-white mb-4">Europa League TV Coverage & Cost Comparison</h3>
+              <div className="overflow-x-auto rounded-xl border border-gray-800 bg-gray-950/40 mb-6">
+                <table className="w-full text-xs md:text-sm text-left">
+                  <thead>
+                    <tr className="border-b border-gray-800 bg-gray-900/60 text-gray-400">
+                      <th className="p-3 font-semibold">Service</th>
+                      <th className="p-3 font-semibold">Live Coverage</th>
+                      <th className="p-3 font-semibold">Monthly Cost</th>
+                      <th className="p-3 font-semibold">UHD 4K</th>
+                      <th className="p-3 font-semibold">Contract</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800/40">
+                    <tr>
+                      <td className="p-3 font-bold text-white">discovery+ Premium</td>
+                      <td className="p-3 text-gray-300">All 189 matches</td>
+                      <td className="p-3 text-gray-300">£30.99/mo</td>
+                      <td className="p-3 text-gray-300">Selected (Ultimate only)</td>
+                      <td className="p-3 text-gray-300">None (Rolling)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-bold text-white">Sky Sports + TNT Add-on</td>
+                      <td className="p-3 text-gray-300">All 189 matches</td>
+                      <td className="p-3 text-gray-300">£43 + £30.99 = £73.99/mo</td>
+                      <td className="p-3 text-[#f97316]">Extra £6-£10/mo</td>
+                      <td className="p-3 text-gray-300">18 Months</td>
+                    </tr>
+                    <tr className="bg-orange-500/5">
+                      <td className="p-3 font-bold text-orange-400">Smart Live TV (IPTV)</td>
+                      <td className="p-3 text-orange-300 font-semibold">All 189 matches + Abroad</td>
+                      <td className="p-3 text-orange-300 font-bold">From £4.50 to £12/mo</td>
+                      <td className="p-3 text-orange-300 font-semibold">Yes (Included free)</td>
+                      <td className="p-3 text-orange-300 font-semibold">None (Cancel anytime)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
                 <Link href="/pricing" className="px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-xs font-bold text-black transition-colors">
                   Claim Free 24H Trial
                 </Link>
