@@ -36,6 +36,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/contact`, priority: 0.5, changeFrequency: 'monthly', lastModified: now },
     { url: `${baseUrl}/privacy`, priority: 0.3, changeFrequency: 'yearly', lastModified: now },
     { url: `${baseUrl}/terms`, priority: 0.3, changeFrequency: 'yearly', lastModified: now },
+    { url: `${baseUrl}/llms.txt`, priority: 0.5, changeFrequency: 'daily' as const, lastModified: now },
+    { url: `${baseUrl}/llms-full.txt`, priority: 0.5, changeFrequency: 'daily' as const, lastModified: now },
     ...BLOG_POSTS.map((post) => ({
       url: `${baseUrl}/blog/${post.slug}`,
       lastModified: new Date(post.publishedAt).toISOString(),

@@ -91,6 +91,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
         <link rel="apple-touch-icon" href="/icon.svg" />
+        <link rel="alternate" type="text/plain" href="https://smartlivetv.co.uk/llms.txt" title="LLM Site Map" />
         <link rel="preconnect" href="https://www.thesportsdb.com" />
         <link rel="dns-prefetch" href="https://www.thesportsdb.com" />
         <link rel="preconnect" href="https://r2.thesportsdb.com" />

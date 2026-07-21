@@ -178,6 +178,7 @@ export const Footer = memo(function Footer() {
             <Link href="/privacy" className="hover:text-text-primary transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-text-primary transition-colors">Terms</Link>
             <Link href="/sitemap.xml" className="hover:text-text-primary transition-colors">Sitemap</Link>
+            <Link href="/llms.txt" className="hover:text-text-primary transition-colors">LLM Map</Link>
           </div>
         </div>
       </div>

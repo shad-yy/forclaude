@@ -93,18 +93,52 @@ export default async function MatchPage(
   }
   const watchHref = leagueWatchMap[league] || '/pricing'
 
+  const startIso = match.dateEvent ? (match.dateEvent.includes('T') ? match.dateEvent : `${match.dateEvent}T20:00:00+00:00`) : new Date().toISOString()
+  const endDateObj = new Date(startIso)
+  endDateObj.setHours(endDateObj.getHours() + 2)
+  const endIso = endDateObj.toISOString()
+
   const eventSchema = {
     '@context': 'https://schema.org',
     '@type': 'SportsEvent',
     name: `${homeTeam} vs ${awayTeam}`,
-    startDate: match.dateEvent,
-    location: venue ? {
+    description: `Watch ${homeTeam} vs ${awayTeam} live in 4K UHD. ${league} fixture.`,
+    startDate: startIso,
+    endDate: endIso,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: {
       '@type': 'Place',
-      name: venue,
-    } : undefined,
+      name: venue || `${homeTeam} Stadium`,
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: 'GB',
+      },
+    },
     homeTeam: { '@type': 'SportsTeam', name: homeTeam },
     awayTeam: { '@type': 'SportsTeam', name: awayTeam },
-    superEvent: { '@type': 'SportsEvent', name: league },
+    performer: [
+      { '@type': 'SportsTeam', name: homeTeam },
+      { '@type': 'SportsTeam', name: awayTeam },
+    ],
+    organizer: {
+      '@type': 'Organization',
+      name: league,
+      url: `${ENV.BASE_URL}${watchHref}`,
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `${ENV.BASE_URL}/pricing`,
+      price: '12.00',
+      priceCurrency: 'GBP',
+      availability: 'https://schema.org/InStock',
+      validFrom: '2026-01-01',
+    },
+    superEvent: {
+      '@type': 'EventSeries',
+      name: league,
+      url: `${ENV.BASE_URL}${watchHref}`,
+    },
     url: `${ENV.BASE_URL}/match/${params.id}`,
   }
 

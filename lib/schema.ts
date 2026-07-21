@@ -12,11 +12,29 @@ interface FAQParams {
 }
 
 export function generateSportsEventSchema({ name, homeTeam, awayTeam, date, league }: SportsEventParams) {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://smartlivetv.co.uk"
+    const startIso = date ? (date.includes('T') ? date : `${date}T20:00:00+00:00`) : new Date().toISOString()
+    const endDateObj = new Date(startIso)
+    endDateObj.setHours(endDateObj.getHours() + 2)
+    const endIso = endDateObj.toISOString()
+
     return {
         "@context": "https://schema.org",
         "@type": "SportsEvent",
         name: name,
-        startDate: date,
+        description: `Watch ${name} live stream in HD and 4K UHD. ${league} fixture.`,
+        startDate: startIso,
+        endDate: endIso,
+        eventStatus: "https://schema.org/EventScheduled",
+        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+        location: {
+            "@type": "Place",
+            name: `${homeTeam} Stadium`,
+            address: {
+                "@type": "PostalAddress",
+                addressCountry: "GB",
+            },
+        },
         homeTeam: {
             "@type": "SportsTeam",
             name: homeTeam,
@@ -25,21 +43,28 @@ export function generateSportsEventSchema({ name, homeTeam, awayTeam, date, leag
             "@type": "SportsTeam",
             name: awayTeam,
         },
-        sport: "Soccer",
-        competitor: [
-            {
-                "@type": "SportsTeam",
-                name: homeTeam,
-            },
-            {
-                "@type": "SportsTeam",
-                name: awayTeam,
-            },
+        performer: [
+            { "@type": "SportsTeam", name: homeTeam },
+            { "@type": "SportsTeam", name: awayTeam },
         ],
-        // The event is part of a larger league/tournament
-        superEvent: {
-            "@type": "SportsEvent",
+        sport: "Soccer",
+        organizer: {
+            "@type": "Organization",
             name: league,
+            url: baseUrl,
+        },
+        offers: {
+            "@type": "Offer",
+            url: `${baseUrl}/pricing`,
+            price: "12.00",
+            priceCurrency: "GBP",
+            availability: "https://schema.org/InStock",
+            validFrom: "2026-01-01",
+        },
+        superEvent: {
+            "@type": "EventSeries",
+            name: league,
+            url: `${baseUrl}/watch/premier-league`,
         },
     }
 }

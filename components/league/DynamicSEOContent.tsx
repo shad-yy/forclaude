@@ -47,23 +47,56 @@ export function DynamicSEOContent({
   })
 
   // Generate SportsEvent schemas for next 3 fixtures
-  const eventSchemas = fixtures.slice(0, 3).map(match => ({
-    '@context': 'https://schema.org',
-    '@type': 'SportsEvent',
-    name: `${match.homeTeam} vs ${match.awayTeam}`,
-    startDate: match.date,
-    location: match.venue ? {
-      '@type': 'Place',
-      name: match.venue,
-    } : undefined,
-    homeTeam: { '@type': 'SportsTeam', name: match.homeTeam },
-    awayTeam: { '@type': 'SportsTeam', name: match.awayTeam },
-    superEvent: {
+  const eventSchemas = fixtures.slice(0, 3).map(match => {
+    const startIso = match.date ? (match.date.includes('T') ? match.date : `${match.date}T20:00:00+00:00`) : new Date().toISOString()
+    const endDateObj = new Date(startIso)
+    endDateObj.setHours(endDateObj.getHours() + 2)
+    const endIso = endDateObj.toISOString()
+
+    return {
+      '@context': 'https://schema.org',
       '@type': 'SportsEvent',
-      name: leagueName,
-    },
-    url: `${baseUrl}/match/${match.id}`,
-  }))
+      name: `${match.homeTeam} vs ${match.awayTeam}`,
+      description: `Watch ${match.homeTeam} vs ${match.awayTeam} live in HD and 4K UHD. ${leagueName} fixture.`,
+      startDate: startIso,
+      endDate: endIso,
+      eventStatus: 'https://schema.org/EventScheduled',
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      location: {
+        '@type': 'Place',
+        name: match.venue || `${match.homeTeam} Stadium`,
+        address: {
+          '@type': 'PostalAddress',
+          addressCountry: 'GB',
+        },
+      },
+      homeTeam: { '@type': 'SportsTeam', name: match.homeTeam },
+      awayTeam: { '@type': 'SportsTeam', name: match.awayTeam },
+      performer: [
+        { '@type': 'SportsTeam', name: match.homeTeam },
+        { '@type': 'SportsTeam', name: match.awayTeam },
+      ],
+      organizer: {
+        '@type': 'Organization',
+        name: leagueName,
+        url: `${baseUrl}/watch/${leagueSlug}`,
+      },
+      offers: {
+        '@type': 'Offer',
+        url: `${baseUrl}/pricing`,
+        price: '12.00',
+        priceCurrency: 'GBP',
+        availability: 'https://schema.org/InStock',
+        validFrom: '2026-01-01',
+      },
+      superEvent: {
+        '@type': 'EventSeries',
+        name: leagueName,
+        url: `${baseUrl}/watch/${leagueSlug}`,
+      },
+      url: `${baseUrl}/match/${match.id}`,
+    }
+  })
 
   // Dynamic FAQ based on real data
   const dynamicFAQs = [

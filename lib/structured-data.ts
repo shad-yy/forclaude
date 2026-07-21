@@ -41,25 +41,59 @@ export const websiteStructuredData = {
 }
 
 export function createSportsEventStructuredData(event: any) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://smartlivetv.co.uk"
+  const startIso = event.date ? (event.date.includes('T') ? event.date : `${event.date}T20:00:00+00:00`) : new Date().toISOString()
+  const endDateObj = new Date(startIso)
+  endDateObj.setHours(endDateObj.getHours() + 2)
+  const endIso = endDateObj.toISOString()
+
   return {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name: `${event.homeTeam} vs ${event.awayTeam}`,
-    startDate: event.date,
+    description: `Watch ${event.homeTeam} vs ${event.awayTeam} live stream in 4K UHD.`,
+    startDate: startIso,
+    endDate: endIso,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: {
       "@type": "Place",
-      name: event.venue || "TBD",
+      name: event.venue || `${event.homeTeam} Stadium`,
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: "GB",
+      },
     },
-    competitor: [
-      {
-        "@type": "SportsTeam",
-        name: event.homeTeam,
-      },
-      {
-        "@type": "SportsTeam",
-        name: event.awayTeam,
-      },
+    homeTeam: {
+      "@type": "SportsTeam",
+      name: event.homeTeam,
+    },
+    awayTeam: {
+      "@type": "SportsTeam",
+      name: event.awayTeam,
+    },
+    performer: [
+      { "@type": "SportsTeam", name: event.homeTeam },
+      { "@type": "SportsTeam", name: event.awayTeam },
     ],
+    organizer: {
+      "@type": "Organization",
+      name: event.league || "Premier League",
+      url: `${baseUrl}/watch/premier-league`,
+    },
+    offers: {
+      "@type": "Offer",
+      url: `${baseUrl}/pricing`,
+      price: "12.00",
+      priceCurrency: "GBP",
+      availability: "https://schema.org/InStock",
+      validFrom: "2026-01-01",
+    },
+    superEvent: {
+      "@type": "EventSeries",
+      name: event.league || "Premier League",
+      url: `${baseUrl}/watch/premier-league`,
+    },
     sport: "Football",
   }
 }
