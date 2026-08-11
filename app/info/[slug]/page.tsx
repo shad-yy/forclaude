@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Metadata } from "next"
-import DOMPurify from "isomorphic-dompurify"
+import sanitizeHtml from "sanitize-html"
 
 // This is a mock function. In a real app, you'd fetch this from a CMS.
 const getPageContent = async (slug: string) => {
@@ -63,7 +63,7 @@ export default async function InfoPage({ params }: Props) {
           <CardTitle className="text-3xl font-bold">{page.title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }} />
+          <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.content) }} />
         </CardContent>
       </Card>
     </div>

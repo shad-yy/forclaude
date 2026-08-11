@@ -4,7 +4,7 @@ import { SchemaMarkup } from "@/components/SchemaMarkup"
 import { BLOG_POSTS } from "@/lib/blog/posts"
 import { ENV } from "@/lib/config/env"
 import { BlogPostLayout } from "@/components/blog/BlogPostLayout"
-import DOMPurify from "isomorphic-dompurify"
+import sanitizeHtml from "sanitize-html"
 
 /**
  * Extract FAQ pairs from HTML content by finding <h3> headings
@@ -154,7 +154,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         tags={categoryTagMap[post.category] ?? []}
       >
         {/* Article HTML rendered inside prose-blog styles from the layout */}
-        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }} />
       </BlogPostLayout>
     </>
   )
