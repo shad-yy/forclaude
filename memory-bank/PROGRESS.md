@@ -6,8 +6,46 @@ This file maintains the active development context, records completed tasks, and
 
 ## 1. Active Context
 
-*   **Current Objective**: Verify codebase for security vulnerabilities, environment variable leaks, and confirm files safe to push to GitHub.
-*   **Status**: Security audit completed; hardcoded RapidAPI MMA fallback keys and hardcoded admin credential backdoors removed. Safe git-push criteria defined.
+*   **Product**: Smart Live TV on `smartlivetv.co.uk` — sports streaming guide, live
+    scores and news, with an integrated subscription funnel on the same domain.
+*   **Repo**: `shad-yy/forclaude` · branch `Version-3` · in sync with origin at `f67cb49`.
+*   **Objective**: keep the site healthy and improve it continuously — acquisition
+    surface (scores, fixtures, guides, news) and conversion surface (channels, pricing,
+    trial, checkout) both.
+
+### Current state
+
+Working tree clean and in sync with origin. Build succeeds. The site is deployed on
+Vercel and serving traffic.
+
+Both halves are functional end to end: the data pages render live fixtures and standings
+from TheSportsDB, and the funnel routes (`/buy`, `/pricing`, `/free-trial`, `/subscribe`,
+`/channels`, `/login`, `/setup/[device]`) are real pages on this domain with working
+form handlers at `/api/orders` and `/api/subscribe`.
+
+### Search performance — read the caveat
+
+Search Console, three months to 2026-07-31: **67 clicks, 2.3K impressions, average
+position 36, CTR 2.9%**.
+
+**This is too small a sample to draw strategic conclusions from.** 67 clicks over three
+months is under one a day, and position 36 means the site is effectively invisible for
+almost everything it appears for. Percentage swings on this base (a reported +308% over
+28 days) are movement between single-digit numbers, not a trend.
+
+What it does support, weakly:
+
+*   The pages earning clicks are the commercial and event ones — homepage, `/ufc`,
+    `/watch/europa-league`, `/setup/firestick`.
+*   Most top queries are `smart live tv` / `smart live` / `smart tv live` variants, which
+    are more likely generic smart-TV searches the domain name happens to match than brand
+    demand. The unambiguous brand query `smartlivetv` returned 1 click in three months.
+*   Country mix beyond the UK (France, Morocco, Portugal, Romania at ~4% each) is **2
+    clicks apiece**. That is noise. Do not build a geographic strategy on it.
+
+**Re-check GSC once volume is meaningfully higher before making decisions from it.**
+Until then, prioritise by technical health and by what is obviously broken — not by
+these numbers.
 
 ---
 
@@ -78,5 +116,26 @@ Here is the repository of issues encountered, including root causes and their pe
 
 ## 4. Next Steps
 
-1.  **Repository Push**: Safely stage and push tracked and untracked files while ensuring `.env` files remain ignored.
-2.  **Verify Setup**: Confirm that all future agent interactions start by checking these memory bank files.
+The repository split is complete (2026-08-11) and this tree is in sync with
+`origin/Version-3`. Outstanding work on the store itself:
+
+1.  **Decide whether to commit `CLAUDE.md`.** It was added locally to stop a future
+    session mistaking this for the clean project. Currently untracked.
+2.  **Security: plan the Next.js 14 to 16 upgrade.** The advisory list is serious —
+    SSRF, cache poisoning, request smuggling, unauthenticated disclosure of internal
+    Server Function endpoints. It is a breaking two-major-version jump and needs its own
+    regression pass, but it should not be deferred indefinitely.
+3.  **Fix the UFC widget.** `/api/espn/mma/ufc/scoreboard` returns 503 on every homepage
+    load. It fails silently, so users see an empty section rather than an error.
+4.  **Re-enable type checking in the build.** `typescript.ignoreBuildErrors` and
+    `eslint.ignoreDuringBuilds` are both on, so a type error ships to production without
+    complaint. Type checking first — it is cheaper to green than linting.
+5.  **Gate the IndexNow ping.** `npm run build` submits URLs to IndexNow on every run,
+    including local and CI builds. Gate it behind an env flag set only in production.
+
+### Guardrails
+
+*   Do not remove commercial content — see section 1.
+*   `origin` is `shad-yy/forclaude`. Do not add other remotes to this repo.
+*   Update this memory bank after any task that changes architecture, adds an
+    integration, or fixes a non-obvious bug.

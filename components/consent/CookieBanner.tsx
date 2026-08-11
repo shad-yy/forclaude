@@ -31,8 +31,8 @@ export function CookieBanner() {
     }))
     setState('accepted')
     // Enable GA4
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      ;(window as any).gtag('consent', 'update', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('consent', 'update', {
         analytics_storage: 'granted'
       })
     }
@@ -46,8 +46,8 @@ export function CookieBanner() {
     }))
     setState('declined')
     // Keep GA4 denied
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      ;(window as any).gtag('consent', 'update', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('consent', 'update', {
         analytics_storage: 'denied'
       })
     }

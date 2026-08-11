@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { ENV } from '@/lib/config/env'
 import ChannelLibrary from '@/components/channels/channel-library'
+import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 export const metadata: Metadata = {
   title: 'Netflix, Sky Sports & 230,000+ Channels | Smart Live TV',
@@ -87,6 +88,17 @@ export default function ChannelsPage() {
             <p className="text-gray-400 text-lg max-w-2xl mx-auto mt-4">
               Netflix, Disney+, Amazon Prime, Hulu, Shahid and 230,000+ live channels, movies and series — all included from £12/month. Browse a sample of what&apos;s available below.
             </p>
+
+            <AnswerBlock
+              answer="Smart Live TV includes 230,000+ channels covering Sky Sports Premier League, Sky Sports F1, TNT Sports (Champions League), beIN Sports, Netflix, Disney+, Amazon Prime, Hulu, Shahid, MBC, OSN, and 50+ country packages — all for £12/month with no contract."
+              facts={[
+                "All Sky Sports channels: Premier League, Football, F1, Cricket, Golf",
+                "Streaming services: Netflix, Disney+, Amazon Prime, Hulu, Shahid, OSN",
+                "Sports: Premier League, Champions League, UFC, F1, NBA, NFL, La Liga, Serie A",
+                "50+ country packages including UK, USA, Arabic, Turkish, Indian, and African channels",
+              ]}
+              className="max-w-2xl mx-auto text-left mt-6"
+            />
             
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-8">
               <Link

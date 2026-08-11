@@ -57,7 +57,6 @@ export const metadata: Metadata = {
     images: ['/og-default.png'],
   },
   alternates: {
-    canonical: ENV.BASE_URL,
     languages: {
       "en-GB": ENV.BASE_URL,
     },

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ENV } from '@/lib/config/env'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { Calendar, MapPin, ArrowLeft } from 'lucide-react'
 import { getUpcomingEvents, getPastEvents } from '@/lib/api/ufc'
+import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 export const metadata: Metadata = {
   title: 'Watch UFC Live — All Fight Nights in 4K',
@@ -125,6 +127,17 @@ export default async function UFCPage() {
             Every UFC event included — prelims, main card, and PPV. 
             No pay-per-view charges. Stream in 4K on any device.
           </p>
+
+          <AnswerBlock
+            answer="Smart Live TV streams every UFC event live in 4K — including prelims, main card, and PPV fights — with no additional pay-per-view charges. All UFC Fight Nights, numbered events, and The Ultimate Fighter are included in every subscription plan from £12/month."
+            facts={[
+              "Every UFC event: Fight Nights, numbered PPV events, and TUF",
+              "No pay-per-view charges — all events included in your subscription",
+              "4K streaming quality on Firestick, Smart TV, and all devices",
+              "Free 24-hour trial to watch the next event",
+            ]}
+            className="max-w-2xl mx-auto text-left"
+          />
           <div className="flex gap-4 justify-center flex-wrap">
             <Link href="/buy"
               className="bg-[#00e676] text-black font-extrabold 
@@ -204,7 +217,7 @@ export default async function UFCPage() {
           ) : (
             <div className="bg-[#12121a] border border-[#2a2a3a] 
               rounded-2xl p-10 text-center">
-              <img src="/leagues/ufc.png" alt="UFC"
+              <Image src="/leagues/ufc.png" alt="UFC"
                 width={48} height={48}
                 className="object-contain mx-auto mb-4 opacity-40" />
               <h3 className="font-bold text-white mb-2">

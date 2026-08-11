@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Zap, Calendar, Trophy, Clock, RefreshCw, MapPin, AlertCircle, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import type { UnifiedFixture } from "@/lib/api/unified-sports-api"
+import { AnswerBlock } from "@/components/seo/AnswerBlock"
 
 // ─── Tiny helpers ─────────────────────────────────────────────────────────────
 
@@ -258,6 +259,14 @@ export default function ScoresPageClient() {
               <p className="text-white/40 mt-2 text-base">
                 Real-time football scores, live match updates, and recent results.
               </p>
+              <AnswerBlock
+                answer="Smart Live TV provides real-time football scores from the Premier League, La Liga, Bundesliga, Serie A, and Ligue 1. Scores update every 60 seconds with live match status, lineups, and results."
+                facts={[
+                  "Premier League, Champions League, Europa League, and 20+ leagues covered",
+                  "Auto-refreshes every 60 seconds — no manual reload needed",
+                  "Includes live match status, half-time scores, and full-time results",
+                ]}
+              />
             </div>
 
             {/* Refresh + last updated */}

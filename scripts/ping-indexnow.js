@@ -1,3 +1,9 @@
+// Only ping IndexNow in production builds
+if (process.env.VERCEL_ENV !== 'production') {
+  console.log('Skipping IndexNow ping (not production)')
+  process.exit(0)
+}
+
 const fs = require('fs');
 const path = require('path');
 

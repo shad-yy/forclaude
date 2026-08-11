@@ -10,6 +10,7 @@ import { FirestickIcon, SmartTVIcon, AndroidIcon, IPhoneIcon } from '@/component
 import { Lock, RotateCcw, Zap, Ban, Headphones, Film, Trophy, Tv, Globe, Swords } from 'lucide-react'
 import { SpeedChecker } from '@/components/ui/SpeedChecker'
 import { PricingCardsSlider } from '@/components/pricing/PricingCardsSlider'
+import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 
 export const metadata: Metadata = {
@@ -392,6 +393,17 @@ export default function PricingPage() {
           Pick a plan. Get instant access. Watch everything live.
           Try free for 24 hours — no card needed.
         </p>
+
+        <AnswerBlock
+          answer="Smart Live TV costs from £12/month (1-month plan). The 3-month plan is £24 (£8/mo), the 6-month plan is £36 (£6/mo), and the 12-month plan is £54 (£4.50/mo). All plans include identical content: 230,000+ channels including Sky Sports, Netflix, Disney+, and TNT Sports. Free 24-hour trial with no credit card required."
+          facts={[
+            "All 4 plans include identical channels and features — only duration differs",
+            "No contract on any plan — cancel anytime before your next billing date",
+            "Free 24-hour trial — no credit card, activated via WhatsApp in under 5 minutes",
+            "7-day money-back guarantee on all paid subscriptions",
+          ]}
+          className="max-w-2xl mx-auto text-left"
+        />
       </section>
       </FadeIn>
 

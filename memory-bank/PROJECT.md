@@ -1,73 +1,122 @@
 # Project Identity & Scope: Smart Live TV
 
-Smart Live TV is a premium sports streaming guide, scores aggregator, and news platform designed to capture high-intent traffic for sports events and drive subscription conversions. It serves as a unified hub for real-time scores, news, leagues, teams, and countdown guides.
+**Domain:** `smartlivetv.co.uk` · **Repo:** `shad-yy/forclaude` · **Branch:** `Version-3`
+**Hosting:** Vercel · **This is the live production site.**
+
+Smart Live TV is a sports streaming guide, live scores aggregator and news platform with
+an integrated subscription service. It is a single self-contained property: it earns its
+own search traffic and converts it on the same domain.
 
 ---
 
-## 1. Product Context & Objectives
+## 1. Product context & objectives
 
-*   **Primary Purpose**: Capture peak search engine traffic during major sports seasons (specifically Premier League, La Liga, Serie A, Europa League, and World Cup 2026) and convert users into premium IPTV subscribers.
-*   **Core Value Proposition**: "Everything in One Place" - combining high-fidelity scheduling, team and league analytics, live scores, curated sports news, and direct broadcast comparison guides in a responsive, modern interface.
-*   **Key Audiences**:
-    *   IPTV/Streaming Subscribers looking for reliable schedule & channel data.
-    *   Sports enthusiasts checking live scores and standings.
-    *   Search engines looking for structured, high-authority sports landing pages.
+*   **Primary purpose**: capture search traffic during major sports seasons — Premier
+    League, Champions League, Europa League, La Liga, Serie A, UFC, Formula 1, World Cup
+    2026 — and convert it into subscriptions.
+*   **Core value proposition**: "Everything in one place." Fixtures, kick-off times, live
+    scores, league tables, team and player data, sports news and broadcast guides,
+    alongside the subscription that provides access.
+*   **Key audiences**:
+    *   Subscribers and prospects looking for reliable schedule and channel data.
+    *   Sports fans checking live scores, standings and fixtures.
+    *   Search engines indexing structured sports landing pages.
+
+### Self-contained by design
+
+Traffic that lands here converts here. Every commercial route is a real page on this
+domain — `/buy`, `/pricing`, `/free-trial`, `/subscribe`, `/channels`, `/login`,
+`/setup/[device]`. The only redirects are internal (`/home` → `/`,
+`/football` → `/watch/premier-league`).
+
+**Do not introduce redirects or CTAs that send users to another domain.**
+
+### The two halves reinforce each other
+
+The sports data earns the traffic; the funnel converts it. Neither works alone:
+
+*   Editorial and data pages (`/scores`, `/leagues`, `/watch/*`, `/news`, `/blog`,
+    `/ufc`) are the acquisition surface.
+*   Commercial pages are the conversion surface.
+*   Match, league and event pages sit between the two and carry both.
+
+When changing one, check the effect on the other.
 
 ---
 
-## 2. Technical Stack
+## 2. Technical stack
 
-| Layer | Technology | Usage & Configuration |
+| Layer | Technology | Configuration |
 |---|---|---|
-| **Core Framework** | Next.js 14 (App Router) | Handles SSR/ISR, API routing, and hybrid rendering. |
-| **Styling** | Vanilla CSS / TailwindCSS | Modern dark-themed glassmorphism UI, custom animations. |
-| **Language** | TypeScript | Strict compilation, unified typings across components. |
-| **State & Cache** | Redis / SWR / In-Memory | Aggressive caching layers for API quotas and local state. |
-| **Validation** | TypeScript / Custom Schema | API response validation using `expectedKey` structures. |
-| **Testing** | Playwright & Vitest | End-to-end user flows and unit testing for core API layers. |
-| **Hosting** | Vercel | Production deployments with preview builds. |
+| Framework | Next.js 14 (App Router) | SSR/ISR, API routes, static generation |
+| Styling | TailwindCSS | Dark glassmorphism, Framer Motion |
+| Language | TypeScript | Strict — `npx tsc --noEmit` must pass clean |
+| Cache | In-memory TTL + Upstash Redis | See `PATTERNS.md` |
+| Auth | `jose` JWT + bcryptjs | Admin session cookie, 8h expiry |
+| Testing | Vitest + Playwright | Unit + E2E |
+| Hosting | Vercel | Production deploys from `Version-3` |
 
----
-
-## 3. Third-Party Integrations
+## 3. Third-party integrations
 
 ### TheSportsDB (v1)
-*   **Purpose**: Main provider for sports leagues, teams, rosters, standings, fixtures, and events.
-*   **Access Pattern**: Fetches go through `lib/api/the-sports-db.ts` utilizing API key `123`.
-*   **Rate Limits**: Free tier allows 30 requests/minute. The app is throttled at **25 requests/minute** for safety.
-*   **Caching**: extended to 30 days for static data (leagues, teams, profiles) and 5 minutes/1 minute for dynamic data (matches/live matches).
+*   Leagues, teams, rosters, standings, fixtures, events.
+*   Via `lib/api/the-sports-db.ts`, key `123`.
+*   Free tier is 30 req/min; **throttled to 25** with a 2400 ms token-bucket delay.
+*   Circuit breaker blocks a failing endpoint for 1 minute after 5 consecutive 429s.
+*   Cache: 30 days static, 1 hour scheduled events, 5 min near-live, 1 min today's events.
 
 ### NewsData.io
-*   **Purpose**: Fetches real-time sports news articles.
-*   **Access Pattern**: Unified proxy server-side calling `newsAPI`.
-*   **Quota**: 200 requests/day. Strict fallback to mock news data on failure/exhaustion.
+*   Sports news articles. 200 requests/day.
+*   Strict fallback to mock data on failure or quota exhaustion.
 
-### UFC.com (Scraper)
-*   **Purpose**: Live scraping of UFC events, fighter stats, and fight cards.
-*   **Access Pattern**: HTML parsing via server-side scraper with a strict 5-minute cache.
+### UFC.com (scraper)
+*   Events, fighter stats, fight cards. Server-side HTML parsing, 5-minute cache.
+
+### ESPN
+*   F1 and MMA scoreboards via `/api/espn/*`.
+*   ⚠️ The MMA endpoint currently returns **503** on every homepage load — upstream
+    failure. The UFC widget degrades silently. See `PROGRESS.md` §4.
 
 ---
 
-## 4. Repository Structure
+## 4. Repository structure
 
 ```
 smart-live-tv/
-├── app/                      # Next.js App Router (pages and API routes)
-│   ├── api/                  # Server-side API endpoints (proxies)
-│   ├── leagues/              # League listings & modal details
-│   ├── teams/                # Team profile views
-│   ├── scores/               # Live matches and daily scores
+├── app/
+│   ├── api/                  # Server-side proxies and endpoints
+│   │   ├── orders/           # Order intake
+│   │   ├── subscribe/        # Subscription requests
+│   │   ├── auth/admin/       # Admin authentication
+│   │   └── espn/ ufc/ scores/ leagues/ teams/ news/ …
+│   ├── buy/ pricing/ free-trial/ subscribe/   # Conversion funnel
+│   ├── channels/             # Channel directory
+│   ├── setup/[device]/       # Device setup guides
+│   ├── login/                # Account access
+│   ├── scores/ leagues/ teams/ players/ events/ match/[id]/
+│   ├── watch/                # Broadcast and matchday guides
+│   ├── news/ blog/ ufc/
 │   └── page.tsx              # Homepage
-├── components/               # UI components
-│   ├── homepage/             # Scores widgets, live matches, news sliders
-│   └── ui/                   # Shared UI primitives (OptimizedImage, modals)
-├── data/                     # Local static data JSONs
-│   └── sportsdb/             # Pre-fetched teams, leagues, and sports cache
-├── lib/                      # Central utilities & core classes
-│   ├── api/                  # Unified APIs & low-level external API clients
-│   ├── cache/                # apiCache.ts (In-memory TTL cache provider)
-│   ├── env.ts                # Environment variable mappings & checks
-│   └── types.ts              # Global TypeScript interfaces (UnifiedFixture, etc.)
-├── scripts/                  # Automated tool scripts (Hydration, Verification)
-└── memory-bank/              # Persistent memory for AI agents (This folder)
+├── components/
+│   ├── channels/             # Channel library + channel database
+│   ├── buy/ pricing/ trial/ setup/   # Funnel components
+│   ├── homepage/             # Score widgets, sliders, countdowns
+│   ├── layout/               # Header, footer
+│   └── ui/                   # Shared primitives (OptimizedImage, modals)
+├── content/blog/             # ⚠️ SOURCE OF TRUTH for blog content
+├── data/                     # Static JSON caches
+├── lib/
+│   ├── api/                  # unified-sports-api.ts + low-level clients
+│   ├── cache/apiCache.ts     # Central TTL cache
+│   ├── blog/posts.ts         # ⚠️ GENERATED — never edit directly
+│   └── types.ts              # UnifiedFixture, UnifiedTeam, UnifiedPlayer …
+├── scripts/                  # generate-posts.js, ping-indexnow.js, hydration
+└── memory-bank/              # Persistent context for AI agents
 ```
+
+### Generated files — never edit directly
+
+`lib/blog/posts.ts` and `public/llms-full.txt` are produced by
+`scripts/generate-posts.js` from `content/blog/*.mdx`. Both `npm run dev` and
+`npm run build` regenerate them, so any direct edit is silently overwritten on the next
+run. **Edit `content/blog/*.mdx`.**

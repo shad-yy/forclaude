@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 
 interface CountdownEvent {
   name: string
@@ -206,7 +207,7 @@ export function EventCountdown() {
           
           {/* Event info */}
           <div className="flex items-center gap-3">
-            <img
+            <Image
               src={upcomingEvent.badge}
               alt={upcomingEvent.sport}
               width={32}

@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation"
 type MetricName = 'LCP' | 'INP' | 'CLS' | 'FCP' | 'TTFB'
 
 function sendToAnalytics(metric: { name: MetricName; value: number; rating: string }) {
-  if (typeof window === 'undefined' || !(window as any).gtag) return
+  if (typeof window === 'undefined' || !window.gtag) return
   
-  ;(window as any).gtag('event', metric.name, {
+  window.gtag('event', metric.name, {
     event_category: 'Web Vitals',
     event_label: metric.rating,
     value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),

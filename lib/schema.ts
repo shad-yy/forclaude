@@ -53,14 +53,6 @@ export function generateSportsEventSchema({ name, homeTeam, awayTeam, date, leag
             name: league,
             url: baseUrl,
         },
-        offers: {
-            "@type": "Offer",
-            url: `${baseUrl}/pricing`,
-            price: "12.00",
-            priceCurrency: "GBP",
-            availability: "https://schema.org/InStock",
-            validFrom: "2026-01-01",
-        },
         superEvent: {
             "@type": "EventSeries",
             name: league,
@@ -85,7 +77,7 @@ export function generateFAQSchema(faqs: FAQParams[]) {
 }
 
 export function generateOrganizationSchema() {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://smart-live-tv.vercel.app"
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://smartlivetv.co.uk"
     return {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -108,5 +100,17 @@ export function generateWebPageSchema(title: string, description: string, url: s
         name: title,
         description: description,
         url: url,
+    }
+}
+
+export function generateSpeakableSchema(url: string, cssSelectors: string[] = ["h1", ".summary", ".score-display"]) {
+    return {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        url: url,
+        speakable: {
+            "@type": "SpeakableSpecification",
+            cssSelector: cssSelectors,
+        },
     }
 }

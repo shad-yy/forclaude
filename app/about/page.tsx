@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
+import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 export const metadata: Metadata = {
   title: 'About Smart Live TV | IPTV Streaming Service',
@@ -15,6 +16,17 @@ export default function AboutPage() {
       <section className="pt-28 md:pt-36 pb-16 md:pb-20 px-4 border-b border-[#2a2a3a]">
         <div className="container mx-auto max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 md:mb-6">About Smart Live TV</h1>
+
+          <AnswerBlock
+            answer="Smart Live TV is a UK-based IPTV subscription service that replaces Netflix (£18/mo), Sky Sports (£43/mo), Disney+ (£11/mo), and TNT Sports (£30/mo) with a single subscription starting at £12/month. It streams 230,000+ channels in 4K quality to any device, with no contract and a free 24-hour trial."
+            facts={[
+              "Replaces an average of £120+/month in separate streaming subscriptions",
+              "4K Ultra HD quality on Firestick, Smart TV, Android, iPhone, and PC",
+              "Free 24-hour trial — no credit card required, activated via WhatsApp",
+              "WhatsApp support 7 days a week, 9am–11pm UK time",
+            ]}
+          />
+
           <p className="text-gray-300 text-lg leading-relaxed mb-4">
             Smart Live TV gives UK sports fans and TV viewers the ability to watch everything they love — Premier League, Champions League, UFC, Formula 1, and all their favourite shows on Netflix, Disney+, Amazon Prime and Shahid — for a single monthly subscription that costs less than Sky Sports alone.
           </p>

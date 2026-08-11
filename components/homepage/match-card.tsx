@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Clock } from "lucide-react"
 import { MatchPopup } from "./match-popup"
@@ -378,7 +379,7 @@ export function MatchCard() {
                         ].map(s => (
                           <Link key={s.sport} href={s.href}
                             className="flex items-center gap-3 bg-[#12121a] border border-[#2a2a3a] hover:border-[#00e676]/30 rounded-xl p-3 transition-all group">
-                            <img src={s.icon} alt={s.sport}
+                            <Image src={s.icon} alt={s.sport}
                               width={32} height={32}
                               className="w-8 h-8 object-contain" />
                             <div>
