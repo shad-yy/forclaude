@@ -112,30 +112,69 @@ Here is the repository of issues encountered, including root causes and their pe
 *   **Root Cause**: Credentials were coded directly in `app/api/auth/admin/route.ts` to allow easy login on development environments without setting Upstash or environment flags.
 *   **Permanent Fix**: Removed the fallback hash and comment entirely, forcing the route to authenticate exclusively against `process.env.ADMIN_PASSWORD_HASH` and return `500` if not set.
 
+### ⚠️ Bug 7: `/api/espn/*` returned 503 with no way to diagnose it
+
+*   **Symptoms**: `/api/espn/mma/ufc/scoreboard` intermittently returned 503; the UFC
+    countdown on the homepage silently rendered nothing. Reported as "ESPN is down".
+*   **Root cause**: not an upstream outage. The ESPN endpoint returns 200 consistently
+    when tested directly. The proxy route had no timeout, no retry, no stale fallback,
+    and — critically — `catch (err)` discarded the error without logging it. A single
+    transient blip produced a 503, and the swallowed error made a temporary network
+    failure indistinguishable from a broken URL or a local fault, which is why it was
+    misdiagnosed as a permanent ESPN outage.
+*   **Permanent fix** (`app/api/espn/[...sport]/route.ts`):
+    *   8s `AbortController` timeout so a hung request cannot block the route.
+    *   One retry with a 300 ms gap — transient 5xx usually succeeds on the second try.
+    *   **Single timestamped cache entry** (`{ data, fetchedAt }`, 24h TTL). Served as
+        `X-Cache: HIT` under 30 minutes old, and served as `X-Cache: STALE` with an
+        `X-Cache-Age` header when upstream fails. A stale scoreboard beats an empty widget.
+    *   `console.error` with the real reason, plus the reason in the 503 body.
+    *   503 now only when upstream fails **and** nothing is cached.
+*   **Design note**: an earlier attempt used separate `fresh` and `stale` keys. That
+    silently does not work — the stale copy is only written on a fresh-cache miss, and
+    since the fresh cache almost always hits, the stale copy stays empty exactly when it
+    is needed. Verified by testing the failure path, not by inspection.
+
 ---
 
 ## 4. Next Steps
 
-The repository split is complete (2026-08-11) and this tree is in sync with
-`origin/Version-3`. Outstanding work on the store itself:
+Ordered by impact. Items 1-2 are defects with security or production-safety consequences.
 
-1.  **Decide whether to commit `CLAUDE.md`.** It was added locally to stop a future
-    session mistaking this for the clean project. Currently untracked.
-2.  **Security: plan the Next.js 14 to 16 upgrade.** The advisory list is serious —
-    SSRF, cache poisoning, request smuggling, unauthenticated disclosure of internal
-    Server Function endpoints. It is a breaking two-major-version jump and needs its own
-    regression pass, but it should not be deferred indefinitely.
-3.  **Fix the UFC widget.** `/api/espn/mma/ufc/scoreboard` returns 503 on every homepage
-    load. It fails silently, so users see an empty section rather than an error.
-4.  **Re-enable type checking in the build.** `typescript.ignoreBuildErrors` and
-    `eslint.ignoreDuringBuilds` are both on, so a type error ships to production without
-    complaint. Type checking first — it is cheaper to green than linting.
-5.  **Gate the IndexNow ping.** `npm run build` submits URLs to IndexNow on every run,
-    including local and CI builds. Gate it behind an env flag set only in production.
+1.  **Plan the Next.js 14 → 16 upgrade.** `npm audit` reports high-severity advisories in
+    `next`, `postcss`, `sharp` and `undici` — SSRF via rewrites, cache poisoning of RSC
+    responses, request smuggling, unauthenticated disclosure of internal Server Function
+    endpoints. It is a breaking two-major-version jump and needs its own branch and
+    regression pass. Do not bundle it with other work, and do not defer it indefinitely.
+
+2.  **Re-enable type checking in the build.** `next.config.mjs` sets
+    `typescript.ignoreBuildErrors: true` and `eslint.ignoreDuringBuilds: true`, so a type
+    error ships to production silently. Turn type checking back on first — it is cheaper
+    to get green than linting. Until then, run `npx tsc --noEmit` manually before every
+    deploy.
+
+3.  **Gate the IndexNow ping.** `npm run build` ends with
+    `node scripts/ping-indexnow.js`, which submits URLs to a real search-engine API on
+    every run — including local builds and CI. Put it behind an env flag set only in the
+    production deploy.
+
+4.  **Audit the funnel end to end.** Confirm pricing on the marketing pages matches
+    `/pricing` and `/buy`, that `/api/orders` and `/api/subscribe` validate input and
+    return 4xx rather than 500 on a malformed body, and that every device guide under
+    `/setup/[device]` renders.
+
+5.  **Check seasonal data before each new season.** Hardcoded season strings silently
+    freeze standings when a new campaign starts:
+    `grep -rn "20[0-9][0-9]-20[0-9][0-9]" --include=*.tsx --include=*.ts app lib`
 
 ### Guardrails
 
-*   Do not remove commercial content — see section 1.
-*   `origin` is `shad-yy/forclaude`. Do not add other remotes to this repo.
+*   **Self-contained.** No redirects or CTAs pointing off this domain. Traffic that
+    arrives here converts here.
+*   **`origin` is `shad-yy/forclaude`.** Do not add other remotes.
+*   **Generated files**: `lib/blog/posts.ts` and `public/llms-full.txt` are rebuilt from
+    `content/blog/*.mdx` on every dev and build run. Edit the MDX.
+*   **Trouble Registry first.** Check section 3 before debugging — several recurring
+    failures already have permanent fixes recorded there.
 *   Update this memory bank after any task that changes architecture, adds an
     integration, or fixes a non-obvious bug.

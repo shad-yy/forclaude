@@ -21,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/watch/serie-a`, priority: 0.9, changeFrequency: 'daily', lastModified: now },
     { url: `${baseUrl}/watch/ligue-1`, priority: 0.9, changeFrequency: 'daily', lastModified: now },
     { url: `${baseUrl}/watch/champions-league`, priority: 0.9, changeFrequency: 'daily', lastModified: now },
-    { url: `${baseUrl}/watch/world-cup-2026`, priority: 0.95, changeFrequency: 'daily' as const, lastModified: now },
+    { url: `${baseUrl}/watch/world-cup-2026`, priority: 0.6, changeFrequency: 'monthly' as const, lastModified: now },
     { url: `${baseUrl}/watch/europa-league`, priority: 0.85, changeFrequency: 'daily' as const, lastModified: now },
     { url: `${baseUrl}/watch/formula-1`, priority: 0.85, changeFrequency: 'weekly' as const, lastModified: now },
     { url: `${baseUrl}/ufc`, priority: 0.8, changeFrequency: 'weekly', lastModified: now },
@@ -43,7 +43,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/players`, priority: 0.7, changeFrequency: 'weekly' as const, lastModified: now },
     { url: `${baseUrl}/subscribe`, priority: 0.8, changeFrequency: 'monthly' as const, lastModified: now },
     { url: `${baseUrl}/login`, priority: 0.3, changeFrequency: 'yearly' as const, lastModified: now },
-    { url: `${baseUrl}/iptv-vs-netflix`, priority: 0.8, changeFrequency: 'monthly' as const, lastModified: now },
+
     { url: `${baseUrl}/llms.txt`, priority: 0.5, changeFrequency: 'daily' as const, lastModified: now },
     { url: `${baseUrl}/llms-full.txt`, priority: 0.5, changeFrequency: 'daily' as const, lastModified: now },
     ...BLOG_POSTS.map((post) => ({

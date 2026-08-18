@@ -207,8 +207,10 @@ const nextConfig = {
     }
 
     // Override hashFunction to prevent WasmHash crash in Node 22
+    // xxhash64 still uses WasmHash internally in Next 14.2's bundled webpack;
+    // sha256 uses Node's native crypto module and avoids WasmHash entirely.
     config.output = config.output || {}
-    config.output.hashFunction = 'xxhash64'
+    config.output.hashFunction = 'sha256'
 
     return config
   },

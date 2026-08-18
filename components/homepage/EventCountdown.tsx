@@ -33,71 +33,72 @@ function pad(n: number): string {
   return String(n).padStart(2, '0')
 }
 
-/** Knockout fixtures during World Cup 2026 — used when live APIs have no near-term event. */
-const WORLD_CUP_KNOCKOUT: CountdownEvent[] = [
+/** Premier League 2026-27 Matchweek 1 — used as default countdown when live APIs have no near-term event. */
+const PREMIER_LEAGUE_MW1: CountdownEvent[] = [
   {
-    name: 'Canada vs Morocco — Round of 16',
-    date: new Date('2026-07-04T18:00:00+01:00'),
-    href: '/blog/watch-morocco-canada-world-cup-2026-uk',
-    sport: 'World Cup',
-    badge: '/leagues/world-cup.png',
+    name: 'Arsenal vs Coventry City — PL Matchweek 1',
+    date: new Date('2026-08-21T20:00:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
   {
-    name: 'France vs Paraguay — Round of 16',
-    date: new Date('2026-07-04T22:00:00+01:00'),
-    href: '/blog/watch-france-paraguay-world-cup-2026-uk',
-    sport: 'World Cup',
-    badge: '/leagues/world-cup.png',
+    name: 'Hull City vs Manchester United — PL Matchweek 1',
+    date: new Date('2026-08-22T15:00:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
   {
-    name: 'Brazil vs Norway — Round of 16',
-    date: new Date('2026-07-05T21:00:00+01:00'),
-    href: '/blog/watch-brazil-norway-world-cup-2026-uk',
-    sport: 'World Cup',
-    badge: '/leagues/world-cup.png',
+    name: 'Everton vs Crystal Palace — PL Matchweek 1',
+    date: new Date('2026-08-22T15:00:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
   {
-    name: 'Mexico vs England — Round of 16',
-    date: new Date('2026-07-06T01:00:00+01:00'),
-    href: '/blog/watch-england-mexico-world-cup-2026-uk',
-    sport: 'World Cup',
-    badge: '/leagues/world-cup.png',
+    name: 'Brentford vs Tottenham Hotspur — PL Matchweek 1',
+    date: new Date('2026-08-22T17:30:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
   {
-    name: 'Portugal vs Spain — Round of 16',
-    date: new Date('2026-07-06T20:00:00+01:00'),
-    href: '/blog/watch-portugal-spain-world-cup-2026-uk',
-    sport: 'World Cup',
-    badge: '/leagues/world-cup.png',
+    name: 'Brighton vs Aston Villa — PL Matchweek 1',
+    date: new Date('2026-08-23T14:00:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
   {
-    name: 'USA vs Belgium — Round of 16',
-    date: new Date('2026-07-07T01:00:00+01:00'),
-    href: '/watch/world-cup-2026',
-    sport: 'World Cup',
-    badge: '/leagues/world-cup.png',
+    name: 'Manchester City vs Bournemouth — PL Matchweek 1',
+    date: new Date('2026-08-23T14:00:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
   {
-    name: 'Argentina vs Egypt — Round of 16',
-    date: new Date('2026-07-07T17:00:00+01:00'),
-    href: '/watch/world-cup-2026',
-    sport: 'World Cup',
-    badge: '/leagues/world-cup.png',
+    name: 'Newcastle United vs Liverpool — PL Matchweek 1',
+    date: new Date('2026-08-23T16:30:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
   {
-    name: 'Switzerland vs Colombia — Round of 16',
-    date: new Date('2026-07-07T21:00:00+01:00'),
-    href: '/watch/world-cup-2026',
-    sport: 'World Cup',
-    badge: '/leagues/world-cup.png',
+    name: 'Fulham vs Chelsea — PL Matchweek 1',
+    date: new Date('2026-08-24T20:00:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
 ]
 
-function nextWorldCupKnockout(): CountdownEvent | null {
+function nextPremierLeagueMatch(): CountdownEvent | null {
   const now = Date.now()
-  const upcoming = WORLD_CUP_KNOCKOUT.find(e => e.date.getTime() > now)
+  const upcoming = PREMIER_LEAGUE_MW1.find(e => e.date.getTime() > now)
   return upcoming ?? null
 }
+
 
 export function EventCountdown() {
   const [upcomingEvent, setUpcomingEvent] = useState<CountdownEvent | null>(null)
@@ -107,10 +108,10 @@ export function EventCountdown() {
   // Fetch upcoming events from our API
   useEffect(() => {
     const loadEvent = async () => {
-      // World Cup knockout stage takes priority during live tournament
-      const wcEvent = nextWorldCupKnockout()
-      if (wcEvent) {
-        setUpcomingEvent(wcEvent)
+      // Premier League Matchweek 1 takes priority during season opener
+      const plEvent = nextPremierLeagueMatch()
+      if (plEvent) {
+        setUpcomingEvent(plEvent)
         setLoading(false)
         return
       }
