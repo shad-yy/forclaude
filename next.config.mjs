@@ -211,6 +211,8 @@ const nextConfig = {
     // sha256 uses Node's native crypto module and avoids WasmHash entirely.
     config.output = config.output || {}
     config.output.hashFunction = 'sha256'
+    config.output.hashDigest = 'hex'
+    config.output.hashDigestLength = 16
 
     return config
   },
