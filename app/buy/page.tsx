@@ -5,6 +5,7 @@ import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { ENV } from '@/lib/config/env'
 import { Check } from 'lucide-react'
 import { VisaLogo, MastercardLogo, PayPalLogo, CryptoIcon, BankTransferIcon } from '@/components/ui/PaymentLogos'
+import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 export const metadata: Metadata = {
   title: 'Get Smart Live TV — Start Watching in 5 Minutes',
@@ -117,6 +118,16 @@ export default function BuyPage() {
         <p className="text-gray-400 text-center mb-10 text-sm">
           230,000+ channels including Netflix, Sky Sports and Disney+. Active within 5 minutes.
         </p>
+
+          <AnswerBlock
+            answer="Smart Live TV subscriptions start at £12 for one month, with longer plans reducing the cost to £4.50/month. All plans include identical content: 230,000+ channels, Sky Sports, TNT Sports, Netflix, Disney+, and 4K streaming. Activation takes under 5 minutes via WhatsApp."
+            facts={[
+              'Starter: £12/1 month — Popular: £24/3 months — Standard: £36/6 months — Ultimate: £54/12 months',
+              'No contract, cancel anytime, 7-day money-back guarantee',
+              'Payment via card, PayPal, bank transfer, or cryptocurrency',
+            ]}
+            className="max-w-2xl mx-auto text-left"
+          />
 
         <BuyForm plans={plans} />
 

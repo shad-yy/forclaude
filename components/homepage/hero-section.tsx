@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Check } from "lucide-react"
 import { LiveStats } from "@/components/homepage/LiveStats"
 import { useState, useEffect, useCallback, useRef } from "react"
+import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 // Curated high-quality sports imagery from TheSportsDB league fanart
 // These are fallback images — we also try to load dynamic event images
@@ -235,6 +236,16 @@ export function HeroSection() {
               Replace Netflix, Sky Sports & Disney+ <br className="hidden sm:inline" />
               <span className="text-[#00e676]">With One £12 Subscription</span>
             </h1>
+
+            <AnswerBlock
+              answer="Smart Live TV is a UK IPTV service from £12/month that replaces Sky Sports (£43), Netflix (£18), Disney+ (£5), and TNT Sports (£31) with a single subscription. Stream 230,000+ live channels in 4K on any device. Free 24-hour trial, no credit card required."
+              facts={[
+                'Replaces £97+/month in separate streaming subscriptions with one £12/month plan',
+                'Includes Premier League, Champions League, UFC, F1, NBA, and all major sports',
+                'Works on Firestick, Smart TV, Android, iPhone — setup takes under 5 minutes',
+              ]}
+              className="max-w-xl text-left"
+            />
 
             <p
               className="text-base sm:text-lg md:text-xl text-gray-300 max-w-xl font-normal leading-relaxed"

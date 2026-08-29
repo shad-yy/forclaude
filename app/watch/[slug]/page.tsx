@@ -11,6 +11,7 @@ import { ENV } from '@/lib/config/env'
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
+import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 /** Only append a size suffix if the URL doesn't already have one */
 function safeBadge(url: string | null | undefined, size: 'tiny' | 'small' | 'medium' = 'small'): string {
@@ -212,6 +213,17 @@ export default async function WatchLeaguePage({ params }: Props) {
                         <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
                             Tired of missing the biggest games because of expensive cable packages and restricted broadcasts? Get access to every single kick-off this season—crystal clear, on any device.
                         </p>
+                        {params.slug === 'premier-league' && (
+                          <AnswerBlock
+                            answer="Watch every Premier League 2026/27 match live from £12/month with Smart Live TV. All Sky Sports, TNT Sports, and Amazon Prime channels included in one subscription. No blackouts — access international feeds for 3pm Saturday kick-offs."
+                            facts={[
+                              'All 380+ matches including 3pm Saturday blackout games via international feeds',
+                              'Sky Sports (£43/mo) + TNT Sports (£31/mo) + Prime (£9/mo) = £83/mo vs Smart Live TV from £12/mo',
+                              'Free 24-hour trial available — no credit card required',
+                            ]}
+                            className="text-left max-w-2xl mx-auto"
+                          />
+                        )}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <ShimmerButton
                                 href="/buy"

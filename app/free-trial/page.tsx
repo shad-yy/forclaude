@@ -6,6 +6,7 @@ import { StaggerIn } from "@/components/ui/stagger-in"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { TrialForm } from "@/components/trial/TrialForm"
 import { CheckCircle2, Clock, CreditCard, Check } from 'lucide-react'
+import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 export const metadata: Metadata = {
   title: 'Get Your Free 24-Hour IPTV Trial',
@@ -31,6 +32,16 @@ export default function FreeTrialPage() {
         <p className="text-gray-400 text-lg mb-10">
           Get full access to Netflix, Disney+, Sky Sports, Champions League, UFC, and every streaming service you pay for separately — all in one place, for one price.
         </p>
+
+          <AnswerBlock
+            answer="Smart Live TV offers a free 24-hour trial with full access to all 230,000+ channels including Sky Sports, TNT Sports, Netflix, and Disney+. No credit card required. Request your trial via WhatsApp and receive login credentials within 5 minutes."
+            facts={[
+              'Limited to 10 free trials per day due to supplier constraints',
+              'Works on Firestick, Smart TV, Android, iPhone, and all devices',
+              'Full 4K and HD quality during trial — no restrictions',
+            ]}
+            className="text-left"
+          />
 
         <div className="flex gap-6 justify-center flex-wrap mb-10">
           <div className="text-center">
