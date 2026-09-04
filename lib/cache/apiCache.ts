@@ -10,9 +10,18 @@ interface CacheEntry<T> {
   timestamp: number
 }
 
+const MAX_ENTRIES = 500
+
 class APICache {
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheEntry<unknown>>()
   private readonly DEFAULT_TTL = 3600 // 1 hour in seconds
+
+  constructor() {
+    // Periodically clear expired entries every 5 minutes
+    if (typeof setInterval !== 'undefined') {
+      setInterval(() => this.clearExpired(), 5 * 60 * 1000)
+    }
+  }
 
   /**
    * Get cached data if available and not expired
@@ -30,9 +39,27 @@ class APICache {
   }
 
   /**
-   * Set cache entry with TTL
+   * Set cache entry with TTL. Evicts oldest if at capacity.
    */
   set<T>(key: string, data: T, ttlSeconds: number = this.DEFAULT_TTL): void {
+    // Evict expired entries first if at capacity
+    if (this.cache.size >= MAX_ENTRIES) {
+      this.clearExpired()
+    }
+
+    // If still at capacity after clearing expired, evict oldest
+    if (this.cache.size >= MAX_ENTRIES) {
+      let oldestKey: string | null = null
+      let oldestTime = Infinity
+      for (const [k, v] of this.cache.entries()) {
+        if (v.timestamp < oldestTime) {
+          oldestTime = v.timestamp
+          oldestKey = k
+        }
+      }
+      if (oldestKey) this.cache.delete(oldestKey)
+    }
+
     const expiry = Date.now() + ttlSeconds * 1000
     this.cache.set(key, {
       data,
@@ -87,6 +114,7 @@ class APICache {
     this.clearExpired()
     return {
       size: this.cache.size,
+      maxSize: MAX_ENTRIES,
       keys: Array.from(this.cache.keys()),
     }
   }

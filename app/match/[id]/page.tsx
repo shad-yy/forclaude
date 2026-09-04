@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { ENV } from '@/lib/config/env'
@@ -204,7 +205,7 @@ export default async function MatchPage(
             <div className="flex flex-col items-center flex-1">
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#1a1a24]/80 border border-white/10 flex items-center justify-center p-2 backdrop-blur-sm shadow-xl">
                 {homeTeamBadge ? (
-                  <img src={homeTeamBadge} alt={homeTeam} className="w-full h-full object-contain" />
+                  <Image src={homeTeamBadge} alt={homeTeam} width={96} height={96} className="w-full h-full object-contain" unoptimized />
                 ) : (
                   <span className="text-xl font-bold text-gray-400">{homeTeam.substring(0, 3).toUpperCase()}</span>
                 )}
@@ -234,7 +235,7 @@ export default async function MatchPage(
             <div className="flex flex-col items-center flex-1">
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#1a1a24]/80 border border-white/10 flex items-center justify-center p-2 backdrop-blur-sm shadow-xl">
                 {awayTeamBadge ? (
-                  <img src={awayTeamBadge} alt={awayTeam} className="w-full h-full object-contain" />
+                  <Image src={awayTeamBadge} alt={awayTeam} width={96} height={96} className="w-full h-full object-contain" unoptimized />
                 ) : (
                   <span className="text-xl font-bold text-gray-400">{awayTeam.substring(0, 3).toUpperCase()}</span>
                 )}

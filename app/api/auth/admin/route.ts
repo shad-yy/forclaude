@@ -3,6 +3,9 @@ import { SignJWT, jwtVerify } from "jose"
 import { ENV } from "@/lib/config/env"
 import bcrypt from "bcryptjs"
 
+// Module-level rate limiter (typed, avoids globalThis as any)
+const adminRateLimit = new Map<string, { count: number; ts: number }>()
+
 // Admin password hash - securely stored in environment
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 
@@ -29,13 +32,12 @@ export async function POST(request: NextRequest) {
 
     // Basic IP-based rate limiting
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
-    ;(globalThis as any).__adminRateLimit = (globalThis as any).__adminRateLimit || new Map<string, { count: number; ts: number }>()
     const windowMs = 5 * 60 * 1000
     const limit = 10
-    const entry = (globalThis as any).__adminRateLimit.get(ip)
+    const entry = adminRateLimit.get(ip)
     const now = Date.now()
     if (!entry || now - entry.ts > windowMs) {
-      ;(globalThis as any).__adminRateLimit.set(ip, { count: 1, ts: now })
+      adminRateLimit.set(ip, { count: 1, ts: now })
     } else {
       entry.count += 1
       if (entry.count > limit) {
@@ -43,10 +45,9 @@ export async function POST(request: NextRequest) {
       }
     }
     // Clamp map size to avoid unbounded growth
-    const rateMap: Map<string, { count: number; ts: number }> = (globalThis as any).__adminRateLimit
-    if (rateMap.size > 1000) {
-      const oldestKey = [...rateMap.entries()].sort((a, b) => a[1].ts - b[1].ts)[0]?.[0]
-      if (oldestKey) rateMap.delete(oldestKey)
+    if (adminRateLimit.size > 1000) {
+      const oldestKey = [...adminRateLimit.entries()].sort((a, b) => a[1].ts - b[1].ts)[0]?.[0]
+      if (oldestKey) adminRateLimit.delete(oldestKey)
     }
 
     if (!isValidPassword) {

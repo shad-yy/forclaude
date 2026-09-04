@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { generateFAQSchema } from '@/lib/schema'
 import { LeagueBadge } from '@/components/league/league-badge'
@@ -8,6 +9,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 import { getUEFAMatches, getUEFAResults, UEFA_COMPETITIONS } from '@/lib/api/football-data'
+import type { SportsDbTable, SportsDbEvent } from '@/lib/types/sportsdb'
 
 export const metadata: Metadata = {
   title: 'Watch Champions League Live | Stream UCL Free Trial',
@@ -94,6 +96,13 @@ const renderForm = (formStr?: string) => {
   )
 }
 
+function getCurrentSeason(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth()
+  return month < 7 ? `${year - 1}-${year}` : `${year}-${year + 1}`
+}
+
 export default async function ChampionsLeaguePage() {
   const [upcoming, results] = await Promise.allSettled([
     getUEFAMatches(UEFA_COMPETITIONS.UCL, 8),
@@ -102,10 +111,12 @@ export default async function ChampionsLeaguePage() {
   const upcomingMatches = upcoming.status === 'fulfilled' ? upcoming.value : []
   const recentResults = results.status === 'fulfilled' ? results.value : []
 
+  const apiKey = ENV.THESPORTSDB_KEY
+  const season = getCurrentSeason()
   const [nextEvent, standings, pastEvents] = await Promise.allSettled([
-    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventsnextleague.php?id=4480'),
-    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/lookuptable.php?l=4480&s=2025-2026'),
-    fetchWithTimeout('https://www.thesportsdb.com/api/v1/json/123/eventspastleague.php?id=4480'),
+    fetchWithTimeout(`https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsnextleague.php?id=4480`),
+    fetchWithTimeout(`https://www.thesportsdb.com/api/v1/json/${apiKey}/lookuptable.php?l=4480&s=${season}`),
+    fetchWithTimeout(`https://www.thesportsdb.com/api/v1/json/${apiKey}/eventspastleague.php?id=4480`),
   ])
 
   const nextJson = nextEvent.status === 'fulfilled' ? nextEvent.value : null
@@ -113,8 +124,8 @@ export default async function ChampionsLeaguePage() {
   const pastJson = pastEvents.status === 'fulfilled' ? pastEvents.value : null
 
   const nextFixture = nextJson?.events?.[0] ?? null
-  const tableRows: any[] = Array.isArray(tableJson?.table) ? tableJson.table : []
-  const recent: any[] = Array.isArray(pastJson?.events) ? pastJson.events.slice(0, 3) : []
+  const tableRows: SportsDbTable[] = Array.isArray(tableJson?.table) ? tableJson.table : []
+  const recent: SportsDbEvent[] = Array.isArray(pastJson?.events) ? pastJson.events.slice(0, 3) : []
 
   const faqs = [
     {
@@ -216,10 +227,10 @@ export default async function ChampionsLeaguePage() {
                           text-right truncate max-w-[120px]">
                           {match.homeTeam.name}
                         </span>
-                        <img src={match.homeTeam.crest} 
+                        <Image src={match.homeTeam.crest} 
                           alt={match.homeTeam.name}
                           width={24} height={24}
-                          className="w-6 h-6 object-contain" />
+                          className="w-6 h-6 object-contain" unoptimized />
                       </div>
                       <div className="text-center px-3 flex-shrink-0">
                         <span className="font-extrabold text-white text-lg">
@@ -232,10 +243,10 @@ export default async function ChampionsLeaguePage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2 flex-1">
-                        <img src={match.awayTeam.crest}
+                        <Image src={match.awayTeam.crest}
                           alt={match.awayTeam.name}
                           width={24} height={24}
-                          className="w-6 h-6 object-contain" />
+                          className="w-6 h-6 object-contain" unoptimized />
                         <span className="text-white font-semibold text-sm 
                           truncate max-w-[120px]">
                           {match.awayTeam.name}
@@ -266,10 +277,10 @@ export default async function ChampionsLeaguePage() {
                           text-right truncate max-w-[120px]">
                           {match.homeTeam.name}
                         </span>
-                        <img src={match.homeTeam.crest} 
+                        <Image src={match.homeTeam.crest} 
                           alt={match.homeTeam.name}
                           width={24} height={24}
-                          className="w-6 h-6 object-contain" />
+                          className="w-6 h-6 object-contain" unoptimized />
                       </div>
                       <div className="text-center px-3 flex-shrink-0">
                         <span className="font-extrabold text-white text-lg">
@@ -284,10 +295,10 @@ export default async function ChampionsLeaguePage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2 flex-1">
-                        <img src={match.awayTeam.crest}
+                        <Image src={match.awayTeam.crest}
                           alt={match.awayTeam.name}
                           width={24} height={24}
-                          className="w-6 h-6 object-contain" />
+                          className="w-6 h-6 object-contain" unoptimized />
                         <span className="text-white font-semibold text-sm 
                           truncate max-w-[120px]">
                           {match.awayTeam.name}
@@ -322,7 +333,7 @@ export default async function ChampionsLeaguePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {tableRows.map((t: any, idx: number) => {
+                      {tableRows.map((t: SportsDbTable, idx: number) => {
                         const rank = Number(t.intRank ?? idx + 1)
                         const played = Number(t.intPlayed ?? 0)
                         const win = Number(t.intWin ?? 0)
