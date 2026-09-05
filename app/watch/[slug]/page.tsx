@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { unifiedSportsAPI } from '@/lib/api/unified-sports-api'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
@@ -12,6 +13,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 import { AnswerBlock } from '@/components/seo/AnswerBlock'
+import { KickoffCountdown } from '@/components/match/KickoffCountdown'
 
 /** Only append a size suffix if the URL doesn't already have one */
 function safeBadge(url: string | null | undefined, size: 'tiny' | 'small' | 'medium' = 'small'): string {
@@ -301,20 +303,34 @@ export default async function WatchLeaguePage({ params }: Props) {
                     {/* Upcoming Matches */}
                     <section className="py-16 md:py-20 border-t border-[#2a2a3a]">
                         <h2 className="text-2xl font-bold text-white mb-8 md:mb-12">Upcoming {theme.name} Fixtures</h2>
+                        {fixtures.length > 0 && fixtures[0]?.date && (
+                            <div className="mb-10 max-w-md mx-auto">
+                                <KickoffCountdown
+                                    targetDate={fixtures[0].date}
+                                    homeTeam={fixtures[0].homeTeam}
+                                    awayTeam={fixtures[0].awayTeam}
+                                />
+                            </div>
+                        )}
                         {fixtures.length > 0 ? (
                             <StaggerIn className="space-y-6">
                                 {fixtures.map((match: any) => (
                                     <div key={match.id} className="bg-gray-900 p-6 rounded-2xl border border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 hover:border-gray-700 transition">
                                         <div className="flex items-center gap-6 w-full md:w-auto flex-1">
                                             <div className="flex flex-col items-center w-24">
-                                                <img src={safeBadge(match.homeLogo)} alt={match.homeTeam} width={48} height={48} className="w-12 h-12 object-contain mb-2" />
+                                                <Image src={safeBadge(match.homeLogo)} alt={match.homeTeam} width={48} height={48} className="w-12 h-12 object-contain mb-2" unoptimized />
                                                 <span className="text-xs text-center font-bold text-gray-300">{match.homeTeam}</span>
                                             </div>
                                             <div className="text-center px-4 text-sm text-gray-500 font-bold">
                                                 VS<br /><span className="text-xs font-normal">{formatMatchDate(match.date)}</span>
+                                                {match.date && (
+                                                    <div className="mt-2">
+                                                        <KickoffCountdown targetDate={match.date} variant="badge" />
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="flex flex-col items-center w-24">
-                                                <img src={safeBadge(match.awayLogo)} alt={match.awayTeam} width={48} height={48} className="w-12 h-12 object-contain mb-2" />
+                                                <Image src={safeBadge(match.awayLogo)} alt={match.awayTeam} width={48} height={48} className="w-12 h-12 object-contain mb-2" unoptimized />
                                                 <span className="text-xs text-center font-bold text-gray-300">{match.awayTeam}</span>
                                             </div>
                                         </div>
