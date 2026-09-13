@@ -158,12 +158,39 @@ async function isUsernameAvailable(username: string, session: string): Promise<b
 }
 
 /**
+ * STRICT SECURITY CEILING:
+ * Free trials are strictly hardcoded to Package ID '8' (24 Hours Test Line).
+ * Under NO circumstances can any client parameter, request, or environment
+ * override create a trial line longer than 24 hours or consume paid credits.
+ */
+export const LOCKED_TRIAL_SUB_ID = '8' as const
+export const MAX_TRIAL_DURATION_MS = 24 * 60 * 60 * 1000 // Exactly 24 hours
+
+export function calculateStrictExpiry(rawExpiry?: string | number): string {
+  const maxAllowedTimestamp = Date.now() + MAX_TRIAL_DURATION_MS
+
+  if (!rawExpiry) {
+    return new Date(maxAllowedTimestamp).toISOString()
+  }
+
+  const parsedMs = typeof rawExpiry === 'number'
+    ? (rawExpiry > 1e11 ? rawExpiry : rawExpiry * 1000)
+    : new Date(rawExpiry).getTime()
+
+  // Strict Ceiling: If panel returns an expiry further than 24h + 10m buffer, cap it to exactly 24h
+  if (isNaN(parsedMs) || parsedMs > maxAllowedTimestamp + (10 * 60 * 1000)) {
+    return new Date(maxAllowedTimestamp).toISOString()
+  }
+
+  return new Date(parsedMs).toISOString()
+}
+
+/**
  * Create a 24-hour free trial line on the reseller panel.
  * Returns the credentials to send to the customer.
  */
 export async function createTrialAccount(customerName: string, comment?: string): Promise<CreateTrialResult> {
   const panelUrl = process.env.CMS8K_URL || 'https://cms-8k.com'
-  const trialSubId = process.env.CMS8K_TRIAL_SUB_ID || '8'
   const apiKey = process.env.CMS8K_API_KEY
 
   // 1. IF OFFICIAL GOLD PANEL API KEY IS CONFIGURED (Preferred & Cleanest)
@@ -175,7 +202,7 @@ export async function createTrialAccount(customerName: string, comment?: string)
         action: 'new',
         type: 'lines',
         mac: username,
-        sub_id: trialSubId,
+        sub_id: LOCKED_TRIAL_SUB_ID, // Strictly locked to 24h trial package
         country: '["ALL"]',
         api_key: apiKey,
       })
@@ -202,9 +229,7 @@ export async function createTrialAccount(customerName: string, comment?: string)
         const user = data.mac || data.username || username
         const pass = data.password || ''
         const server = data.server || process.env.CMS8K_SERVER_URL || panelUrl
-        const expiry = data.expire
-          ? (typeof data.expire === 'number' ? new Date(data.expire * 1000).toISOString() : new Date(data.expire).toISOString())
-          : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        const expiry = calculateStrictExpiry(data.expire)
 
         return {
           success: true,
@@ -239,7 +264,7 @@ export async function createTrialAccount(customerName: string, comment?: string)
   // Build the add_new request
   const data = {
     mac: username,
-    sub_id: trialSubId,
+    sub_id: LOCKED_TRIAL_SUB_ID, // Strictly locked to 24h trial package
     comment: comment || `Trial - ${customerName} - ${new Date().toISOString()}`,
     bouq_list: DEFAULT_BOUQUETS,
     type: 'lines',
@@ -347,10 +372,8 @@ async function getLineCredentials(username: string, session: string): Promise<Li
     const user = info.username || username
     const pass = info.password || ''
 
-    // Expiry from panel (Unix timestamp) or 24h from now for trial
-    const expiryTimestamp = info.exp_date
-      ? new Date(parseInt(info.exp_date) * 1000).toISOString()
-      : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    // Expiry capped strictly at maximum 24 hours
+    const expiryTimestamp = calculateStrictExpiry(info.exp_date)
 
     return {
       username: user,

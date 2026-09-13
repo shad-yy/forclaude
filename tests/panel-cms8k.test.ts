@@ -34,4 +34,33 @@ describe('CMS8K Reseller Panel Integration', () => {
       expect(DEFAULT_BOUQUETS).toContain('1533')
     })
   })
+
+  describe('Strict 24-Hour Security Ceiling', () => {
+    it('strictly locks trial package ID to 8 (24h trial package)', async () => {
+      const { LOCKED_TRIAL_SUB_ID } = await import('@/lib/panel/cms8k')
+      expect(LOCKED_TRIAL_SUB_ID).toBe('8')
+    })
+
+    it('caps any expiry timestamp to maximum 24 hours from now', async () => {
+      const { calculateStrictExpiry } = await import('@/lib/panel/cms8k')
+      const now = Date.now()
+      const maxAllowed = now + 24 * 60 * 60 * 1000
+
+      // If a rogue panel response claims 1 month (30 days from now)
+      const futureThirtyDays = now + 30 * 24 * 60 * 60 * 1000
+      const capped = calculateStrictExpiry(futureThirtyDays)
+      const cappedMs = new Date(capped).getTime()
+
+      // Must be capped within 24h (within 1 second of maxAllowed)
+      expect(cappedMs).toBeLessThanOrEqual(maxAllowed + 1000)
+    })
+
+    it('defaults to exactly 24 hours when no expiry is returned', async () => {
+      const { calculateStrictExpiry } = await import('@/lib/panel/cms8k')
+      const expected = Date.now() + 24 * 60 * 60 * 1000
+      const res = calculateStrictExpiry(undefined)
+      const diff = Math.abs(new Date(res).getTime() - expected)
+      expect(diff).toBeLessThan(1000) // Within 1s
+    })
+  })
 })
