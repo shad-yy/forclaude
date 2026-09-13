@@ -129,6 +129,16 @@ export function canonicalEmail(raw: string): string {
   return `${localClean}@${normDomain}`
 }
 
+export function isDisposableDomain(domain: string): boolean {
+  if (!domain) return false
+  const lower = domain.toLowerCase().trim()
+  if (DISPOSABLE_EMAIL_DOMAINS.has(lower)) return true
+  for (const blocked of DISPOSABLE_EMAIL_DOMAINS) {
+    if (lower.endsWith('.' + blocked)) return true
+  }
+  return false
+}
+
 // ─── Name & WhatsApp Helpers ──────────────────────────────────────────────────
 
 export function canonicalName(name: string): string {
@@ -136,7 +146,12 @@ export function canonicalName(name: string): string {
 }
 
 export function canonicalWhatsApp(raw: string): string {
-  return raw.replace(/\D/g, '')
+  const digits = raw.replace(/\D/g, '')
+  // Normalize UK mobile domestic format (07xxx -> 447xxx) so 07429313810 == +447429313810
+  if (digits.startsWith('07') && digits.length === 11) {
+    return '44' + digits.slice(1)
+  }
+  return digits
 }
 
 export function isFakePhone(digits: string): boolean {
@@ -175,9 +190,9 @@ export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResu
     }
   }
 
-  // 3. Disposable email check
+  // 3. Disposable email check (including subdomains)
   const domain = email.toLowerCase().split('@')[1]
-  if (domain && DISPOSABLE_EMAIL_DOMAINS.has(domain)) {
+  if (domain && isDisposableDomain(domain)) {
     return {
       allowed: false,
       reason: 'Temporary and disposable email addresses are not accepted for free trials.',
@@ -209,9 +224,28 @@ export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResu
 
   const canonical = canonicalEmail(email)
 
+  // 6b. Concurrency lock — prevent parallel racing requests with the same canonical email
+  const lockKey = `fraud:lock:${canonical}`
+  const lockAcquired = await redis.set(lockKey, '1', { nx: true, ex: 30 })
+  if (!lockAcquired) {
+    return {
+      allowed: false,
+      reason: 'A trial request is already being processed for this account. Please wait.',
+      flagType: 'duplicate_email',
+    }
+  }
+
+  // Helper to release concurrency lock on early rejection
+  const releaseLock = async () => {
+    if (redis) {
+      try { await redis.del(lockKey) } catch {}
+    }
+  }
+
   // 7. Exact email duplicate
   const exactId = await redis.get<string>(`customer:email:${email.toLowerCase().trim()}`)
   if (exactId) {
+    await releaseLock()
     return {
       allowed: false,
       reason: 'This email address has already been used for a free trial.',
@@ -222,6 +256,7 @@ export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResu
   // 8. Canonical email duplicate (dot trick & alias)
   const canonicalId = await redis.get<string>(`fraud:canonical:${canonical}`)
   if (canonicalId) {
+    await releaseLock()
     return {
       allowed: false,
       reason: 'An account with this email address (or a variation of it) has already received a trial.',
@@ -233,6 +268,7 @@ export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResu
   if (canonWhatsApp.length >= 7) {
     const waId = await redis.get<string>(`fraud:whatsapp:${canonWhatsApp}`)
     if (waId) {
+      await releaseLock()
       return {
         allowed: false,
         reason: 'This WhatsApp number has already been used for a free trial.',
@@ -246,6 +282,7 @@ export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResu
     const nameDeviceKey = `fraud:name_device:${canonicalName(name)}:${device.toLowerCase().replace(/\s+/g, '_')}`
     const ndId = await redis.get<string>(nameDeviceKey)
     if (ndId) {
+      await releaseLock()
       return {
         allowed: false,
         reason: 'A trial was recently issued with the same name and device combination.',
@@ -333,6 +370,15 @@ export function checkSuspiciousPatterns(name: string, email: string): FraudCheck
     return {
       allowed: false,
       reason: 'Please provide your full name.',
+      flagType: 'suspicious_pattern',
+    }
+  }
+
+  // Name must contain at least one letter (prevents punctuation-only bot names like "...", "---", "$$$")
+  if (!/[a-zA-Z\u00C0-\u024F\u1E00-\u1EFF]/.test(trimmedName)) {
+    return {
+      allowed: false,
+      reason: 'Please provide your real name.',
       flagType: 'suspicious_pattern',
     }
   }

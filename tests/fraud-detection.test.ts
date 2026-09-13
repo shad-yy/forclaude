@@ -69,9 +69,10 @@ describe('Fraud & Anti-Spam Detection', () => {
   })
 
   describe('Phone number validation & anti-spam', () => {
-    it('normalises phone numbers by stripping non-digit characters', () => {
+    it('normalises phone numbers by stripping non-digits and converting UK 07x to 447x', () => {
       expect(canonicalWhatsApp('+44 7429 313810')).toBe('447429313810')
-      expect(canonicalWhatsApp('(074) 29-313-810')).toBe('07429313810')
+      expect(canonicalWhatsApp('(074) 29-313-810')).toBe('447429313810')
+      expect(canonicalWhatsApp('07429 313810')).toBe('447429313810')
     })
 
     it('detects fake or repeating phone numbers', () => {

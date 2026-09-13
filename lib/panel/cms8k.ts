@@ -178,7 +178,8 @@ export function calculateStrictExpiry(rawExpiry?: string | number): string {
     : new Date(rawExpiry).getTime()
 
   // Strict Ceiling: If panel returns an expiry further than 24h + 10m buffer, cap it to exactly 24h
-  if (isNaN(parsedMs) || parsedMs > maxAllowedTimestamp + (10 * 60 * 1000)) {
+  // Also guard against invalid/epoch/past timestamps by defaulting to 24h from now
+  if (isNaN(parsedMs) || parsedMs <= Date.now() || parsedMs > maxAllowedTimestamp + (10 * 60 * 1000)) {
     return new Date(maxAllowedTimestamp).toISOString()
   }
 
