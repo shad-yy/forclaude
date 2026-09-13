@@ -1,6 +1,7 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Check } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 
 interface Plan {
   id: string
@@ -23,6 +24,18 @@ export function BuyForm({ plans }: { plans: Plan[] }) {
     device: '',
   })
 
+  const searchParams = useSearchParams()
+
+  // Check for Stripe redirect results
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      setSubmitted(true)
+    }
+    if (searchParams.get('cancelled') === 'true') {
+      setError('Payment was cancelled. You can try again whenever you\'re ready.')
+    }
+  }, [searchParams])
+
   const set = (key: string) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => setForm(f => ({ ...f, [key]: e.target.value }))
@@ -41,12 +54,36 @@ export function BuyForm({ plans }: { plans: Plan[] }) {
     setError('')
     setLoading(true)
     try {
+      // Try Stripe checkout first
+      const checkoutRes = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: selectedPlan,
+          name: form.name,
+          email: form.email,
+          whatsapp: form.whatsapp,
+          device: form.device,
+        }),
+      })
+
+      if (checkoutRes.ok) {
+        const { url } = await checkoutRes.json()
+        if (url) {
+          // Redirect to Stripe Checkout
+          window.location.href = url
+          return
+        }
+      }
+
+      // Fallback: if Stripe not configured, submit as order request (old behaviour)
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
           plan: selectedPlanData?.name || selectedPlan,
+          device: form.device,
           message: `Purchase request: ${selectedPlanData?.period} (${selectedPlanData?.price}) | Device: ${form.device}`,
         }),
       })
@@ -66,16 +103,21 @@ export function BuyForm({ plans }: { plans: Plan[] }) {
           <Check className="w-8 h-8 text-[#00e676]" />
         </div>
         <h2 className="text-2xl font-extrabold text-white mb-3">
-          Order Received!
+          {searchParams.get('success') ? 'Payment Confirmed! ✅' : 'Order Received!'}
         </h2>
         <p className="text-gray-400 mb-2">
-          We&apos;ll send your credentials to your WhatsApp within 5 minutes.
+          {searchParams.get('success')
+            ? 'Your payment has been processed successfully. We\'ll send your credentials to your WhatsApp within 5 minutes.'
+            : 'We\'ll send your credentials to your WhatsApp within 5 minutes.'
+          }
         </p>
-        <p className="text-sm text-gray-500">
-          Plan: <span className="text-white font-bold">
-            {selectedPlanData?.period} — {selectedPlanData?.price}
-          </span>
-        </p>
+        {selectedPlanData && (
+          <p className="text-sm text-gray-500">
+            Plan: <span className="text-white font-bold">
+              {selectedPlanData.period} — {selectedPlanData.price}
+            </span>
+          </p>
+        )}
       </div>
     )
   }
@@ -190,8 +232,15 @@ export function BuyForm({ plans }: { plans: Plan[] }) {
         disabled={loading}
         className="w-full bg-[#00e676] hover:bg-[#00ff87] disabled:opacity-50 text-black font-extrabold py-4 rounded-xl text-base transition-all shadow-[0_0_20px_rgba(0,230,118,0.3)] touch-manipulation active:scale-[0.98]"
       >
-        {loading ? 'Processing...' : `Get Access Now — ${selectedPlanData?.price} →`}
+        {loading ? 'Redirecting to checkout...' : `Pay Securely — ${selectedPlanData?.price} →`}
       </button>
+
+      <div className="flex items-center justify-center gap-2 text-xs text-gray-600">
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        Secure checkout powered by Stripe · 256-bit SSL encrypted
+      </div>
 
       <p className="text-center text-xs text-gray-600">
         By submitting you agree to our{' '}
