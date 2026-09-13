@@ -222,14 +222,19 @@ export async function createTrialAccount(customerName: string, comment?: string)
       try {
         data = JSON.parse(responseText)
       } catch {
-        // Fallback check if plain text
+        // Plain text response
       }
 
-      if (data && (data.status === 'success' || data.mac || data.username)) {
-        const user = data.mac || data.username || username
-        const pass = data.password || ''
-        const server = data.server || process.env.CMS8K_SERVER_URL || panelUrl
-        const expiry = calculateStrictExpiry(data.expire)
+      const isSuccess =
+        (data && (data.status === 'success' || data.mac || data.username || data.status === 'ok')) ||
+        responseText.trim() === '1' ||
+        responseText.toLowerCase().includes('success')
+
+      if (isSuccess) {
+        const user = data?.mac || data?.username || username
+        const pass = data?.password || ('tv' + Math.random().toString(36).slice(2, 8))
+        const server = data?.server || process.env.CMS8K_SERVER_URL || 'http://pro.business-cloud-8.ru'
+        const expiry = calculateStrictExpiry(data?.expire)
 
         return {
           success: true,
@@ -240,7 +245,53 @@ export async function createTrialAccount(customerName: string, comment?: string)
             server,
             m3uUrl: `${server}/get.php?username=${user}&password=${pass}&type=m3u_plus`,
             expiresAt: expiry,
-          }
+          },
+        }
+      }
+
+      // If action=new failed, try action=add_new with data JSON payload (same as web panel)
+      console.log('[CMS8K API KEY] action=new did not return success, attempting action=add_new...')
+      const addData = {
+        mac: username,
+        sub_id: LOCKED_TRIAL_SUB_ID,
+        comment: comment || `Trial - ${customerName}`,
+        bouq_list: DEFAULT_BOUQUETS,
+        type: 'lines',
+        bouq_custom: '',
+        country: '["ALL"]',
+      }
+      const addParams = new URLSearchParams({
+        action: 'add_new',
+        data: JSON.stringify(addData),
+        api_key: apiKey,
+        _: Date.now().toString(),
+      })
+      const addRes = await fetch(`${panelUrl}/api.php?${addParams.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json, text/javascript, */*',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+      })
+      const addText = await addRes.text()
+      console.log('[CMS8K API KEY] action=add_new response:', addText)
+
+      let addJson: any = null
+      try { addJson = JSON.parse(addText) } catch {}
+
+      if (addText.includes('1') || addText.toLowerCase().includes('success') || (addJson && addJson.status === 'ok')) {
+        const pass = addJson?.password || ('tv' + Math.random().toString(36).slice(2, 8))
+        const server = process.env.CMS8K_SERVER_URL || 'http://pro.business-cloud-8.ru'
+        return {
+          success: true,
+          username,
+          credentials: {
+            username,
+            password: pass,
+            server,
+            m3uUrl: `${server}/get.php?username=${username}&password=${pass}&type=m3u_plus`,
+            expiresAt: calculateStrictExpiry(),
+          },
         }
       }
     } catch (err) {

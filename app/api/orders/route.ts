@@ -311,20 +311,30 @@ export async function POST(req: NextRequest) {
     }
 
     // AUTO-PROVISION TRIAL — if panel is configured, create the account automatically
-    const isPanelConfigured = !!(process.env.CMS8K_USERNAME && process.env.CMS8K_PASSWORD)
+    const isPanelConfigured = !!(
+      process.env.CMS8K_API_KEY ||
+      (process.env.CMS8K_USERNAME && process.env.CMS8K_PASSWORD)
+    )
     const isTrialPlan = plan === 'Free Trial Request'
 
+    console.log(`[ORDER] Processing order for ${email}. isTrial: ${isTrialPlan}, isPanelConfigured: ${isPanelConfigured}`)
+
     if (isTrialPlan && isPanelConfigured && resendKey) {
-      // Fire-and-forget — don't block the 200 response to customer
-      provisionTrialAndNotify({
-        customerId: savedCustomerId,
-        name,
-        email,
-        whatsapp: whatsapp || '',
-        resendKey,
-      }).catch(err => {
+      try {
+        console.log(`[ORDER] Starting automated trial provisioning for ${email}...`)
+        await provisionTrialAndNotify({
+          customerId: savedCustomerId,
+          name,
+          email,
+          whatsapp: whatsapp || '',
+          resendKey,
+        })
+        console.log(`[ORDER] Automated trial provisioning completed for ${email}`)
+      } catch (err) {
         console.error('[ORDER] Background provisioning failed:', err)
-      })
+      }
+    } else if (isTrialPlan && !isPanelConfigured) {
+      console.warn('[ORDER] Trial requested but CMS8K panel is not configured! Check CMS8K_API_KEY or CMS8K_USERNAME in Vercel environment variables.')
     }
 
     return NextResponse.json({ success: true })
