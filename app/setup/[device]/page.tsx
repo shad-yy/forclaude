@@ -9,6 +9,7 @@ import { StaggerIn } from "@/components/ui/stagger-in"
 import { ShimmerButton } from "@/components/ui/shimmer-button"
 import { SpeedChecker } from '@/components/ui/SpeedChecker'
 import { FirestickWizard } from '@/components/setup/FirestickWizard'
+import { RecommendedApps } from '@/components/setup/RecommendedApps'
 
 const DEVICES = {
     'firestick': { name: 'Firestick' },
@@ -132,27 +133,27 @@ export default async function SetupDevicePage({ params }: Props) {
 
     const howToSteps: Record<string, Array<{name: string; text: string}>> = {
       firestick: [
-        { name: 'Enable Unknown Sources', text: 'Go to Settings → My Fire TV → Developer Options → Apps from Unknown Sources → turn ON.' },
-        { name: 'Install Downloader App', text: 'Search for "Downloader" in the Amazon Appstore and install it for free.' },
-        { name: 'Download the IPTV Player', text: 'Open Downloader and enter the URL provided in your Smart Live TV welcome email.' },
-        { name: 'Enter Your Credentials', text: 'Open the IPTV app, enter your username and password from your Smart Live TV account.' },
-        { name: 'Start Watching', text: 'Navigate to Live TV → Sports to find all Premier League, Champions League and sports channels.' },
+        { name: 'Enable Unknown Sources', text: 'Go to Settings → My Fire TV → About → click device name 7 times. Then go back to My Fire TV → Developer Options → Install Unknown Apps → turn ON for Downloader.' },
+        { name: 'Install Downloader App', text: 'Search for "Downloader" in the Amazon Appstore and install it for free (orange icon by AFTVnews).' },
+        { name: 'Choose and Install Your IPTV Player', text: 'Open Downloader and enter the code for your chosen app. We recommend TiviMate (code: 278077), IPTV Smarters (code: 250931), or XCIPTV (code: 548268). See all app options below.' },
+        { name: 'Enter Your Smart Live TV Credentials', text: 'Open the app, select "Xtream Codes API" or "Login", and enter the server URL, username, and password from your Smart Live TV account.' },
+        { name: 'Start Watching', text: 'The app will load your channels automatically. Navigate to Live TV → Sports for all Premier League, Champions League, UFC, and more.' },
       ],
       'smart-tv': [
-        { name: 'Open Smart Hub or App Store', text: 'Press the Home button on your remote and navigate to Apps or Smart Hub.' },
-        { name: 'Search for IPTV Player', text: 'Search for "Smart IPTV" or "IPTV Smarters" in the app store and install.' },
-        { name: 'Enter Your Playlist URL', text: 'Open the app and enter the M3U URL provided in your Smart Live TV welcome email.' },
-        { name: 'Load Your Channels', text: 'The app will load your 230,000+ channels automatically. Navigate to Sports for live matches.' },
+        { name: 'Open Your TV App Store', text: 'Press the Home button on your remote and navigate to Apps, Smart Hub (Samsung), or the LG Content Store (LG).' },
+        { name: 'Choose and Install an IPTV Player', text: 'Search for "IBO Player" (recommended — lets you set up from your phone), "Smarters Player Lite", or "Flix IPTV". See all app options below.' },
+        { name: 'Enter Your Smart Live TV Details', text: 'Open the app and select "Xtream Codes" login. Enter the server URL, username, and password we sent you. For IBO Player, you can do this from your phone at iboplayer.com using your TV\'s MAC address.' },
+        { name: 'Start Watching', text: 'The app will load your 230,000+ channels automatically. Navigate to Sports for live matches, or Movies for on-demand content.' },
       ],
       android: [
-        { name: 'Download the App', text: 'Go to Google Play Store and download "IPTV Smarters Pro" or the app link we provide.' },
-        { name: 'Open and Add Playlist', text: 'Open the app, tap "Add User" and enter your Smart Live TV login credentials.' },
-        { name: 'Select Your Content', text: 'Choose Live TV for sports channels, or VOD for movies and on-demand content.' },
+        { name: 'Download an IPTV Player', text: 'Go to Google Play Store and search for "Televizo" (best for phones), "IPTV Smarters Pro" (easiest), or "XCIPTV" (best for movies). See all app options below.' },
+        { name: 'Open and Add Your Account', text: 'Open the app, select "Xtream Codes API" or "Add User", and enter your Smart Live TV server URL, username, and password.' },
+        { name: 'Browse and Watch', text: 'Choose Live TV for sports channels, Movies for on-demand films, or Series for box sets. All 230,000+ channels are included.' },
       ],
       iphone: [
-        { name: 'Download the App', text: 'Go to the App Store and download "GSE Smart IPTV" or the player app we recommend.' },
-        { name: 'Add Your Playlist', text: 'In the app settings, add playlist URL and enter the M3U link from your welcome email.' },
-        { name: 'Browse Channels', text: 'Open Live TV and navigate to Sports for all live sports channels in HD and 4K.' },
+        { name: 'Download an IPTV Player', text: 'Go to the App Store and search for "UHF" (best overall — syncs across Apple devices), "Smarters Player Lite" (free), or "IPTVX" (best for movies). See all app options below.' },
+        { name: 'Add Your Smart Live TV Account', text: 'Open the app, select "Xtream Codes" login, and enter the server URL, username, and password from your welcome message.' },
+        { name: 'Start Streaming', text: 'Browse Live TV for sports channels in HD and 4K, or explore Movies and Series for on-demand content across 230,000+ channels.' },
       ],
     }
 
@@ -221,8 +222,8 @@ export default async function SetupDevicePage({ params }: Props) {
                             <div className="flex gap-4">
                                 <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">2</div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Install an IPTV Player on your {deviceParams.name}</h3>
-                                    <p className="text-gray-400">Open your device's app store and search for a standard player like "IPTV Smarters", "TiviMate", or "XCIPTV". Download and install it for free.</p>
+                                    <h3 className="text-xl font-bold text-white mb-2">Choose and install an IPTV player on your {deviceParams.name}</h3>
+                                    <p className="text-gray-400">Pick any IPTV player app that suits you — we recommend several options below. All work with your Smart Live TV credentials. Install from your app store or via Downloader (Firestick).</p>
                                 </div>
                             </div>
 
@@ -252,6 +253,11 @@ export default async function SetupDevicePage({ params }: Props) {
                             </ShimmerButton>
                         </div>
                     </section>
+                    </FadeIn>
+
+                    {/* Recommended Apps Section */}
+                    <FadeIn direction="up">
+                      <RecommendedApps device={params.device} />
                     </FadeIn>
 
                     {params.device === 'firestick' && (
