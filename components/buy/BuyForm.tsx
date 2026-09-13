@@ -16,6 +16,7 @@ export function BuyForm({ plans }: { plans: Plan[] }) {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [honeypot, setHoneypot] = useState('')
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -48,13 +49,18 @@ export function BuyForm({ plans }: { plans: Plan[] }) {
           ...form,
           plan: selectedPlanData?.name || selectedPlan,
           device: form.device,
+          hp_website: honeypot,
           message: `Purchase request: ${selectedPlanData?.period} (${selectedPlanData?.price}) | Device: ${form.device}`,
         }),
       })
-      if (!res.ok) throw new Error('Failed')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed')
+      }
       setSubmitted(true)
-    } catch {
-      setError('Something went wrong. Message us on WhatsApp instead.')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong. Message us on WhatsApp instead.'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -116,6 +122,20 @@ export function BuyForm({ plans }: { plans: Plan[] }) {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Invisible Honeypot to trap automated bots */}
+      <div style={{ display: 'none', opacity: 0, position: 'absolute', left: '-9999px' }} aria-hidden="true">
+        <label htmlFor="hp_website_buy">Do not fill this field</label>
+        <input
+          id="hp_website_buy"
+          type="text"
+          name="hp_website_buy"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={e => setHoneypot(e.target.value)}
+        />
       </div>
 
       {/* Form fields */}

@@ -37,7 +37,7 @@ export type CreateTrialResult =
     }
 
 // The full bouquet list from HAR — all channel packages
-const DEFAULT_BOUQUETS = [
+export const DEFAULT_BOUQUETS = [
   "1079","1299","1533","35","1222","1264","13","67","17","5","43","6","14","3",
   "15","1","7","1168","1587","18","19","21","20","168","199","200","201","1269",
   "4","8","22","38","98","56","1594","110","1180","45","12","1492","31","28",
@@ -118,7 +118,7 @@ async function getSession(): Promise<string | null> {
  * Format: SLTV_{first5charsOfName}_{random4digits}
  * e.g. "SLTV_James_4821"
  */
-function generateUsername(customerName: string): string {
+export function generateUsername(customerName: string): string {
   const clean = customerName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 5).toLowerCase()
   const rand = Math.floor(1000 + Math.random() * 9000)
   return `SLTV_${clean}_${rand}`

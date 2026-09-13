@@ -19,6 +19,8 @@ const orderSchema = z.object({
   ]),
   message: z.string().max(500).optional(),
   device: z.string().max(100).optional(),
+  hp_website: z.string().max(100).optional(),
+  form_loaded_at: z.number().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -32,10 +34,10 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
-    const { name, email, whatsapp, plan, message, device } = parsed.data
+    const { name, email, whatsapp, plan, message, device, hp_website, form_loaded_at } = parsed.data
     const isTrial = plan === 'Free Trial Request'
 
-    // ─── FRAUD DETECTION (trials only) ───────────────────────────────────────
+    // ─── FRAUD & ANTI-SPAM DETECTION (trials only) ───────────────────────────
     if (isTrial) {
       const ip =
         req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -49,22 +51,31 @@ export async function POST(req: NextRequest) {
         device: device || '',
         country: '',
         ip,
+        honeypot: hp_website,
+        formLoadedAt: form_loaded_at,
       })
 
       if (!fraudResult.allowed) {
         // Log for your review — includes all their details
         await logBlockedRequest(
-          { email, name, whatsapp: whatsapp || '', device: device || '', country: '', ip },
+          {
+            email,
+            name,
+            whatsapp: whatsapp || '',
+            device: device || '',
+            country: '',
+            ip,
+            honeypot: hp_website,
+            formLoadedAt: form_loaded_at,
+          },
           fraudResult
         )
 
         console.warn(`[FRAUD] Blocked trial for ${email} — ${fraudResult.flagType}: ${fraudResult.reason}`)
 
-        // Return a polite generic message — don't reveal what triggered the block
-        // This prevents people from knowing what to change to bypass it
         return NextResponse.json({
           success: false,
-          error: 'We were unable to process your trial request. Please contact support via WhatsApp.',
+          error: fraudResult.reason,
         }, { status: 429 })
       }
     }

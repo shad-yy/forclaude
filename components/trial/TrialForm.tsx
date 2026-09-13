@@ -33,6 +33,8 @@ export function TrialForm() {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const [honeypot, setHoneypot] = useState("")
+  const formLoadedAt = useRef(Date.now())
 
   const captchaRef = useRef<HCaptcha>(null)
   const [captchaToken, setCaptchaToken] = useState("")
@@ -78,15 +80,21 @@ export function TrialForm() {
           ...form,
           plan: "Free Trial Request",
           captchaToken,
+          hp_website: honeypot,
+          form_loaded_at: formLoadedAt.current,
           message: `Device: ${form.device} | Connection: ${form.connectionType} | Speed: ${form.internetSpeed} | Country: ${form.country}`,
         }),
       })
 
-      if (!res.ok) throw new Error("Submission failed")
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || "Submission failed")
+      }
       setSubmitted(true)
       trackEvent('trial_request', 'conversion', form.device)
-    } catch {
-      setError("Something went wrong. Please try WhatsApp instead.")
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try WhatsApp instead."
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -127,6 +135,20 @@ export function TrialForm() {
 
   return (
     <div className="space-y-5">
+      {/* Invisible Honeypot to trap automated bots */}
+      <div style={{ display: "none", opacity: 0, position: "absolute", left: "-9999px" }} aria-hidden="true">
+        <label htmlFor="hp_website">Do not fill this field</label>
+        <input
+          id="hp_website"
+          type="text"
+          name="hp_website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={e => setHoneypot(e.target.value)}
+        />
+      </div>
+
       {/* Name + Email */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>

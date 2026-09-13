@@ -1,22 +1,19 @@
 /**
- * Fraud Detection for Trial Requests
+ * Fraud Detection & Anti-Spam for Trial Requests
  *
  * Checks performed before allowing a trial to be provisioned:
  *
- * 1. CANONICAL EMAIL — Gmail dot trick normalization
- *    jakob.fer@gmail.com == jakobfer@gmail.com == j.a.k.o.b.f.e.r@gmail.com
- *    Also handles googlemail.com alias.
- *
- * 2. DUPLICATE EMAIL — exact + canonical match against DB
- *
- * 3. DUPLICATE WHATSAPP — same phone number, different email
- *
- * 4. FUZZY NAME MATCH — catches "Jack Smith" vs "Jack  Smith" vs "JACK SMITH"
- *    combined with same device/country fingerprint
- *
- * 5. IP RATE LIMIT — max 2 trial requests per IP per 48 hours
- *
- * 6. SUSPICIOUS PATTERNS — e.g. name contains digits, obvious fakes
+ * 1. HONEYPOT FIELD — Catches automated web scrapers and spam bots
+ * 2. SUBMISSION SPEED — Rejects scripts that submit the form in under 1.5 seconds
+ * 3. DISPOSABLE EMAIL BLOCKLIST — Blocks temp/burner emails (10minutemail, mailinator, etc.)
+ * 4. GMAIL DOT TRICK NORMALIZATION — Normalises j.a.c.k.o.b.f.e.r@gmail.com == jackobfer@gmail.com
+ * 5. DUPLICATE EMAIL CHECK — Prevents multiple trial requests with same email/canonical email
+ * 6. FAKE / SPAM PHONE DETECTION — Rejects repeating digits (000000000, 111111111), <7 digits
+ * 7. DUPLICATE WHATSAPP CHECK — Prevents same phone with different emails
+ * 8. NAME + DEVICE FINGERPRINT — Blocks name & device combos churning trials
+ * 9. IP BURST COOLDOWN — 1 request per 3 minutes per IP (stops spam clicking/looping)
+ * 10. IP RATE LIMIT — Max 2 trial requests per IP per 48 hours
+ * 11. SUSPICIOUS PATTERNS — Numeric names, gibberish, abnormal handle lengths
  */
 
 import { Redis } from '@upstash/redis'
@@ -34,21 +31,76 @@ export type FraudCheckResult =
   | { allowed: false; reason: string; flagType: FlagType }
 
 export type FlagType =
+  | 'honeypot'
+  | 'bot_speed'
+  | 'disposable_email'
   | 'duplicate_email'
   | 'duplicate_email_dot_trick'
+  | 'fake_phone'
   | 'duplicate_whatsapp'
   | 'duplicate_name_device'
+  | 'ip_cooldown'
   | 'ip_rate_limit'
   | 'suspicious_pattern'
 
-interface FraudCheckInput {
+export interface FraudCheckInput {
   email: string
   name: string
   whatsapp: string
   device: string
   country: string
   ip: string
+  honeypot?: string
+  formLoadedAt?: number
 }
+
+// ─── Known Disposable Email Domains ──────────────────────────────────────────
+
+export const DISPOSABLE_EMAIL_DOMAINS = new Set([
+  '10minutemail.com',
+  '10minutemail.net',
+  'guerrillamail.com',
+  'guerrillamail.net',
+  'guerrillamail.org',
+  'sharklasers.com',
+  'grr.la',
+  'mailinator.com',
+  'yopmail.com',
+  'yopmail.fr',
+  'tempmail.com',
+  'temp-mail.org',
+  'temp-mail.io',
+  'throwawaymail.com',
+  'dispostable.com',
+  'fakemailgenerator.com',
+  'trashmail.com',
+  'getairmail.com',
+  'mohmal.com',
+  'crazymailing.com',
+  'nada.ltd',
+  'inboxkitten.com',
+  'generator.email',
+  'burnermail.io',
+  'minuteinbox.com',
+  'mytemp.email',
+  'emailondeck.com',
+  'tempail.com',
+  'fakemail.net',
+  'dropmail.me',
+  'maildrop.cc',
+  'fakeinbox.com',
+  'trashmail.net',
+  'armyspy.com',
+  'cuvox.de',
+  'dayrep.com',
+  'einrot.com',
+  'fleckens.hu',
+  'gustr.com',
+  'jourrapide.com',
+  'rhyta.com',
+  'superrito.com',
+  'teleworm.us',
+])
 
 // ─── Email Normalisation ──────────────────────────────────────────────────────
 
@@ -58,7 +110,7 @@ interface FraudCheckInput {
  * - Strips the +alias suffix
  * - Normalises googlemail.com → gmail.com
  *
- * For non-Gmail providers, returns the email lowercased only.
+ * For non-Gmail providers, strips aliases and lowercases.
  */
 export function canonicalEmail(raw: string): string {
   const lower = raw.toLowerCase().trim()
@@ -69,108 +121,134 @@ export function canonicalEmail(raw: string): string {
   const isGmail = normDomain === 'gmail.com'
 
   if (isGmail) {
-    // Strip + alias suffix, then strip all dots
     const localClean = local.split('+')[0].replace(/\./g, '')
     return `${localClean}@${normDomain}`
   }
 
-  // For other providers: strip + alias, lowercase — dots are significant
   const localClean = local.split('+')[0]
   return `${localClean}@${normDomain}`
 }
 
-// ─── Name Normalisation ───────────────────────────────────────────────────────
+// ─── Name & WhatsApp Helpers ──────────────────────────────────────────────────
 
-function canonicalName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, ' ')   // collapse multiple spaces
-    .trim()
+export function canonicalName(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, ' ').trim()
 }
 
-function namesSimilar(a: string, b: string): boolean {
-  const ca = canonicalName(a)
-  const cb = canonicalName(b)
-  if (ca === cb) return true
-
-  // Check if one name is contained in the other (e.g. "Jack" vs "Jack Smith")
-  if (ca.split(' ')[0] === cb.split(' ')[0] && (ca.length < 6 || cb.length < 6)) {
-    return true
-  }
-
-  return false
-}
-
-// ─── WhatsApp Normalisation ───────────────────────────────────────────────────
-
-function canonicalWhatsApp(raw: string): string {
-  // Strip all non-digits
+export function canonicalWhatsApp(raw: string): string {
   return raw.replace(/\D/g, '')
 }
 
-// ─── Main Fraud Check ─────────────────────────────────────────────────────────
+export function isFakePhone(digits: string): boolean {
+  if (digits.length < 7 || digits.length > 15) return true
+  // Check all identical digits (e.g. 0000000000, 1111111111)
+  if (/^(\d)\1+$/.test(digits)) return true
+  // Check sequential digits (123456789, 987654321)
+  if ('01234567890123456789'.includes(digits)) return true
+  if ('98765432109876543210'.includes(digits)) return true
+  return false
+}
+
+// ─── Main Fraud & Spam Check ──────────────────────────────────────────────────
 
 export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResult> {
-  const { email, name, whatsapp, device, country, ip } = input
+  const { email, name, whatsapp, device, ip, honeypot, formLoadedAt } = input
 
-  // 1. Suspicious pattern check (fast, no DB needed)
-  const suspiciousResult = checkSuspiciousPatterns(name, email)
-  if (!suspiciousResult.allowed) return suspiciousResult
-
-  // 2. IP rate limit
-  const ipResult = await checkIpRateLimit(ip)
-  if (!ipResult.allowed) return ipResult
-
-  if (!redis) {
-    // No DB — can only do IP check, allow through
-    return { allowed: true }
-  }
-
-  const canonical = canonicalEmail(email)
-  const canonWhatsApp = canonicalWhatsApp(whatsapp)
-
-  // 3. Exact email duplicate
-  const exactId = await redis.get<string>(`customer:email:${email}`)
-  if (exactId) {
+  // 1. Honeypot check — bots fill hidden fields automatically
+  if (honeypot && honeypot.trim().length > 0) {
     return {
       allowed: false,
-      reason: `This email address has already been used for a free trial.`,
-      flagType: 'duplicate_email',
+      reason: 'Spam detected.',
+      flagType: 'honeypot',
     }
   }
 
-  // 4. Canonical email duplicate (dot trick)
-  if (canonical !== email) {
-    const canonicalId = await redis.get<string>(`fraud:canonical:${canonical}`)
-    if (canonicalId) {
+  // 2. Submission speed check — humans take >1.5s to fill a form
+  if (formLoadedAt && typeof formLoadedAt === 'number') {
+    const elapsed = Date.now() - formLoadedAt
+    if (elapsed > 0 && elapsed < 1500) {
       return {
         allowed: false,
-        reason: `An account with this email address (or a variation of it) has already received a trial.`,
-        flagType: 'duplicate_email_dot_trick',
+        reason: 'Submission too fast. Please take your time to fill the form.',
+        flagType: 'bot_speed',
       }
     }
   }
 
-  // 5. Duplicate WhatsApp number
+  // 3. Disposable email check
+  const domain = email.toLowerCase().split('@')[1]
+  if (domain && DISPOSABLE_EMAIL_DOMAINS.has(domain)) {
+    return {
+      allowed: false,
+      reason: 'Temporary and disposable email addresses are not accepted for free trials.',
+      flagType: 'disposable_email',
+    }
+  }
+
+  // 4. Fake or spam phone check
+  const canonWhatsApp = canonicalWhatsApp(whatsapp)
+  if (isFakePhone(canonWhatsApp)) {
+    return {
+      allowed: false,
+      reason: 'Please enter a valid WhatsApp phone number where we can deliver your credentials.',
+      flagType: 'fake_phone',
+    }
+  }
+
+  // 5. Suspicious pattern check
+  const suspiciousResult = checkSuspiciousPatterns(name, email)
+  if (!suspiciousResult.allowed) return suspiciousResult
+
+  // 6. IP burst cooldown & rate limit
+  const ipResult = await checkIpLimits(ip)
+  if (!ipResult.allowed) return ipResult
+
+  if (!redis) {
+    return { allowed: true }
+  }
+
+  const canonical = canonicalEmail(email)
+
+  // 7. Exact email duplicate
+  const exactId = await redis.get<string>(`customer:email:${email.toLowerCase().trim()}`)
+  if (exactId) {
+    return {
+      allowed: false,
+      reason: 'This email address has already been used for a free trial.',
+      flagType: 'duplicate_email',
+    }
+  }
+
+  // 8. Canonical email duplicate (dot trick & alias)
+  const canonicalId = await redis.get<string>(`fraud:canonical:${canonical}`)
+  if (canonicalId) {
+    return {
+      allowed: false,
+      reason: 'An account with this email address (or a variation of it) has already received a trial.',
+      flagType: 'duplicate_email_dot_trick',
+    }
+  }
+
+  // 9. Duplicate WhatsApp number
   if (canonWhatsApp.length >= 7) {
     const waId = await redis.get<string>(`fraud:whatsapp:${canonWhatsApp}`)
     if (waId) {
       return {
         allowed: false,
-        reason: `This WhatsApp number has already been used for a free trial.`,
+        reason: 'This WhatsApp number has already been used for a free trial.',
         flagType: 'duplicate_whatsapp',
       }
     }
   }
 
-  // 6. Name + device fingerprint (scan recent trials — max 500 records)
+  // 10. Name + device combination fingerprint
   if (name && device) {
     const nameDeviceKey = `fraud:name_device:${canonicalName(name)}:${device.toLowerCase().replace(/\s+/g, '_')}`
     const ndId = await redis.get<string>(nameDeviceKey)
     if (ndId) {
       return {
         allowed: false,
-        reason: `A trial was recently issued with the same name and device combination.`,
+        reason: 'A trial was recently issued with the same name and device combination.',
         flagType: 'duplicate_name_device',
       }
     }
@@ -196,16 +274,12 @@ export async function recordFraudFingerprints(input: {
   const TTL = 60 * 60 * 24 * 90 // 90 days
 
   const pipeline = redis.pipeline()
-
-  // Store canonical email → customer ID
   pipeline.set(`fraud:canonical:${canonical}`, input.customerId, { ex: TTL })
 
-  // Store WhatsApp → customer ID
   if (canonWhatsApp.length >= 7) {
     pipeline.set(`fraud:whatsapp:${canonWhatsApp}`, input.customerId, { ex: TTL })
   }
 
-  // Store name+device fingerprint → customer ID
   if (input.name && input.device) {
     const nameDeviceKey = `fraud:name_device:${canonicalName(input.name)}:${input.device.toLowerCase().replace(/\s+/g, '_')}`
     pipeline.set(nameDeviceKey, input.customerId, { ex: TTL })
@@ -214,32 +288,48 @@ export async function recordFraudFingerprints(input: {
   await pipeline.exec()
 }
 
-// ─── IP Rate Limiting ─────────────────────────────────────────────────────────
+// ─── IP Cooldown & Rate Limiting ──────────────────────────────────────────────
 
-async function checkIpRateLimit(ip: string): Promise<FraudCheckResult> {
-  if (!redis || !ip || ip === '0.0.0.0') return { allowed: true }
+async function checkIpLimits(ip: string): Promise<FraudCheckResult> {
+  if (!redis || !ip || ip === '0.0.0.0' || ip === '127.0.0.1') return { allowed: true }
 
-  const key = `fraud:ip:${ip}`
-  const count = await redis.get<number>(key)
+  // A. Cooldown: Max 1 trial request per 3 minutes (prevents spam clicking/scripts)
+  const cooldownKey = `fraud:ip_cooldown:${ip}`
+  const inCooldown = await redis.get<boolean>(cooldownKey)
+  if (inCooldown) {
+    return {
+      allowed: false,
+      reason: 'Please wait a few minutes before submitting another trial request.',
+      flagType: 'ip_cooldown',
+    }
+  }
 
+  // B. Rate limit: Max 2 trial requests per 48 hours
+  const rateKey = `fraud:ip:${ip}`
+  const count = await redis.get<number>(rateKey)
   if (count !== null && count >= 2) {
     return {
       allowed: false,
-      reason: 'Too many trial requests from this network. Please contact support.',
+      reason: 'Maximum trial requests exceeded from this network. Please contact support via WhatsApp.',
       flagType: 'ip_rate_limit',
     }
   }
 
-  // Increment counter, expire in 48 hours
-  await redis.set(key, (count ?? 0) + 1, { ex: 60 * 60 * 48 })
+  // Set 3-minute burst cooldown and increment 48-hour counter
+  const pipeline = redis.pipeline()
+  pipeline.set(cooldownKey, true, { ex: 180 })
+  pipeline.set(rateKey, (count ?? 0) + 1, { ex: 60 * 60 * 48 })
+  await pipeline.exec()
+
   return { allowed: true }
 }
 
 // ─── Pattern Checks ───────────────────────────────────────────────────────────
 
-function checkSuspiciousPatterns(name: string, email: string): FraudCheckResult {
-  // Name too short or obviously fake
-  if (name.trim().length < 2) {
+export function checkSuspiciousPatterns(name: string, email: string): FraudCheckResult {
+  const trimmedName = name.trim()
+
+  if (trimmedName.length < 2) {
     return {
       allowed: false,
       reason: 'Please provide your full name.',
@@ -247,8 +337,17 @@ function checkSuspiciousPatterns(name: string, email: string): FraudCheckResult 
     }
   }
 
-  // Name is all digits or gibberish (e.g. "12345" or "asdfgh")
-  if (/^\d+$/.test(name.trim())) {
+  // Name is digits only or contains digits
+  if (/\d/.test(trimmedName)) {
+    return {
+      allowed: false,
+      reason: 'Please provide a valid name without numbers.',
+      flagType: 'suspicious_pattern',
+    }
+  }
+
+  // Name has repeating characters (e.g. "aaaaaaa" or "xxxxxx")
+  if (/^(.)\1{4,}$/i.test(trimmedName)) {
     return {
       allowed: false,
       reason: 'Please provide your real name.',
@@ -256,9 +355,9 @@ function checkSuspiciousPatterns(name: string, email: string): FraudCheckResult 
     }
   }
 
-  // Email local part is very long random string (>30 chars before @)
+  // Email handle before @ is abnormally long or suspicious
   const local = email.split('@')[0] ?? ''
-  if (local.length > 40) {
+  if (local.length > 35) {
     return {
       allowed: false,
       reason: 'This email address does not appear to be valid.',
@@ -269,11 +368,8 @@ function checkSuspiciousPatterns(name: string, email: string): FraudCheckResult 
   return { allowed: true }
 }
 
-// ─── Helpers for reviewing flagged requests ───────────────────────────────────
+// ─── Security Log ─────────────────────────────────────────────────────────────
 
-/**
- * Log a blocked request for manual review.
- */
 export async function logBlockedRequest(
   input: FraudCheckInput,
   result: Extract<FraudCheckResult, { allowed: false }>
@@ -287,7 +383,10 @@ export async function logBlockedRequest(
     blockedAt: new Date().toISOString(),
   }
 
-  // Keep last 200 blocked requests in a list
-  await redis.lpush('fraud:blocked_log', JSON.stringify(entry))
-  await redis.ltrim('fraud:blocked_log', 0, 199)
+  try {
+    await redis.lpush('fraud:blocked_log', JSON.stringify(entry))
+    await redis.ltrim('fraud:blocked_log', 0, 199)
+  } catch (err) {
+    console.error('[FRAUD LOG] Failed to record blocked request:', err)
+  }
 }
