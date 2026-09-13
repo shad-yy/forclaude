@@ -164,8 +164,66 @@ async function isUsernameAvailable(username: string, session: string): Promise<b
 export async function createTrialAccount(customerName: string, comment?: string): Promise<CreateTrialResult> {
   const panelUrl = process.env.CMS8K_URL || 'https://cms-8k.com'
   const trialSubId = process.env.CMS8K_TRIAL_SUB_ID || '8'
+  const apiKey = process.env.CMS8K_API_KEY
 
-  // Get authenticated session
+  // 1. IF OFFICIAL GOLD PANEL API KEY IS CONFIGURED (Preferred & Cleanest)
+  if (apiKey) {
+    let username = generateUsername(customerName)
+    try {
+      // Direct Gold Panel API: action=new or action=add_new with api_key
+      const params = new URLSearchParams({
+        action: 'new',
+        type: 'lines',
+        mac: username,
+        sub_id: trialSubId,
+        country: '["ALL"]',
+        api_key: apiKey,
+      })
+
+      const res = await fetch(`${panelUrl}/api.php?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json, text/javascript, */*',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+      })
+
+      const responseText = await res.text()
+      console.log('[CMS8K API KEY] Create trial response:', responseText)
+
+      let data: any = null
+      try {
+        data = JSON.parse(responseText)
+      } catch {
+        // Fallback check if plain text
+      }
+
+      if (data && (data.status === 'success' || data.mac || data.username)) {
+        const user = data.mac || data.username || username
+        const pass = data.password || ''
+        const server = data.server || process.env.CMS8K_SERVER_URL || panelUrl
+        const expiry = data.expire
+          ? (typeof data.expire === 'number' ? new Date(data.expire * 1000).toISOString() : new Date(data.expire).toISOString())
+          : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+
+        return {
+          success: true,
+          username: user,
+          credentials: {
+            username: user,
+            password: pass,
+            server,
+            m3uUrl: `${server}/get.php?username=${user}&password=${pass}&type=m3u_plus`,
+            expiresAt: expiry,
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[CMS8K API KEY] Error during trial creation:', err)
+    }
+  }
+
+  // 2. FALLBACK: SESSION COOKIE AUTHENTICATION
   const session = await getSession()
   if (!session) {
     return { success: false, error: 'Could not authenticate with reseller panel' }
@@ -175,7 +233,6 @@ export async function createTrialAccount(customerName: string, comment?: string)
   let username = generateUsername(customerName)
   const available = await isUsernameAvailable(username, session)
   if (!available) {
-    // Just add more randomness
     username = generateUsername(customerName + Math.random().toString(36).slice(2, 5))
   }
 

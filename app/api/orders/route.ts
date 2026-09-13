@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createCustomer, getCustomerByEmail, updateCustomer } from '@/lib/db/customers'
 import { createTrialAccount } from '@/lib/panel/cms8k'
+import { checkFraud, recordFraudFingerprints, logBlockedRequest, canonicalEmail } from '@/lib/fraud/detect'
 
 const orderSchema = z.object({
   name: z.string().min(2).max(100).trim(),
@@ -32,6 +33,42 @@ export async function POST(req: NextRequest) {
       )
     }
     const { name, email, whatsapp, plan, message, device } = parsed.data
+    const isTrial = plan === 'Free Trial Request'
+
+    // ─── FRAUD DETECTION (trials only) ───────────────────────────────────────
+    if (isTrial) {
+      const ip =
+        req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        req.headers.get('x-real-ip') ||
+        '0.0.0.0'
+
+      const fraudResult = await checkFraud({
+        email,
+        name,
+        whatsapp: whatsapp || '',
+        device: device || '',
+        country: '',
+        ip,
+      })
+
+      if (!fraudResult.allowed) {
+        // Log for your review — includes all their details
+        await logBlockedRequest(
+          { email, name, whatsapp: whatsapp || '', device: device || '', country: '', ip },
+          fraudResult
+        )
+
+        console.warn(`[FRAUD] Blocked trial for ${email} — ${fraudResult.flagType}: ${fraudResult.reason}`)
+
+        // Return a polite generic message — don't reveal what triggered the block
+        // This prevents people from knowing what to change to bypass it
+        return NextResponse.json({
+          success: false,
+          error: 'We were unable to process your trial request. Please contact support via WhatsApp.',
+        }, { status: 429 })
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     const deviceMatch = message?.match(/Device:\s*([^|]+)/i)
     const extractedDevice = (device || (deviceMatch ? deviceMatch[1].trim() : '')).toLowerCase()
@@ -53,6 +90,7 @@ export async function POST(req: NextRequest) {
       setupUrl = 'https://smartlivetv.co.uk/setup/firestick'
       apps = ['TiviMate', 'IPTV Smarters Pro', 'XCIPTV']
     }
+
 
     const resendKey = process.env.RESEND_API_KEY
     // Primary: support@smartlivetv.co.uk forwards to formyownwork@gmail.com
@@ -88,8 +126,6 @@ export async function POST(req: NextRequest) {
             reply_to: email,
           }),
         })
-
-        const isTrial = plan === 'Free Trial Request'
 
         // Build device-specific inline setup instructions
         const setupInstructions: Record<string, string> = {
@@ -242,7 +278,6 @@ export async function POST(req: NextRequest) {
     try {
       const existingCustomer = await getCustomerByEmail(email)
       if (!existingCustomer) {
-        const isTrial = plan === 'Free Trial Request'
         const newCustomer = await createCustomer({
           name,
           email,
@@ -357,6 +392,14 @@ async function provisionTrialAndNotify({
           username: credentials.username,
           password: credentials.password,
         },
+      })
+      // Record fraud fingerprints for future duplicate checks
+      await recordFraudFingerprints({
+        customerId,
+        email,
+        name,
+        whatsapp,
+        device: '',
       })
     } catch (dbErr) {
       console.error('[PROVISION] Failed to update customer record:', dbErr)
