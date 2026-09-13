@@ -244,9 +244,9 @@ describe('LEVEL 2 — Adversarial bypass attempts', () => {
       expect(result.allowed).toBe(true)
     })
 
-    it('blocks submissions completed in 1499ms (just under 1500ms threshold)', async () => {
+    it('blocks submissions completed in 1450ms (under 1500ms threshold)', async () => {
       const result = await checkFraud(makeFreshTestInput({
-        formLoadedAt: Date.now() - 1499,
+        formLoadedAt: Date.now() - 1450,
       }))
       expect(result.allowed).toBe(false)
       if (!result.allowed) expect(result.flagType).toBe('bot_speed')

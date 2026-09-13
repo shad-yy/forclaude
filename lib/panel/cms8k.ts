@@ -62,12 +62,19 @@ let sessionCookie: string | null = null
 let sessionExpiry: number = 0
 
 async function getSession(): Promise<string | null> {
+  // If user provided an active session cookie in environment variables, prioritize it
+  const envCookie = process.env.CMS8K_SESSION_COOKIE
+  if (envCookie) {
+    return envCookie.startsWith('STORMERSESSID=') || envCookie.startsWith('PHPSESSID=')
+      ? envCookie
+      : `STORMERSESSID=${envCookie}`
+  }
+
   const username = process.env.CMS8K_USERNAME
   const password = process.env.CMS8K_PASSWORD
   const panelUrl = process.env.CMS8K_URL || 'https://cms-8k.com'
 
   if (!username || !password) {
-    console.error('[CMS8K] Missing CMS8K_USERNAME or CMS8K_PASSWORD env vars')
     return null
   }
 
@@ -77,38 +84,42 @@ async function getSession(): Promise<string | null> {
   }
 
   try {
-    const res = await fetch(`${panelUrl}/login`, {
+    const res = await fetch(`${panelUrl}/login.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'text/html,application/xhtml+xml,*/*',
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Origin': panelUrl,
-        'Referer': `${panelUrl}/login`,
+        'Referer': `${panelUrl}/login.php`,
       },
-      body: new URLSearchParams({ username, password }).toString(),
-      redirect: 'manual', // Don't follow redirects — we just want the Set-Cookie
+      body: new URLSearchParams({
+        uname: username,
+        upass: password,
+        'btn-login': '',
+      }).toString(),
+      redirect: 'manual',
     })
 
-    // Grab PHPSESSID from Set-Cookie header
     const setCookie = res.headers.get('set-cookie')
     if (!setCookie) {
-      console.error('[CMS8K] No Set-Cookie header in login response — wrong credentials?')
       return null
     }
 
+    const stormerSession = setCookie.match(/STORMERSESSID=([^;]+)/)?.[1]
     const phpSession = setCookie.match(/PHPSESSID=([^;]+)/)?.[1]
-    if (!phpSession) {
-      console.error('[CMS8K] Could not extract PHPSESSID from login response')
+    const sessionToken = stormerSession ? `STORMERSESSID=${stormerSession}` : (phpSession ? `PHPSESSID=${phpSession}` : null)
+
+    if (!sessionToken) {
       return null
     }
 
-    sessionCookie = `PHPSESSID=${phpSession}`
+    sessionCookie = sessionToken
     sessionExpiry = Date.now() + 20 * 60 * 1000 // 20 minutes
-    console.log('[CMS8K] Logged in, session cached')
+    console.log('[CMS8K] Web session established')
     return sessionCookie
   } catch (err) {
-    console.error('[CMS8K] Login failed:', err)
+    console.error('[CMS8K] Session login attempt error:', err)
     return null
   }
 }
@@ -140,7 +151,7 @@ async function isUsernameAvailable(username: string, session: string): Promise<b
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Origin': panelUrl,
         'Referer': `${panelUrl}/addnew?t=lines`,
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
       body: new URLSearchParams({
         mac_check: '1',
@@ -149,11 +160,16 @@ async function isUsernameAvailable(username: string, session: string): Promise<b
     })
 
     const text = await res.text()
-    console.log('[CMS8K] Username check response:', text)
-    // Panel returns something like "0" (available) or "1" (taken) — adjust based on actual response
-    return text.trim() !== '1' && !text.toLowerCase().includes('exists')
+    try {
+      const parsed = JSON.parse(text)
+      if (parsed.msg === 'not_taken' || parsed.result === true) return true
+      if (parsed.msg === 'taken') return false
+    } catch {
+      // Fallback text check
+    }
+    return text.trim() !== '1' && !text.toLowerCase().includes('taken')
   } catch {
-    return true // Assume available if check fails, let create fail gracefully
+    return true
   }
 }
 
@@ -189,22 +205,26 @@ export function calculateStrictExpiry(rawExpiry?: string | number): string {
 /**
  * Create a 24-hour free trial line on the reseller panel.
  * Returns the credentials to send to the customer.
+ * 
+ * IMPORTANT: NEVER returns fake/random passwords. If the panel fails or
+ * does not return real credentials, this function returns { success: false }.
  */
 export async function createTrialAccount(customerName: string, comment?: string): Promise<CreateTrialResult> {
   const panelUrl = process.env.CMS8K_URL || 'https://cms-8k.com'
   const apiKey = process.env.CMS8K_API_KEY
+  const username = generateUsername(customerName)
 
-  // 1. IF OFFICIAL GOLD PANEL API KEY IS CONFIGURED (Preferred & Cleanest)
+  // 1. STRATEGY A: OFFICIAL GOLD PANEL API KEY
   if (apiKey) {
-    let username = generateUsername(customerName)
     try {
-      // Direct Gold Panel API: action=new or action=add_new with api_key
+      console.log(`[CMS8K API] Attempting trial creation for ${username} with API key...`)
       const params = new URLSearchParams({
         action: 'new',
         type: 'lines',
         mac: username,
         sub_id: LOCKED_TRIAL_SUB_ID, // Strictly locked to 24h trial package
         country: '["ALL"]',
+        comment: comment || `Trial - ${customerName}`,
         api_key: apiKey,
       })
 
@@ -212,181 +232,166 @@ export async function createTrialAccount(customerName: string, comment?: string)
         method: 'GET',
         headers: {
           'Accept': 'application/json, text/javascript, */*',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         },
       })
 
       const responseText = await res.text()
-      console.log('[CMS8K API KEY] Create trial response:', responseText)
+      console.log('[CMS8K API] Raw response:', responseText.slice(0, 300))
 
       let data: any = null
       try {
         data = JSON.parse(responseText)
       } catch {
-        // Plain text response
+        // Not valid JSON (e.g. PHP warnings or HTML)
       }
 
-      const isSuccess =
-        (data && (data.status === 'success' || data.mac || data.username || data.status === 'ok')) ||
-        responseText.trim() === '1' ||
-        responseText.toLowerCase().includes('success')
+      // Check for genuine success and verified credentials from the panel
+      const isSuccess = data && (data.result === 'success' || data.result === true || data.status === 'success')
+      const pass = data?.password
 
-      if (isSuccess) {
-        const user = data?.mac || data?.username || username
-        const pass = data?.password || ('tv' + Math.random().toString(36).slice(2, 8))
-        const server = data?.server || process.env.CMS8K_SERVER_URL || 'http://pro.business-cloud-8.ru'
-        const expiry = calculateStrictExpiry(data?.expire)
+      if (isSuccess && typeof pass === 'string' && pass.trim().length > 0) {
+        const user = data.username || data.mac || username
+        const server = data.server || process.env.CMS8K_SERVER_URL || 'http://pro.business-cloud-8.ru'
+        const expiry = calculateStrictExpiry(data.expire)
 
         return {
           success: true,
           username: user,
           credentials: {
             username: user,
-            password: pass,
+            password: pass.trim(),
             server,
-            m3uUrl: `${server}/get.php?username=${user}&password=${pass}&type=m3u_plus`,
+            m3uUrl: `${server}/get.php?username=${user}&password=${pass.trim()}&type=m3u_plus`,
             expiresAt: expiry,
           },
         }
       }
 
-      // If action=new failed, try action=add_new with data JSON payload (same as web panel)
-      console.log('[CMS8K API KEY] action=new did not return success, attempting action=add_new...')
+      console.warn('[CMS8K API] API key call did not return verified credentials. Response was:', responseText.slice(0, 200))
+    } catch (err) {
+      console.error('[CMS8K API] Error during API key trial creation:', err)
+    }
+  }
+
+  // 2. STRATEGY B: SESSION AUTHENTICATION (via CMS8K_SESSION_COOKIE or login)
+  const session = await getSession()
+  if (session) {
+    try {
+      console.log(`[CMS8K SESSION] Attempting line creation via session cookie for ${username}...`)
       const addData = {
         mac: username,
         sub_id: LOCKED_TRIAL_SUB_ID,
-        comment: comment || `Trial - ${customerName}`,
+        comment: comment || `Trial - ${customerName} - ${new Date().toISOString()}`,
         bouq_list: DEFAULT_BOUQUETS,
         type: 'lines',
         bouq_custom: '',
         country: '["ALL"]',
       }
-      const addParams = new URLSearchParams({
+
+      const queryParams = new URLSearchParams({
         action: 'add_new',
         data: JSON.stringify(addData),
-        api_key: apiKey,
         _: Date.now().toString(),
       })
-      const addRes = await fetch(`${panelUrl}/api.php?${addParams.toString()}`, {
+
+      const res = await fetch(`${panelUrl}/api.php?${queryParams.toString()}`, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json, text/javascript, */*',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Cookie': session,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Referer': `${panelUrl}/addnew?t=lines`,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         },
       })
-      const addText = await addRes.text()
-      console.log('[CMS8K API KEY] action=add_new response:', addText)
 
-      let addJson: any = null
-      try { addJson = JSON.parse(addText) } catch {}
+      const responseText = await res.text()
+      console.log('[CMS8K SESSION] Create line response:', responseText)
 
-      if (addText.includes('1') || addText.toLowerCase().includes('success') || (addJson && addJson.status === 'ok')) {
-        const pass = addJson?.password || ('tv' + Math.random().toString(36).slice(2, 8))
-        const server = process.env.CMS8K_SERVER_URL || 'http://pro.business-cloud-8.ru'
+      let parsedResult: any = null
+      try {
+        parsedResult = JSON.parse(responseText)
+      } catch {}
+
+      if (parsedResult && parsedResult.result === true) {
+        // Line created on panel! Retrieve the generated password from panel table
+        const credentials = await getLineCredentials(username, session)
+        if (credentials && credentials.password) {
+          return { success: true, credentials, username }
+        }
         return {
-          success: true,
-          username,
-          credentials: {
-            username,
-            password: pass,
-            server,
-            m3uUrl: `${server}/get.php?username=${username}&password=${pass}&type=m3u_plus`,
-            expiresAt: calculateStrictExpiry(),
-          },
+          success: false,
+          error: `Line ${username} was created on panel, but could not retrieve generated password. Check panel manually.`,
         }
       }
-    } catch (err) {
-      console.error('[CMS8K API KEY] Error during trial creation:', err)
+    } catch (sessionErr) {
+      console.error('[CMS8K SESSION] Error creating line via session:', sessionErr)
     }
   }
 
-  // 2. FALLBACK: SESSION COOKIE AUTHENTICATION
-  const session = await getSession()
-  if (!session) {
-    return { success: false, error: 'Could not authenticate with reseller panel' }
-  }
-
-  // Generate a unique username, retry if taken
-  let username = generateUsername(customerName)
-  const available = await isUsernameAvailable(username, session)
-  if (!available) {
-    username = generateUsername(customerName + Math.random().toString(36).slice(2, 5))
-  }
-
-  // Build the add_new request
-  const data = {
-    mac: username,
-    sub_id: LOCKED_TRIAL_SUB_ID, // Strictly locked to 24h trial package
-    comment: comment || `Trial - ${customerName} - ${new Date().toISOString()}`,
-    bouq_list: DEFAULT_BOUQUETS,
-    type: 'lines',
-    bouq_custom: '',
-    country: '["ALL"]',
-  }
-
-  const queryParams = new URLSearchParams({
-    action: 'add_new',
-    data: JSON.stringify(data),
-    _: Date.now().toString(),
-  })
-
-  try {
-    const res = await fetch(`${panelUrl}/api.php?${queryParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Cookie': session,
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'Referer': `${panelUrl}/addnew?t=lines`,
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36',
-      },
-    })
-
-    const responseText = await res.text()
-    console.log('[CMS8K] Create trial response:', responseText)
-
-    // Parse response — CMS8K returns a short response (15 bytes per HAR)
-    // Typically something like "1" or JSON with success indicator
-    let responseData: { status?: string; password?: string } = {}
-    try {
-      responseData = JSON.parse(responseText)
-    } catch {
-      // Not JSON — check if it's a plain success indicator
-    }
-
-    const isSuccess = responseText.includes('1') || 
-                      responseText.toLowerCase().includes('success') ||
-                      responseData.status === 'ok' ||
-                      res.ok
-
-    if (!isSuccess) {
-      return { success: false, error: `Panel returned error: ${responseText}` }
-    }
-
-    // Fetch the created line's credentials
-    const credentials = await getLineCredentials(username, session)
-    if (!credentials) {
-      // Session might have expired during creation — clear and return partial info
-      sessionCookie = null
-      return {
-        success: false,
-        error: 'Line created but could not retrieve credentials — check panel manually',
-      }
-    }
-
-    return { success: true, credentials, username }
-  } catch (err) {
-    console.error('[CMS8K] Create trial error:', err)
-    return { success: false, error: `Failed to create trial: ${err instanceof Error ? err.message : 'Unknown error'}` }
+  // Neither strategy yielded verified credentials — fail safely and notify owner
+  return {
+    success: false,
+    error: 'Reseller panel did not return valid credentials. API key may need activation on Telegram or CMS8K_SESSION_COOKIE is required.',
   }
 }
 
 /**
- * Fetch credentials for an existing line
+ * Fetch credentials for an existing line from the panel table or get_line_info
  */
 async function getLineCredentials(username: string, session: string): Promise<LineCredentials | null> {
   const panelUrl = process.env.CMS8K_URL || 'https://cms-8k.com'
+  const server = process.env.CMS8K_SERVER_URL || 'http://pro.business-cloud-8.ru'
 
+  // Step 1: Query api_table.php (lines table) where password is directly stored
+  try {
+    const tableParams = new URLSearchParams({
+      draw: '1',
+      start: '0',
+      length: '10',
+      'search[value]': username,
+      'search[regex]': 'false',
+      id: 'lines',
+      filter: '15',
+      state: '0',
+      reseller: '',
+      template: '0',
+      _: Date.now().toString(),
+    })
+
+    const tableRes = await fetch(`${panelUrl}/api_table.php?${tableParams.toString()}`, {
+      headers: {
+        'Cookie': session,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Referer': `${panelUrl}/lines`,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    })
+
+    const tableText = await tableRes.text()
+    try {
+      const tableJson = JSON.parse(tableText)
+      if (Array.isArray(tableJson.data)) {
+        const matchingRow = tableJson.data.find((r: any) => r.username === username)
+        if (matchingRow && matchingRow.password) {
+          const pass = String(matchingRow.password).trim()
+          return {
+            username,
+            password: pass,
+            server,
+            m3uUrl: `${server}/get.php?username=${username}&password=${pass}&type=m3u_plus`,
+            expiresAt: calculateStrictExpiry(matchingRow.exp_date_flag),
+          }
+        }
+      }
+    } catch {}
+  } catch (tableErr) {
+    console.warn('[CMS8K] Error querying api_table.php:', tableErr)
+  }
+
+  // Step 2: Fallback to get_line_info
   try {
     const params = new URLSearchParams({
       action: 'get_line_info',
@@ -400,44 +405,28 @@ async function getLineCredentials(username: string, session: string): Promise<Li
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Referer': `${panelUrl}/lines`,
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
     })
 
     const text = await res.text()
-    console.log('[CMS8K] Get line info response:', text)
+    const info = JSON.parse(text)
 
-    let info: {
-      username?: string
-      password?: string
-      exp_date?: string
-      server_url?: string
-    } = {}
-
-    try {
-      info = JSON.parse(text)
-    } catch {
-      return null
-    }
-
-    const server = process.env.CMS8K_SERVER_URL || panelUrl
-    const user = info.username || username
-    const pass = info.password || ''
-
-    // Expiry capped strictly at maximum 24 hours
-    const expiryTimestamp = calculateStrictExpiry(info.exp_date)
-
-    return {
-      username: user,
-      password: pass,
-      server,
-      m3uUrl: `${server}/get.php?username=${user}&password=${pass}&type=m3u_plus`,
-      expiresAt: expiryTimestamp,
+    if (info && info.password) {
+      const pass = String(info.password).trim()
+      return {
+        username: info.username || username,
+        password: pass,
+        server,
+        m3uUrl: `${server}/get.php?username=${info.username || username}&password=${pass}&type=m3u_plus`,
+        expiresAt: calculateStrictExpiry(info.exp_date),
+      }
     }
   } catch (err) {
     console.error('[CMS8K] Get credentials error:', err)
-    return null
   }
+
+  return null
 }
 
 /**
