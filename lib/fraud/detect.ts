@@ -240,9 +240,14 @@ export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResu
 
   const canonical = canonicalEmail(email)
 
-  // 6b. Concurrency lock — prevent parallel racing requests with the same canonical email
+  // 6b. Concurrency lock — prevent parallel racing requests with the same canonical email.
+  // A-07: TTL was 30s and provisionTrialAndNotify can exceed 30s under panel latency
+  // (cms-8k call + two Resend emails). Extended to 300s (5 min) so the lock outlives
+  // any realistic provision. Complementary fix: recordFraudFingerprints is now called
+  // BEFORE the outbound provision in orders/route.ts, so even if the lock does expire
+  // the dedup fingerprint blocks duplicates.
   const lockKey = `fraud:lock:${canonical}`
-  const lockAcquired = await redis.set(lockKey, '1', { nx: true, ex: 30 })
+  const lockAcquired = await redis.set(lockKey, '1', { nx: true, ex: 300 })
   if (!lockAcquired) {
     return {
       allowed: false,

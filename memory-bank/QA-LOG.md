@@ -21,6 +21,24 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-07 — Close race in `provisionTrialAndNotify` (fingerprint before dispatch, lock TTL 30s→300s)
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 1 close.
+- **Layer**: L4 orchestration (orders route) + L4 fraud (detect lock).
+- **Severity**: high (duplicate-trial admission under lock expiry — a bot could receive multiple free 24h lines for the same canonical email/phone).
+- **Was**: (a) `lib/fraud/detect.ts:229` acquired the `fraud:lock:<canonical>` with `ex: 30`. (b) `provisionTrialAndNotify` in `app/api/orders/route.ts` does a cms-8k call + up to three Resend emails; total wall time plausibly > 30 s under panel latency. (c) `recordFraudFingerprints` fired only AFTER successful provision at line 446. Sequence: a duplicate request arriving after lock TTL expired but before fingerprint was written would pass every dedup gate. Security-surface audit E-05.
+- **Now**: two-layer fix per the plan (defence-in-depth):
+  1. **Extend the lock TTL** from 30 s to 300 s (5 min) in `lib/fraud/detect.ts` — plenty of headroom for any realistic panel latency.
+  2. **Move `recordFraudFingerprints` upstream** — from inside `provisionTrialAndNotify` (post-success) to `orders/route.ts` immediately after customer creation, before the panel call. Fingerprint is committed the moment we decide to serve this customer, so dedup is sound even if the lock does expire.
+- **Trade-off** (accepted): if the panel call fails, the fingerprint stays written for the TTL (90 days). The customer can no longer re-submit with the same canonical email/phone until an admin clears the fingerprint. Judged acceptable — a failed provision is rare and easier to recover manually than a slew of duplicates.
+- **Test**: `tests/provision-race.test.ts` — 2 cases: (a) call-order assertion via `vi.mock` of both `recordFraudFingerprints` and `createTrialAccount` pushing to a shared `callOrder[]` array; asserts the fingerprint's index in that array precedes the panel call's. (b) structural assertion that the lock's `ex:` argument is `>= 300` (reads `lib/fraud/detect.ts` source and greps the constant). Red 2/2 before fix; green 2/2 after.
+- **Test setup note**: hit a second iteration when the initial red-test setup left `RESEND_API_KEY` empty — `provisionTrialAndNotify` gates on `resendKey` truthy so `createTrialAccount` never ran, leaving the call-order incomplete. Stubbed `RESEND_API_KEY` to a placeholder and `vi.stubGlobal("fetch", ...)` so the emails don't hit the network. Per `layered-testing-strategy` "if a test could pass on any implementation, it has no discrimination".
+- **Skill/agent used**: `layered-testing-strategy` (module mocks for internal call ordering; structural read for the TTL constant).
+- **Run it**: `npx vitest run tests/provision-race.test.ts`.
+- **Result**: full suite: 148/148 (16 files), tsc clean.
+- **Still open in**: `S-06` (three per-instance rate-limit Maps) still open; `X-11` (150-line inline email HTML in orders/route.ts) still open — both scheduled for later batches per plan.
+
 ### A-06 — Fail-loud on missing fraud infra for trial provisioning
 
 - **Date**: 2026-09-15

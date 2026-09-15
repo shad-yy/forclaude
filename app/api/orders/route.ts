@@ -347,6 +347,26 @@ export async function POST(req: NextRequest) {
 
     console.log(`[ORDER] Processing order for ${email}. isTrial: ${isTrialPlan}, isPanelConfigured: ${isPanelConfigured}`)
 
+    // A-07: record fraud fingerprints BEFORE the outbound provisioning
+    // starts. Previously this fired only on provision success, so a fraud
+    // lock expiring mid-provision (extended to 300s in detect.ts) could
+    // let a duplicate request through before the fingerprint was written.
+    // Now the fingerprint is committed as soon as we decide to serve this
+    // customer, so dedup remains sound even under lock expiry.
+    if (isTrialPlan && savedCustomerId) {
+      try {
+        await recordFraudFingerprints({
+          customerId: savedCustomerId,
+          email,
+          name,
+          whatsapp: whatsapp || '',
+          device: device || extractedDevice || '',
+        })
+      } catch (fpErr) {
+        console.error('[ORDER] Failed to record fraud fingerprint before provisioning:', fpErr)
+      }
+    }
+
     if (isTrialPlan && isPanelConfigured && resendKey) {
       try {
         console.log(`[ORDER] Starting automated trial provisioning for ${email}...`)
@@ -442,17 +462,13 @@ async function provisionTrialAndNotify({
           password: credentials.password,
         },
       })
-      // Record fraud fingerprints for future duplicate checks
-      await recordFraudFingerprints({
-        customerId,
-        email,
-        name,
-        whatsapp,
-        device: '',
-      })
     } catch (dbErr) {
       console.error('[PROVISION] Failed to update customer record:', dbErr)
     }
+    // A-07: recordFraudFingerprints used to fire here (post-success). Moved
+    // upstream to the caller so dedup fingerprints exist BEFORE the panel
+    // call starts. See orders/route.ts around the "record fraud fingerprints
+    // BEFORE the outbound provisioning" comment.
   }
 
   // Send credentials email — the customer gets EVERYTHING they need
