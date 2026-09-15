@@ -21,6 +21,21 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-02 — Redact PII from cms8k panel-response logs
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 1 close (see `<Batch 1 hash consolidation>` entry).
+- **Layer**: L5 provider.
+- **Severity**: high (customer credentials leaking to console logs, therefore to Vercel Log Drains).
+- **Was**: `lib/panel/cms8k.ts` logged raw panel response text at three call sites: line ~240 (`responseText.slice(0, 300)` — includes password), line ~271 (`responseText.slice(0, 200)` on failure), line ~310 (full `responseText`, no slice — most severe). Xtream-Codes panel responses are JSON containing a `password` field, so every trial creation dumped the trial line's password into the log stream. Security-surface audit agent flagged as E-06.
+- **Now**: introduced `lib/log/redact.ts` with `summarizeResponse(text)` — parses JSON safely and returns `result=<v> keys=<sorted> hasPassword=<bool>`. All three call sites in `cms8k.ts` now log the summary. Debug diagnostics preserved (result, presence of password, all top-level keys); the values themselves stay out of logs.
+- **Test**: `tests/pii-redaction.test.ts` — stubs `fetch` to return a panel response with a deliberate `HUNTER2ABC123` password, spies on `console.{log,warn,error}`, asserts no call contains that string. Control test asserts the fixture actually contains the secret (guards against a vacuous pass). Red 1/2 before fix; green 2/2 after.
+- **Skill/agent used**: `layered-testing-strategy` (module-level `fetch` stub + console spy; positive assertion paired with control that would fail a trivially wrong implementation).
+- **Run it**: `npx vitest run tests/pii-redaction.test.ts`.
+- **Result**: full suite: 130/130 passing (11 files) after fix, up from 128/128 before (my 2 added). `tsc --noEmit`: 0 errors.
+- **Still open in**: `lib/panel/cms8k.ts` still has `[CMS8K SESSION] Error creating line via session:` (line ~329) and `[CMS8K] Get credentials error:` (line ~426) logging error objects — the error messages themselves may include URLs with cookies. Not fixed this commit — narrow scope per `reasonable` rule. Registered in OPEN-WORK as follow-up.
+- **Simplification note**: `cms8k.ts` header comment was over-verbose (listed env vars that now belong in `SETUP-REQUIRED.md`); shortened by ~10 lines and cross-referenced the setup doc. No behavioural change.
+
 ### A-01 — Install playbook skill pack + documentation-discipline enforcement
 
 - **Date**: 2026-09-15

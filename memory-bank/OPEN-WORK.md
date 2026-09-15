@@ -54,13 +54,17 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: turning either back on may fail the build against pre-existing errors. Needs a `tsc --noEmit` pass first to see what would surface. Not this session's scope.
 - **What would close it**: run `npx tsc --noEmit`, capture the count, decide whether to fix and re-enable, or file each surfaced error as its own row.
 
-## O-07 — `npm run build` ships an IndexNow ping to production every run
+## O-07 — CLOSED 2026-09-15 (was: IndexNow ping every build)
 
-- **Since**: 2026-09-15 (from `PROGRESS.md` §4.3)
-- **Layer**: L0 (build tooling)
+**Closed as invalid.** My original recording was wrong on both counts: (a) `scripts/ping-indexnow.js:2-5` already gates on `VERCEL_ENV === 'production'`, so local and CI builds skip it; (b) the constant `f63234d7ee824249a5b3260c6d2c49e2` at line 12 is the **public IndexNow ownership key** — its whole purpose is to be published at `/<key>.txt` on the site's own domain, and knowing it grants nothing. Both the testing-infra audit agent and the security-surface audit agent independently confirmed. Standing correction recorded at top of `QA-LOG.md`.
+
+## O-09 — Follow-up log hygiene in `lib/panel/cms8k.ts`
+
+- **Since**: 2026-09-15 (spun out of A-02)
+- **Layer**: L5 (provider)
 - **Owner**: unassigned
-- **Why it isn't done**: queued behind A-02 in this session's plan.
-- **What would close it**: gate `scripts/ping-indexnow.js` on a `SEND_INDEXNOW=1` env flag; leave it unset in dev / CI, set only in the production deploy.
+- **Why it isn't done**: A-02 fixed the three raw-response leaks (lines ~240, ~271, ~310) but left two `console.error` calls that log error objects wholesale: `[CMS8K SESSION] Error creating line via session:` (~329) and `[CMS8K] Get credentials error:` (~426). Error messages from `fetch` failures may include the request URL with query params — those params carry the panel session cookie in some paths. Not yet audited whether any real error object surfaces a cookie in practice.
+- **What would close it**: run the two failure paths against a mock that throws with a URL-carrying error, verify no cookie appears; if it does, redact via `redactObject` before logging.
 
 ## O-08 — `e2e/*.spec.ts` may be orphaned by `playwright.config.ts` `testDir: './tests'`
 
