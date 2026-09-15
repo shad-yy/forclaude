@@ -6,7 +6,7 @@
  *   - Plan name acceptance & rejection
  *   - Fraud gating on POST /api/orders (honeypot, speed, disposable)
  *   - Non-trial orders bypassing trial fraud checks
- *   - Security on /api/admin/test-panel (401 gate & secret auth)
+ *   - Security on /api/admin/provision-test-trial (401 gate; secret bypass closed in A-03)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -152,10 +152,10 @@ describe('Orders API & Security Integration', () => {
 
   // ── 3. Security on Admin Diagnostic Endpoint ─────────────────────────────────
 
-  describe('Security on /api/admin/test-panel', () => {
+  describe('Security on /api/admin/provision-test-trial', () => {
     it('blocks public unauthenticated access with 401 Unauthorized', async () => {
-      const { GET } = await import('@/app/api/admin/test-panel/route')
-      const req = new NextRequest('http://localhost:3000/api/admin/test-panel', {
+      const { GET } = await import('@/app/api/admin/provision-test-trial/route')
+      const req = new NextRequest('http://localhost:3000/api/admin/provision-test-trial', {
         method: 'GET',
       })
 
@@ -165,9 +165,9 @@ describe('Orders API & Security Integration', () => {
       expect(json.error).toContain('Unauthorized')
     })
 
-    it('rejects invalid secret parameter with 401', async () => {
-      const { GET } = await import('@/app/api/admin/test-panel/route')
-      const req = new NextRequest('http://localhost:3000/api/admin/test-panel?secret=wrongsecret', {
+    it('rejects invalid secret parameter with 401 (bypass closed in A-03)', async () => {
+      const { GET } = await import('@/app/api/admin/provision-test-trial/route')
+      const req = new NextRequest('http://localhost:3000/api/admin/provision-test-trial?secret=wrongsecret', {
         method: 'GET',
       })
 

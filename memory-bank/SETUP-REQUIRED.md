@@ -16,10 +16,10 @@ Platform-provided (`NODE_ENV`, `VERCEL_ENV`, `VERCEL_URL`) are not user-configur
 | :-- | :-- | :-- | :-- |
 | `JWT_SECRET` | Yes for admin auth | `lib/config/env.ts`, `middleware.ts`, `app/api/auth/admin/route.ts` | `middleware.ts:23-25` throws in production → 500 on `/admin/*` and `/api/admin/*` (see O-04). `lib/config/env.ts:30` falls back to `""`, so admin JWT verification always fails silently at consumption. |
 | `ADMIN_PASSWORD_HASH` | Yes for admin login | `app/api/auth/admin/route.ts` | Route returns 500. Prior fallback hash was removed for security (see `PROGRESS.md` Bug 6). |
-| `RESEND_API_KEY` | Yes for outbound email | `app/actions/subscribe.ts`, `app/api/subscribe/route.ts`, `app/api/admin/test-panel/route.ts` | Email sending fails; subscription/order confirmations do not arrive. |
+| `RESEND_API_KEY` | Yes for outbound email | `app/actions/subscribe.ts`, `app/api/subscribe/route.ts`, `app/api/admin/provision-test-trial/route.ts` | Email sending fails; subscription/order confirmations do not arrive. |
 | `ORDER_NOTIFY_EMAIL` | Yes to route order alerts | `app/actions/subscribe.ts`, `app/api/subscribe/route.ts`, `app/api/orders/route.ts` | Order/subscribe notifications have no destination. |
-| `CRON_SECRET` | Yes for cron endpoints | `app/api/admin/test-panel/route.ts`, `app/api/cron/trial-followups/route.ts` | Cron endpoints reject legitimate scheduler calls. |
-| `UPSTASH_REDIS_REST_URL` | Yes for cache / rate limit / fraud | `lib/cache/redis.ts`, `lib/fraud/detect.ts`, `app/api/admin/test-panel/route.ts` | Redis-backed features degrade to in-memory (see O-05). |
+| `CRON_SECRET` | Yes for cron endpoints | `app/api/cron/trial-followups/route.ts` | Cron endpoints reject legitimate scheduler calls. As of A-03 no longer accepted as an auth bypass on `/api/admin/provision-test-trial`. |
+| `UPSTASH_REDIS_REST_URL` | Yes for cache / rate limit / fraud | `lib/cache/redis.ts`, `lib/fraud/detect.ts`, `app/api/admin/provision-test-trial/route.ts` | Redis-backed features degrade to in-memory (see O-05). |
 | `UPSTASH_REDIS_REST_TOKEN` | Yes, pairs with URL | same as above | same as above |
 | `NEWS_API_KEY` | Optional | `lib/config/env.ts` | News section falls back to mock data per `PROJECT.md` §3. |
 | `THESPORTSDB_API_KEY` | Optional (but degrades) | `lib/config/env.ts:11` | Falls back to `"123"` (TheSportsDB public test key). Named trap from `ci-runs-without-secrets` — returns valid JSON for a subset of the catalogue, so a missing key looks like a working one. Do not treat as harmless. |
@@ -28,7 +28,7 @@ Platform-provided (`NODE_ENV`, `VERCEL_ENV`, `VERCEL_URL`) are not user-configur
 
 ## CMS8K panel (runtime-read)
 
-Consumers: `app/api/admin/test-panel/route.ts`, `app/api/orders/route.ts`, `lib/panel/cms8k.ts`.
+Consumers: `app/api/admin/provision-test-trial/route.ts`, `app/api/orders/route.ts`, `lib/panel/cms8k.ts`.
 
 | Name | Required | If missing |
 | :-- | :-- | :-- |

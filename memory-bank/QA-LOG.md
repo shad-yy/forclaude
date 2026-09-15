@@ -21,6 +21,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-03 — Close `/api/admin/test-panel` secret-bypass; rename to `provision-test-trial`
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 1 close.
+- **Layer**: L3 API route.
+- **Severity**: high (authentication bypass; anyone with `JWT_SECRET` or `CRON_SECRET` could hit an admin endpoint that provisions a real cms-8k trial).
+- **Was**: `app/api/admin/test-panel/route.ts:17-19` accepted `?secret=` or `Authorization: Bearer` matching either `ENV.JWT_SECRET` or `process.env.CRON_SECRET`. Line 52 then called `createTrialAccount` and returned the live credentials. The two secrets are for signing JWTs and authorising Vercel Cron respectively — neither was designed as an auth-by-value credential for a provisioning endpoint. Security-surface audit E-03.
+- **Now**: endpoint moved to `app/api/admin/provision-test-trial/route.ts`. Only accepts the `admin-session` cookie, verified via `jose.jwtVerify(token, JWT_SECRET)`. On success logs `[PROVISION-DIAG] admin=<sub> running trial creation for <name>` so a maintainer can trace who invoked it. Old path deleted; no callers in `app/` or `components/` (grep confirmed) so no UI wire-up broke.
+- **Test**: `tests/admin-provision-auth.test.ts` — 4 cases: no auth, `?secret=<JWT_SECRET>`, `Authorization: Bearer <JWT_SECRET>`, `?secret=<CRON_SECRET>`. All must return 401. Red 4/4 before fix (route didn't exist at new path; then bypass would grant access at old path); green 4/4 after. Existing `tests/orders-api.test.ts` gate tests updated to new path — remain green.
+- **Skill/agent used**: `layered-testing-strategy` (module import + `NextRequest` directly; `vi.mock` of the panel client so the auth test doesn't hit a real provision).
+- **Run it**: `npx vitest run tests/admin-provision-auth.test.ts`.
+- **Result**: full suite: 134/134 passing (12 files), up from 130/130 before (my 4 added). `tsc --noEmit`: 0 errors.
+- **Still open in**: none for E-03. Broader admin-route JWT-check boilerplate (X-06 — same 20-line block in `metrics/`, `health/`, `health/report/`) is a separate cleanup, not in this scope.
+
 ### A-02 — Redact PII from cms8k panel-response logs
 
 - **Date**: 2026-09-15
