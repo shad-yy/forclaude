@@ -23,6 +23,24 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### C-04 — Install dependabot + CodeQL + gitleaks + CODEOWNERS + PR template
+
+- **Date**: 2026-09-15
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 GitHub-side automation.
+- **Severity**: medium (no active exploit; closes coverage gap I-05 — the entire GitHub-side automation surface was empty).
+- **Was**: `.github/` had only `workflows/ci.yml` and `workflows/auto-index.yml`. No dependabot, no CodeQL SAST, no gitleaks secret scan, no CODEOWNERS routing, no PR template. Every PR landed without automated review sign-off routing or a body scaffold. Every dep bump had to be manual.
+- **Now**:
+  - `.github/dependabot.yml` — weekly npm + github-actions bumps; minor/patch grouped so a maintainer gets one PR per week rather than dozens.
+  - `.github/workflows/codeql.yml` — CodeQL security-extended queries for JS/TS on push, PR, and weekly cron (37 04 * * 1) — off-hour + off-minute per `daily-dependency-audit` best-practice.
+  - `.github/workflows/gitleaks.yml` — secret scan on push/PR + weekly cron. Complements the narrower in-repo hex enforcer at `tests/no-credential-shaped-hex-in-repo.test.ts` (A-11); gitleaks scans the whole repo + full git history.
+  - `.github/CODEOWNERS` — routes every path to `@shad-yy` today; ready to grow when the team does. Explicit lines for the highest-blast-radius paths (`middleware.ts`, `lib/fraud/`, `lib/panel/`, `lib/security/`, `app/api/orders/`, etc.).
+  - `.github/pull_request_template.md` — sections for summary, category, skill invoked (playbook), red-first proof, regression checklist, QA-LOG entry, follow-ups.
+- **Test**: none — these are pure GitHub-side automation additions. The Codeql / gitleaks workflows will produce their own signal on the next push (CodeQL takes ~5 min); their **first run** result recorded here in a follow-up amendment.
+- **Skill/agent used**: `daily-dependency-audit` for cron discipline; `documentation-discipline` for the PR template's red-first + QA-LOG sections.
+- **Result**: `1ccf1b8` (A-14) is the first fully green CI on this branch. This commit tests only that the new workflows parse (they either run or GitHub complains about YAML in the Actions tab).
+- **Standing hazard**: CodeQL security-extended may flag pre-existing issues on first run. Treat those as findings to triage, not blockers on this commit.
+
 ### A-14 — Remove Playwright e2e from PR gate (production-monitor split)
 
 - **Date**: 2026-09-15

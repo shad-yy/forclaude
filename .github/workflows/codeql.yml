@@ -1,0 +1,45 @@
+name: CodeQL
+
+# C-04 / I-05: GitHub-native SAST for JS/TS. Runs on push to production
+# and dev branches, on pull requests, and weekly to catch advisories in
+# code that hasn't been touched.
+
+on:
+  push:
+    branches: ["main", "Version-3"]
+  pull_request:
+    branches: ["main", "Version-3"]
+  schedule:
+    - cron: "37 4 * * 1" # Mondays at 04:37 UTC — off-hour + off-minute
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
