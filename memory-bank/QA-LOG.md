@@ -21,6 +21,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-09 — Extend CI trigger to Version-3 + claude/** (I-01)
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 2 close.
+- **Layer**: L0 CI.
+- **Severity**: high (systemic — pushes to the production branch and to my dev branch fired no CI at all; every commit landed unverified).
+- **Was**: `.github/workflows/ci.yml` `on.push.branches` and `on.pull_request.branches` were `["main"]` only. The active production branch is `Version-3`; my working branch is `claude/exciting-planck-6a4nbr`. Every push to either fired zero CI. Coverage gap I-01.
+- **Now**: `on.push.branches: ["main", "Version-3", "claude/**"]`, `on.pull_request.branches: ["main", "Version-3"]`. Wildcard `claude/**` picks up short-lived dev branches automatically; production branch `Version-3` gates every deploy path.
+- **Test**: `tests/ci-trigger-covers-active-branches.test.ts` — 4 structural cases: file exists, push includes `Version-3`, pull_request includes `Version-3`, push includes `claude/**`. Red 3/4 before fix; green 4/4 after.
+- **Skill/agent used**: `never-count-with-grep` (structural yaml assertion, not a hand-counted claim).
+- **Run it**: `npx vitest run tests/ci-trigger-covers-active-branches.test.ts`.
+- **Result**: full suite: 155/155 (18 files), tsc clean. **First real CI signal expected on this commit's push** — reported honestly on land, per plan.
+- **Still open in**: none for I-01. `daily-dependency-audit` workflow is separate — under Phase C-01.
+
 ### A-08 — Remove `middleware.ts` top-of-function throw on missing JWT_SECRET (S-05, T-ENV-20 recurrence)
 
 - **Date**: 2026-09-15
@@ -33,7 +47,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 - **Skill/agent used**: `runtime-env-and-middleware-safety` rule 1 verbatim; `layered-testing-strategy` for the env-stubbed middleware call.
 - **Run it**: `npx vitest run tests/middleware-never-throws.test.ts`.
 - **Result**: full suite: 151/151 (17 files), tsc clean.
-- **Enforcement note**: on the first regression run my QA-LOG entry contained the relative word "later"; the log-hygiene test I installed in A-01 caught it and refused the commit. Reworded to `Batch 2 / Phase B`. This is the discipline working as designed.
+- **Enforcement note**: on the first regression run my QA-LOG entry contained a relative-date word (`"later"`); the log-hygiene test I installed in A-01 caught it and refused the commit. Reworded to `Batch 2 / Phase B`. This is the discipline working as designed.
 - **Still open in**: `S-06` per-instance rate-limit `Map` at `middleware.ts:6` is unchanged — deferred to a Redis migration under Phase B.
 
 ### A-07 — Close race in `provisionTrialAndNotify` (fingerprint before dispatch, lock TTL 30s→300s)

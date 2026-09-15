@@ -1,10 +1,13 @@
 name: CI
 
+# A-09: trigger scope extended to cover the branches this project actually
+# uses. Previously only `main`, so pushes to Version-3 (production) and to
+# claude/** short-lived dev branches got zero CI signal.
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "Version-3", "claude/**"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "Version-3"]
 
 jobs:
   test:
