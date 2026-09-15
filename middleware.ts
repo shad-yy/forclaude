@@ -20,9 +20,12 @@ function isRateLimited(ip: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-    throw new Error('JWT_SECRET must be set in production')
-  }
+  // A-08 (T-ENV-20 recurrence): NEVER throw at middleware top-of-function.
+  // A throw here has no per-route fallback — every matched route returns
+  // MIDDLEWARE_INVOCATION_FAILED (500). The previous top-level throw on
+  // missing JWT_SECRET is now handled per-request below (admin routes
+  // redirect to home when the secret is unset; API admin routes each do
+  // their own jwtVerify).
 
   // Protect /admin routes (legacy admin - can be removed later)
   if (request.nextUrl.pathname.startsWith("/admin")) {

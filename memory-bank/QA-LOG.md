@@ -21,6 +21,21 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-08 — Remove `middleware.ts` top-of-function throw on missing JWT_SECRET (S-05, T-ENV-20 recurrence)
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 2 close.
+- **Layer**: L4 middleware.
+- **Severity**: high (a dashboard delete of `JWT_SECRET` in production would 500 every `/admin/*` and `/api/admin/*` route with no per-route fallback — exactly what T-ENV-20 caused for ~18 h on the prior project).
+- **Was**: `middleware.ts:23-25` opened with `throw new Error('JWT_SECRET must be set in production')` when the env var was unset. A middleware throw returns `MIDDLEWARE_INVOCATION_FAILED` (500) for every route the matcher covers, with no fallback. Security-surface + skill audit finding S-05, direct match to `playbook/skills/runtime-env-and-middleware-safety.md` incident T-ENV-20.
+- **Now**: throw removed. The subsequent per-request `if (!ENV.JWT_SECRET) return NextResponse.redirect(...)` inside the `/admin` branch already handles missing secret safely (redirect to home instead of 500). `/api/admin/*` routes each perform their own `jwtVerify` (hardened in A-03), so middleware's role is limited to rate-limiting there.
+- **Test**: `tests/middleware-never-throws.test.ts` — 3 cases: (a) `/admin/api-management` with JWT_SECRET="" NODE_ENV=production must not throw; (b) same for `/api/admin/metrics`; (c) `/admin/*` returns a response with status < 500. Red 3/3 before fix; green 3/3 after.
+- **Skill/agent used**: `runtime-env-and-middleware-safety` rule 1 verbatim; `layered-testing-strategy` for the env-stubbed middleware call.
+- **Run it**: `npx vitest run tests/middleware-never-throws.test.ts`.
+- **Result**: full suite: 151/151 (17 files), tsc clean.
+- **Enforcement note**: on the first regression run my QA-LOG entry contained the relative word "later"; the log-hygiene test I installed in A-01 caught it and refused the commit. Reworded to `Batch 2 / Phase B`. This is the discipline working as designed.
+- **Still open in**: `S-06` per-instance rate-limit `Map` at `middleware.ts:6` is unchanged — deferred to a Redis migration under Phase B.
+
 ### A-07 — Close race in `provisionTrialAndNotify` (fingerprint before dispatch, lock TTL 30s→300s)
 
 - **Date**: 2026-09-15
@@ -37,7 +52,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 - **Skill/agent used**: `layered-testing-strategy` (module mocks for internal call ordering; structural read for the TTL constant).
 - **Run it**: `npx vitest run tests/provision-race.test.ts`.
 - **Result**: full suite: 148/148 (16 files), tsc clean.
-- **Still open in**: `S-06` (three per-instance rate-limit Maps) still open; `X-11` (150-line inline email HTML in orders/route.ts) still open — both scheduled for later batches per plan.
+- **Still open in**: `S-06` (three per-instance rate-limit Maps) still open; `X-11` (150-line inline email HTML in orders/route.ts) still open — both scheduled under Batch 2 / Phase B per plan.
 
 ### A-06 — Fail-loud on missing fraud infra for trial provisioning
 
