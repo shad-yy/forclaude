@@ -35,9 +35,17 @@ Frontend Client Component
 ## 2. Coding Standards & Non-Negotiables
 
 ### Error Handling & Fault Tolerance
-*   **Graceful Recovery**: API errors must never crash components or render blank white screens. All API methods must catch exceptions and return empty lists (`[]`) or cached fallback states, logging warnings in the console.
+
+**Hybrid rule adopted 2026-09-15 (see `memory-bank/QA-LOG.md` A-13; skill: `playbook/skills/api-fault-vs-absence.md`).** The older "always return `[]` on error" rule was found to conflict with `api-fault-vs-absence`: it turns a provider outage into an empty-state page, which Google reads as "this entity has nothing" and, for pages that then trip `notFound()`, deindexes the URL for weeks. The hybrid rule replaces it:
+
+*   **New resolvers** (added or migrated after 2026-09-15) rethrow `UpstreamFaultError` (`lib/api/errors.ts`) on 5xx / network / timeout / malformed body. A 429 is a fault too (own class if added later). A 404 from upstream is an *absence*, not a fault — return `null` / `[]` for that one case.
+*   **Callers of new resolvers** turn a fault into an owned/cached fallback or a truthful "we could not check just now" render — **never** into `notFound()` or an empty page. See `playbook/skills/api-fault-vs-absence.md` §Rules.
+*   **The 12 existing routes** listed under S-03 in the plan file (`leagues/route.ts:14-20`, `scores/recent/route.ts:17-23`, etc.) are **grandfathered under this decision date**. They will be migrated one commit per route under Phase B-04 (`api-fault-vs-absence` route migration). Each migration includes a red-first contract test.
+*   **New routes have a red-first test that fails if they return `{data:[]}` on fault** — the pattern is illustrated in the S-03 → B-04 migration commits.
 *   **User Feedback**: When services fail or rate limits are reached, display a friendly placeholder: `"Data temporarily unavailable"` rather than raw technical stacks.
 *   **Rate Limiting Guard**: TheSportsDB API calls are strictly paced at a maximum rate of 25 requests per minute using token bucket queues to protect the API key from 429 locks.
+
+**Do NOT** copy the older "`catch { return [] }` in provider clients" pattern into new code. The exemption is per-route and scoped only to those grandfathered under S-03.
 
 ### Type Safety
 *   **TypeScript Standard**: The codebase operates in strict TypeScript mode. Run `npx tsc --noEmit` to verify code correctness before any commit.
