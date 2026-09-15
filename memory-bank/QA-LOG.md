@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-13 — Playwright picked up vitest files (extension convention + rename)
+
+- **Date**: 2026-09-15
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 test infrastructure.
+- **Severity**: high (Playwright step of CI red on every commit after A-11 because Playwright tried to require `import { ... } from "vitest"` from files it should never have touched).
+- **Was**: A-10 set `playwright.config.ts` `testMatch: ['tests/**/*.spec.ts', 'tests/**/*.test.ts', 'e2e/**/*.spec.ts']` with an enumerated `testIgnore` list of the 19 vitest test files then existing. A-11 (`tests/no-credential-shaped-hex-in-repo.test.ts`) and this-session's B-01 (`tests/upstream-fault-error.test.ts`) added new `*.test.ts` files that weren't added to the ignore list. Playwright therefore tried to load them, encountered `import { describe, it, expect } from "vitest"` in a CJS context, and threw `Error: Vitest cannot be imported in a CommonJS module using require()`.
+- **Now**: settled the convention — **vitest owns `*.test.ts`, Playwright owns `*.spec.ts`**. `playwright.config.ts` `testMatch` reduces to `['tests/**/*.spec.ts', 'e2e/**/*.spec.ts']`; the enumerated `testIgnore` is gone entirely. `tests/mobile-responsiveness.test.ts` was actually a Playwright spec — renamed to `tests/mobile-responsiveness.spec.ts` (via `git mv`; history preserved). `vitest.config.ts` `exclude` dropped the now-unneeded mobile entry.
+- **Test**: `tests/playwright-config.test.ts` (A-10) still green — the tests it asserts (`testMatch` covers both dirs, `baseURL` env-driven) pass under the new simpler config. Verified `pnpm exec playwright test --list` prints 120 tests across 3 spec files (`e2e/smartlivetv.spec.ts`, `e2e/smoke.spec.ts`, `tests/mobile-responsiveness.spec.ts`).
+- **Verification**: `pnpm vitest --run` → 160/160; `pnpm tsc --noEmit` → 0 errors; `pnpm exec playwright test --list` → 120 tests, exit 0.
+- **Skill/agent used**: `reproduce-before-fix` (fetched the CI failure logs via GitHub API to identify the file-and-line that broke); `layered-testing-strategy` (structural test A-10 covered the new shape).
+- **Lesson recorded**: enumerated ignore lists rot the moment new files land. Convention beats configuration when convention is cheap to enforce (a filename suffix).
+
 ### A-12 — Fix vitest/vite version mismatch in `pnpm-lock.yaml` (CI-only failure exposed by A-09)
 
 - **Date**: 2026-09-15

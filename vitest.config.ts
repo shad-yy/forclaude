@@ -4,8 +4,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    // A-13: vitest owns *.test.ts, playwright owns *.spec.ts. The old
+    // mobile-responsiveness .test.ts was actually a playwright spec —
+    // renamed to .spec.ts and dropped from vitest excludes.
     include: ["tests/**/*.test.ts"],
-    exclude: ["tests/mobile-responsiveness.test.ts", "node_modules/**"],
+    exclude: ["node_modules/**"],
     env: {
       // A-11 (2026-09-15): NEVER commit a real JWT_SECRET value here. The
       // previous 128-char hex fallback (see standing correction O-01 in
