@@ -1,8 +1,11 @@
-// tests/smartlivetv.spec.ts
+// e2e/smartlivetv.spec.ts
 import { test, expect, Page } from '@playwright/test'
 
-const BASE = 'https://smartlivetv.co.uk'
-// For local: const BASE = 'http://localhost:3000'
+// A-10: baseURL driven by env, not hardcoded to production. Set
+// PLAYWRIGHT_BASE_URL=https://smartlivetv.co.uk for the production-hit
+// suite; leave it unset for local (defaults to http://localhost:3000
+// via playwright.config.ts).
+const BASE = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // SUITE 1 — SEO CRITICAL (these failures = Google won't index you)

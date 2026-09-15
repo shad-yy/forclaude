@@ -21,6 +21,21 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-10 — Fix Playwright orphaning + env-drive baseURL (I-02)
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 2 close.
+- **Layer**: L0 test infrastructure.
+- **Severity**: high (silent test coverage loss + accidental production traffic on every playwright run).
+- **Was**: `playwright.config.ts` used `testDir: './tests'`; every file under `e2e/*.spec.ts` was orphaned — no Playwright run picked them up. `e2e/smartlivetv.spec.ts:4` hardcoded `const BASE = 'https://smartlivetv.co.uk'` so any hypothetical run would hit live production. `tests/mobile-responsiveness.test.ts` and `e2e/mobile-responsiveness.spec.ts` were near-duplicates (single-line diff in selector strictness). Coverage gap I-02.
+- **Now**: `playwright.config.ts` rewritten with `testDir: '.', testMatch: ['tests/**/*.spec.ts', 'tests/**/*.test.ts', 'e2e/**/*.spec.ts']` and an explicit `testIgnore` list for vitest specs (all 19 vitest test files). `baseURL` reads `process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'` — no accidental production hits. `e2e/smartlivetv.spec.ts:4` `BASE` constant sourced from the same env var. `e2e/mobile-responsiveness.spec.ts` deleted (the `tests/` variant with the more permissive `Go to ` selector is kept as canonical).
+- **Test**: `tests/playwright-config.test.ts` — 3 cases: scanner control (≥ 2 tracked spec files), config picks up both dirs, `baseURL` reads from `process.env.PLAYWRIGHT_BASE_URL`. Red 2/3 before fix; green 3/3 after.
+- **Test infra note**: first attempt used `git ls-files 'tests/**/*.spec.ts'` — git's own glob does not expand `**` to arbitrary depth. Fixed by using `:(glob)` pathspec magic prefix.
+- **Skill/agent used**: `never-count-with-grep` (git-tracked file list, not a hand-counted claim); `layered-testing-strategy` (structural, with a vacuous-walk control).
+- **Run it**: `npx vitest run tests/playwright-config.test.ts`.
+- **Result**: full suite: 158/158 (19 files), tsc clean.
+- **Follow-up (not this commit)**: Playwright test-run itself against the new config still needs to be validated; the Playwright browser download for the local sandbox is pre-provisioned per environment doc, but this run hasn't been executed. Next commit that touches e2e must run `pnpm exec playwright test --list` to prove the config accepts both dirs.
+
 ### A-09 — Extend CI trigger to Version-3 + claude/** (I-01)
 
 - **Date**: 2026-09-15
