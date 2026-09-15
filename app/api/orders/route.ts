@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createCustomer, getCustomerByEmail, updateCustomer } from '@/lib/db/customers'
 import { createTrialAccount } from '@/lib/panel/cms8k'
 import { checkFraud, recordFraudFingerprints, logBlockedRequest, canonicalEmail } from '@/lib/fraud/detect'
+import { verifyCaptcha } from '@/lib/security/captcha'
 
 const orderSchema = z.object({
   name: z.string().min(2).max(100).trim(),
@@ -21,6 +22,8 @@ const orderSchema = z.object({
   device: z.string().max(100).optional(),
   hp_website: z.string().max(100).optional(),
   form_loaded_at: z.number().optional(),
+  // A-04: retained so Zod does not strip it before verifyCaptcha() sees it.
+  captchaToken: z.string().max(4096).optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -34,8 +37,20 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
-    const { name, email, whatsapp, plan, message, device, hp_website, form_loaded_at } = parsed.data
+    const { name, email, whatsapp, plan, message, device, hp_website, form_loaded_at, captchaToken } = parsed.data
     const isTrial = plan === 'Free Trial Request'
+
+    // A-04: hCaptcha server-side verification for trials. When
+    // HCAPTCHA_SECRET is unset (dev/CI) verifyCaptcha returns ok:true.
+    if (isTrial) {
+      const captcha = await verifyCaptcha(captchaToken)
+      if (!captcha.ok) {
+        return NextResponse.json(
+          { success: false, error: `Captcha ${captcha.reason}` },
+          { status: 403 },
+        )
+      }
+    }
 
     // ─── FRAUD & ANTI-SPAM DETECTION (trials only) ───────────────────────────
     if (isTrial) {

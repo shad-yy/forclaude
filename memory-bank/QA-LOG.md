@@ -21,6 +21,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-04 — Wire hCaptcha server-side verification on trial requests
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 1 close.
+- **Layer**: L3 API route + L0 helper.
+- **Severity**: high (bot-protection bypass — any script could submit trial requests).
+- **Was**: `components/trial/TrialForm.tsx:82` posted `captchaToken` in the body; `orders/route.ts`'s Zod schema had no `captchaToken` field so Zod stripped it silently; grep for `hcaptcha.com/siteverify` and `HCAPTCHA_SECRET` returned zero hits across the entire tree. hCaptcha was purely a client-side widget with no server enforcement. Security-surface audit E-01.
+- **Now**: new `lib/security/captcha.ts` exports `verifyCaptcha(token)` — returns `{ok:true}` when `HCAPTCHA_SECRET` unset (dev/CI), rejects with a reason otherwise. `orderSchema` now includes `captchaToken` so the field survives parsing. `orders/route.ts` calls `verifyCaptcha` immediately before the fraud gate on the trial branch; a failure returns 403 with a reason string (`missing_token`, `verification_failed`, `verification_error`). `SETUP-REQUIRED.md` documents `HCAPTCHA_SECRET` as required-in-production with the failure mode called out.
+- **Test**: `tests/hcaptcha-server-verify.test.ts` — 3 cases: (a) missing token with `HCAPTCHA_SECRET` set → 403; (b) `siteverify` returns `success:false` → 403; (c) `HCAPTCHA_SECRET` unset (dev) → does not 403. All fetch calls stubbed; loud failure if the route tries an outbound call it shouldn't. Red 2/3 before fix; green 3/3 after.
+- **Skill/agent used**: `layered-testing-strategy` (module-level `fetch` stub + `NextRequest` directly against POST handler).
+- **Run it**: `npx vitest run tests/hcaptcha-server-verify.test.ts`.
+- **Result**: full suite: 137/137 (13 files), tsc clean.
+- **Still open in**: `/api/subscribe` does not currently ship a `captchaToken` from the client — enforcement there is deferred to when the newsletter form grows a captcha widget. Not in scope.
+
 ### A-03 — Close `/api/admin/test-panel` secret-bypass; rename to `provision-test-trial`
 
 - **Date**: 2026-09-15

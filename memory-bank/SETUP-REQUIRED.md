@@ -19,6 +19,7 @@ Platform-provided (`NODE_ENV`, `VERCEL_ENV`, `VERCEL_URL`) are not user-configur
 | `RESEND_API_KEY` | Yes for outbound email | `app/actions/subscribe.ts`, `app/api/subscribe/route.ts`, `app/api/admin/provision-test-trial/route.ts` | Email sending fails; subscription/order confirmations do not arrive. |
 | `ORDER_NOTIFY_EMAIL` | Yes to route order alerts | `app/actions/subscribe.ts`, `app/api/subscribe/route.ts`, `app/api/orders/route.ts` | Order/subscribe notifications have no destination. |
 | `CRON_SECRET` | Yes for cron endpoints | `app/api/cron/trial-followups/route.ts` | Cron endpoints reject legitimate scheduler calls. As of A-03 no longer accepted as an auth bypass on `/api/admin/provision-test-trial`. |
+| `HCAPTCHA_SECRET` | Yes in production | `lib/security/captcha.ts` (called from `app/api/orders/route.ts`) | Trial requests silently skip captcha verification (a one-time `[CAPTCHA]` warning is logged). In production this MUST be set — leaving it unset makes hCaptcha decorative and any bot can submit trials. Pair with `NEXT_PUBLIC_HCAPTCHA_SITEKEY` on the client. |
 | `UPSTASH_REDIS_REST_URL` | Yes for cache / rate limit / fraud | `lib/cache/redis.ts`, `lib/fraud/detect.ts`, `app/api/admin/provision-test-trial/route.ts` | Redis-backed features degrade to in-memory (see O-05). |
 | `UPSTASH_REDIS_REST_TOKEN` | Yes, pairs with URL | same as above | same as above |
 | `NEWS_API_KEY` | Optional | `lib/config/env.ts` | News section falls back to mock data per `PROJECT.md` §3. |
