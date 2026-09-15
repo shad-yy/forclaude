@@ -50,7 +50,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
   - `.github/dependabot.yml` — weekly npm + github-actions bumps; minor/patch grouped so a maintainer gets one PR per week rather than dozens.
   - `.github/workflows/codeql.yml` — CodeQL security-extended queries for JS/TS on push, PR, and weekly cron (37 04 * * 1) — off-hour + off-minute per `daily-dependency-audit` best-practice.
   - `.github/workflows/gitleaks.yml` — secret scan on push/PR + weekly cron. Complements the narrower in-repo hex enforcer at `tests/no-credential-shaped-hex-in-repo.test.ts` (A-11); gitleaks scans the whole repo + full git history.
-  - `.github/CODEOWNERS` — routes every path to `@shad-yy` today; ready to grow when the team does. Explicit lines for the highest-blast-radius paths (`middleware.ts`, `lib/fraud/`, `lib/panel/`, `lib/security/`, `app/api/orders/`, etc.).
+  - `.github/CODEOWNERS` — routes every path to `@shad-yy` (the sole maintainer as of 2026-09-15). Explicit lines for the highest-blast-radius paths (`middleware.ts`, `lib/fraud/`, `lib/panel/`, `lib/security/`, `app/api/orders/`, etc.).
   - `.github/pull_request_template.md` — sections for summary, category, skill invoked (playbook), red-first proof, regression checklist, QA-LOG entry, follow-ups.
 - **Test**: none — these are pure GitHub-side automation additions. The Codeql / gitleaks workflows will produce their own signal on the next push (CodeQL takes ~5 min); their **first run** result recorded here in a follow-up amendment.
 - **Skill/agent used**: `daily-dependency-audit` for cron discipline; `documentation-discipline` for the PR template's red-first + QA-LOG sections.
