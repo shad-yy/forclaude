@@ -78,6 +78,17 @@ Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `p
 - **Why it isn't done**: A-02 fixed the three raw-response leaks (lines ~240, ~271, ~310) but left two `console.error` calls that log error objects wholesale: `[CMS8K SESSION] Error creating line via session:` (~329) and `[CMS8K] Get credentials error:` (~426). Error messages from `fetch` failures may include the request URL with query params — those params carry the panel session cookie in some paths. Not yet audited whether any real error object surfaces a cookie in practice.
 - **What would close it**: run the two failure paths against a mock that throws with a URL-carrying error, verify no cookie appears; if it does, redact via `redactObject` before logging.
 
+## O-11 — Two critical Next.js RCEs live on production (< 15.5.24)
+
+- **Since**: 2026-09-15 (surfaced by C-01 install audit)
+- **Layer**: L0 dependency
+- **Owner**: unassigned — maintainer needs to schedule the Next patch bump
+- **Advisories** (both `next` @ current 14.2.35):
+  1. **GHSA-p293-qw3h-jr36** — Unauthenticated Remote Code Execution on windows-hosted servers. `>=13.4.0 <15.5.24`. Production hosted on Vercel (Linux) — attack surface is dev machines only.
+  2. **GHSA-2xp9-vwfh-vxw4** — Unauthenticated Remote Code Execution in Image Optimization API when AVIF files are used. `>=10.0.0 <15.5.24`. This project uses Next Image; AVIF is negotiated by modern browsers. **Live-exploitable on the deployed site.**
+- **Why it isn't done**: `PROGRESS.md` §4.1 already flags "Next.js 14 → 16 upgrade" as its own project because it's a breaking two-major-version jump. But the RCE fixes landed in the 15.x line — a patch bump to `15.5.24` (or `15.5.10+`) plugs both without the full 14→16 migration.
+- **What would close it**: (a) `pnpm add next@15.5.24 --save-exact`, (b) run `pnpm tsc --noEmit` and address any type-drift, (c) run `pnpm vitest --run` and address any regressions, (d) test in a preview deploy, (e) merge to `Version-3`. Full 14→16 upgrade stays as its own separate future project.
+
 ## O-10 — Playwright e2e suite removed from PR gate; needs a dedicated scheduled workflow
 
 - **Since**: 2026-09-15 (A-14)

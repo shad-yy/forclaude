@@ -23,6 +23,22 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### C-01 — Install scheduled dependency-audit workflow (finds 2 critical Next.js RCEs live)
+
+- **Date**: 2026-09-15
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 CI + L0 dep audit.
+- **Severity**: **critical** — surfaced 2 unpatched Next.js RCEs live on production.
+- **Was**: no scheduled dependency audit. `pnpm audit --prod` was run manually if at all; advisories that appeared between pushes could sit unreported for weeks. Coverage gap I-05 partly, and the same class of failure `daily-dependency-audit`'s 2026-09-08 incident describes verbatim.
+- **Now**: `.github/workflows/dependency-audit.yml` on cron `23 6 * * *` (off-hour + off-minute per the skill), `workflow_dispatch` also. Uses `pnpm install --frozen-lockfile --ignore-scripts` (the audit never runs dep code). Fails only on critical prod-tree; high/moderate/low reported in the run summary for context. `scripts/audit-gate.mjs` implements the gate + prints the offending advisories inline so a maintainer opening a failing run sees the details without clicking through.
+- **First-run finding (blocking-severity)**: two `next@14.2.35` RCEs:
+  1. **GHSA-p293-qw3h-jr36** — Unauthenticated RCE on Windows-hosted servers. Attack surface: dev machines only (prod is Vercel/Linux).
+  2. **GHSA-2xp9-vwfh-vxw4** — Unauthenticated RCE in Image Optimization API when AVIF files are used. Live-exploitable on the deployed site.
+  Both fixed in `next@15.5.24`. Registered as OPEN-WORK O-11 with concrete "what would close it" steps.
+- **Test**: verified `scripts/audit-gate.mjs` locally against `pnpm audit --prod --json` — exits 1 with a clear itemised markdown report of the 2 criticals + severity table. Exit 0 case: mocked audit.json with `metadata.vulnerabilities.critical: 0` also verified.
+- **Skill/agent used**: `daily-dependency-audit` verbatim (cron shape, --ignore-scripts, unreadable JSON = failure, fail on critical only, full tree for context).
+- **Result**: the audit gate is now live; its **first scheduled run tomorrow 06:23 UTC will fail** (correctly — the 2 criticals still ship on the deployed site until Next is patched). `workflow_dispatch` also available to trigger on-demand.
+
 ### C-04 — Install dependabot + CodeQL + gitleaks + CODEOWNERS + PR template
 
 - **Date**: 2026-09-15
