@@ -21,6 +21,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-05 — Close X-Forwarded-For loopback bypass in fraud IP checks
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 1 close.
+- **Layer**: L4 orchestration (orders route) + L4 fraud (detect).
+- **Severity**: high (rate-limit bypass — attacker sending `X-Forwarded-For: 0.0.0.0` disabled all IP fraud gates).
+- **Was**: `app/api/orders/route.ts:43-45` extracted the client IP by preferring raw `x-forwarded-for` over `x-real-ip`, then `lib/fraud/detect.ts:331` unconditionally returned `allowed:true` for `0.0.0.0` or `127.0.0.1`. Together this meant an attacker's `X-Forwarded-For: 0.0.0.0` disabled the IP cooldown (1 req / 3 min) and 48h rate-limit entirely. Security-surface audit E-02.
+- **Now**: new `lib/security/client-ip.ts` with `getClientIp(headers)` — prefers `x-real-ip` (Vercel-set, unforgeable by client), falls through XFF's leftmost non-loopback entry, returns null on nothing usable. `orders/route.ts` uses it; `detect.ts` now calls `shouldBypassIpChecks(ip)` which only returns true in non-production. In production a `0.0.0.0` arriving at the gate means header extraction failed — treat as suspicious, run the full IP checks.
+- **Test**: `tests/client-ip-spoof.test.ts` — 7 cases: XFF-only-loopback returns null; `x-real-ip` wins over XFF; XFF list falls through to first non-loopback; empty headers return null; `x-real-ip` carrying loopback is ignored; NODE_ENV=development bypasses loopback; NODE_ENV=production does NOT bypass loopback (E-02 attack path). Red 7/7 before fix (module didn't exist); green 7/7 after.
+- **Skill/agent used**: `layered-testing-strategy` (pure helper unit tests + module reload for env-dependent branches).
+- **Run it**: `npx vitest run tests/client-ip-spoof.test.ts`.
+- **Result**: full suite: 144/144 (14 files), tsc clean.
+- **Still open in**: `S-06` — three separate in-memory `Map` rate limiters (middleware, admin-auth login, subscribe) are all per-instance. Not this fix's scope.
+
 ### A-04 — Wire hCaptcha server-side verification on trial requests
 
 - **Date**: 2026-09-15

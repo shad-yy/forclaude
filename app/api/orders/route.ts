@@ -4,6 +4,7 @@ import { createCustomer, getCustomerByEmail, updateCustomer } from '@/lib/db/cus
 import { createTrialAccount } from '@/lib/panel/cms8k'
 import { checkFraud, recordFraudFingerprints, logBlockedRequest, canonicalEmail } from '@/lib/fraud/detect'
 import { verifyCaptcha } from '@/lib/security/captcha'
+import { getClientIp } from '@/lib/security/client-ip'
 
 const orderSchema = z.object({
   name: z.string().min(2).max(100).trim(),
@@ -54,10 +55,10 @@ export async function POST(req: NextRequest) {
 
     // ─── FRAUD & ANTI-SPAM DETECTION (trials only) ───────────────────────────
     if (isTrial) {
-      const ip =
-        req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-        req.headers.get('x-real-ip') ||
-        '0.0.0.0'
+      // A-05: prefer x-real-ip (Vercel-set, cannot be spoofed by client) over
+      // raw x-forwarded-for. `getClientIp` skips loopback entries in XFF so a
+      // caller cannot disable IP fraud checks by sending X-Forwarded-For: 0.0.0.0.
+      const ip = getClientIp(req.headers) ?? '0.0.0.0'
 
       const fraudResult = await checkFraud({
         email,

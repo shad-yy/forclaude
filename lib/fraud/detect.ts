@@ -17,6 +17,7 @@
  */
 
 import { Redis } from '@upstash/redis'
+import { shouldBypassIpChecks } from '@/lib/security/client-ip'
 
 let redis: Redis | null = null
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -328,7 +329,12 @@ export async function recordFraudFingerprints(input: {
 // ─── IP Cooldown & Rate Limiting ──────────────────────────────────────────────
 
 async function checkIpLimits(ip: string): Promise<FraudCheckResult> {
-  if (!redis || !ip || ip === '0.0.0.0' || ip === '127.0.0.1') return { allowed: true }
+  // A-05: the loopback bypass used to be unconditional and was the E-02
+  // attack path — an attacker sent X-Forwarded-For: 0.0.0.0 to disable
+  // IP cooldown+rate-limit entirely. Now gated on NODE_ENV so production
+  // never bypasses even if a real 0.0.0.0 arrives (extraction failure).
+  if (!redis || !ip) return { allowed: true }
+  if (shouldBypassIpChecks(ip)) return { allowed: true }
 
   // A. Cooldown: Max 1 trial request per 3 minutes (prevents spam clicking/scripts)
   const cooldownKey = `fraud:ip_cooldown:${ip}`
