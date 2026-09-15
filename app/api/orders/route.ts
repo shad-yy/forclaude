@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createCustomer, getCustomerByEmail, updateCustomer } from '@/lib/db/customers'
 import { createTrialAccount } from '@/lib/panel/cms8k'
-import { checkFraud, recordFraudFingerprints, logBlockedRequest, canonicalEmail } from '@/lib/fraud/detect'
+import { checkFraud, recordFraudFingerprints, logBlockedRequest, canonicalEmail, isFraudInfraReady } from '@/lib/fraud/detect'
 import { verifyCaptcha } from '@/lib/security/captcha'
 import { getClientIp } from '@/lib/security/client-ip'
 
@@ -51,6 +51,18 @@ export async function POST(req: NextRequest) {
           { status: 403 },
         )
       }
+    }
+
+    // A-06: fail-loud when fraud dedup infra is unreachable. Previously
+    // trial provisioning proceeded with all dedup gates silently no-op'd
+    // if Upstash env was unset. Rejecting with 503 is honest and lets
+    // the client retry; leaving it silent lets duplicates through.
+    if (isTrial && !isFraudInfraReady()) {
+      console.warn('[ORDER] Trial rejected: fraud infrastructure (Upstash) is not configured')
+      return NextResponse.json(
+        { success: false, error: 'Fraud service unavailable. Please try again in a few minutes.' },
+        { status: 503 },
+      )
     }
 
     // ─── FRAUD & ANTI-SPAM DETECTION (trials only) ───────────────────────────

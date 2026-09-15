@@ -19,6 +19,17 @@
 import { Redis } from '@upstash/redis'
 import { shouldBypassIpChecks } from '@/lib/security/client-ip'
 
+/**
+ * A-06: answers "can fraud dedup + IP-limit checks actually run?".
+ * Trial provisioning callers should preflight with this and return 503
+ * if false — otherwise every dedup gate silently no-ops and duplicate
+ * trials go through. Library-level checkFraud remains best-effort by
+ * design (paid orders don't require dedup infra).
+ */
+export function isFraudInfraReady(): boolean {
+  return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+}
+
 let redis: Redis | null = null
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
   redis = new Redis({
@@ -220,6 +231,10 @@ export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResu
   if (!ipResult.allowed) return ipResult
 
   if (!redis) {
+    // Library contract: dedup/IP-limit checks are best-effort when Redis
+    // is unset. Callers that require dedup (trial provisioning) should
+    // preflight with isFraudInfraReady() and reject the request themselves.
+    // See A-06 in QA-LOG.md.
     return { allowed: true }
   }
 

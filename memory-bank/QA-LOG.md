@@ -21,6 +21,23 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-06 — Fail-loud on missing fraud infra for trial provisioning
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 1 close.
+- **Layer**: L3 API route + L4 fraud.
+- **Severity**: high (silent bypass of every dedup+IP fraud gate when Upstash env unset — the exact class of failure the health-status skill exists to prevent).
+- **Was**: `lib/fraud/detect.ts:221-223` returned `{allowed:true}` when Upstash env vars were unset — dedup, IP cooldown, IP rate-limit all silently no-op. A trial request could then provision unlimited times from any IP. Security-surface audit E-04.
+- **Now**: two layered changes so the library stays useful while the caller enforces policy:
+  1. **Library** (`lib/fraud/detect.ts`): exported `isFraudInfraReady()` — a boolean that answers "can dedup actually run?" (both UPSTASH env vars set). Existing `checkFraud`'s `!redis → allowed:true` contract preserved so paid-order code paths that don't require dedup aren't broken.
+  2. **Caller** (`app/api/orders/route.ts`): trial branch now preflights on `isFraudInfraReady()` and returns HTTP 503 with an honest "service unavailable" message when Redis is unreachable. Non-trial orders unaffected.
+- **Test**: `tests/fraud-redis-required.test.ts` — 2 cases: Upstash unset → 503 (E-04 path); Upstash set → not 503 (control that the 503 is our new branch, not something else). Red 1/2 before fix; green 2/2 after.
+- **Iteration note**: first attempt tried to change the library contract directly (return `{allowed:false, flagType:'redis_unavailable'}` from `checkFraud` when `!redis`). Broke 8 existing tests in `fraud-detection-advanced.test.ts` that depend on `!redis → allowed:true` for their setup. Reverted to the split above — library stays library, policy lives in caller. Per `reasonable` rule: minimal blast radius. Second iteration also required stubbing `@upstash/redis` in `tests/orders-api.test.ts` because the fraud test cases (honeypot/speed/disposable) now need `isFraudInfraReady()` to return true to reach the fraud gate under test, and real Upstash calls to a stubbed URL hang on DNS lookup.
+- **Skill/agent used**: `layered-testing-strategy` (module-level `vi.mock('@upstash/redis')` to eliminate network I/O; `NextRequest` directly against POST handler).
+- **Run it**: `npx vitest run tests/fraud-redis-required.test.ts`.
+- **Result**: full suite: 146/146 (15 files), tsc clean.
+- **Still open in**: cron path (`app/api/cron/trial-followups/route.ts`) — not touched. If cron also creates customer records without Redis it would similarly silently no-op; deferred to a coverage pass.
+
 ### A-05 — Close X-Forwarded-For loopback bypass in fraud IP checks
 
 - **Date**: 2026-09-15

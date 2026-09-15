@@ -9,12 +9,46 @@
  *   - Security on /api/admin/provision-test-trial (401 gate; secret bypass closed in A-03)
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
+
+// A-06: We stub Upstash env below so /api/orders' isFraudInfraReady()
+// preflight returns true and control reaches the fraud gate under test.
+// We ALSO mock @upstash/redis so no real network call happens for
+// stubbed test URLs — otherwise createCustomer / logBlockedRequest
+// would attempt a real DNS lookup and hang.
+vi.mock('@upstash/redis', () => {
+  class FakeRedis {
+    async get() { return null }
+    async set() { return 'OK' }
+    async del() { return 1 }
+    async incr() { return 1 }
+    async expire() { return 1 }
+    async lpush() { return 1 }
+    async ltrim() { return 'OK' }
+    pipeline() {
+      return { set: () => this, exec: async () => [] }
+    }
+  }
+  return { Redis: FakeRedis }
+})
 
 describe('Orders API & Security Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // A-06: /api/orders now preflights on isFraudInfraReady() and returns 503
+    // if UPSTASH_REDIS_REST_URL/TOKEN are unset. These tests target the
+    // fraud check itself (honeypot, speed, disposable), which sits AFTER
+    // that preflight, so we need Upstash env stubbed to non-empty. The
+    // real Redis client fails on operations but the fraud check hits its
+    // pre-Redis gates (honeypot/speed/disposable) first and returns 429
+    // before any Redis call — which is exactly what these tests assert.
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://test.upstash.example')
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'test-token')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   // ── 1. Plan Name & Schema Validation ─────────────────────────────────────────
