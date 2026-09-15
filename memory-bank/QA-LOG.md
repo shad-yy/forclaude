@@ -13,13 +13,27 @@ Layer key: L1 UI · L2 client · L3 API route · L4 orchestration · L5 provider
 
 Corrections carried at the top per `documentation-discipline` rule 5. When an earlier document misquoted a fact, the correction lives here with the date it was found and where it appeared.
 
-- **2026-09-15 — `vitest.config.ts:10` embeds a 512-bit hex fallback for `JWT_SECRET` in a checked-in file.** The value is 128 hex characters, i.e., a real signing-appropriate secret, not a random-looking placeholder. If this value was ever the production `JWT_SECRET`, it is leaked in git history and must be rotated. Not verified this session which production value was in use when the fallback was added. Registered in `memory-bank/OPEN-WORK.md` (O-01). Do not delete the fallback until the rotation decision is made — see `runtime-env-and-middleware-safety` rule 4 (env-var deletion needs a full-file grep).
+- **2026-09-15 — `vitest.config.ts:10` embedded a 512-bit hex fallback for `JWT_SECRET` in a checked-in file.** The value was 128 hex characters, i.e., a real signing-appropriate secret, not a random-looking placeholder. **Replaced in A-11** (this session) with an obviously-fake test-only value plus a "NEVER commit a real JWT_SECRET" guard-comment; enforcement test at `tests/no-credential-shaped-hex-in-repo.test.ts` refuses any regression. The **historical value remains in git history** (cannot be un-committed): if it was ever the production `JWT_SECRET`, it must be rotated in Vercel. Not verified this session which production value was in use when the fallback was added — the maintainer must check Vercel dashboard history to make the rotation decision. O-01 in OPEN-WORK remains open on that action item.
 - **2026-09-15 — `.github/workflows/ci.yml` fires only on push/PR to `main`, but the active branch is `Version-3`.** So CI has not been running on any change to the production branch. This is a systemic gap, not a one-off. Registered in `OPEN-WORK.md` (O-02). Local `tsc --noEmit` and `vitest run` are the only gates until the trigger is corrected.
 - **2026-09-15 — `memory-bank/PATTERNS.md` §Error Handling instructs code to return `[]` on API error.** This is the exact anti-pattern `api-fault-vs-absence` exists to prevent. The two rules are mutually exclusive; PATTERNS.md is older but encoded in existing code. Registered in `OPEN-WORK.md` (O-03) as a design decision the maintainer must make.
 
 ---
 
 ## Entries
+
+### A-11 — Rotate vitest.config.ts JWT_SECRET fallback + install hex-leak tripwire (I-06, O-01 code half)
+
+- **Date**: 2026-09-15
+- **Commit**: hash added at Batch 2 close.
+- **Layer**: L0 test infrastructure + tripwire.
+- **Severity**: high (a 128-char hex string committed as a fallback JWT signing secret; behaviour indistinguishable from a leaked production secret).
+- **Was**: `vitest.config.ts:10` and `tests/admin-metrics.test.ts:4` both contained the same 128-char hex value used as `process.env.JWT_SECRET || <hex>`. Whether or not that value was ever the production secret cannot be determined from the code alone — but the shape of the value is signing-appropriate for HS256 and both files kept it as a working fallback. Standing correction O-01, gap I-06.
+- **Now**: both occurrences replaced with `"test-only-jwt-secret-do-not-use-in-prod"` plus an inline guard-comment naming the enforcer. New `tests/no-credential-shaped-hex-in-repo.test.ts` walks `vitest.config.ts` and everything under `tests/` and refuses any line carrying a pure-hex run of ≥ 60 chars. Historical value stays in git history — cannot be un-committed — so O-01 stays open on the "confirm + rotate in Vercel if needed" action.
+- **Test**: `tests/no-credential-shaped-hex-in-repo.test.ts` — 2 cases: file-scanner control + no-hex-secret assertion. Red 1/2 before fix; green 2/2 after.
+- **Skill/agent used**: `layered-testing-strategy` (structural walker with vacuous-walk control); `documentation-discipline` (standing correction updated in place).
+- **Run it**: `npx vitest run tests/no-credential-shaped-hex-in-repo.test.ts`.
+- **Result**: full suite: 160/160 (20 files), tsc clean.
+- **Still open in**: O-01 remains — the production Vercel `JWT_SECRET` may need rotation depending on whether the removed hex was ever used there.
 
 ### A-10 — Fix Playwright orphaning + env-drive baseURL (I-02)
 
