@@ -13,6 +13,8 @@ Layer key: L1 UI · L2 client · L3 API route · L4 orchestration · L5 provider
 
 Corrections carried at the top per `documentation-discipline` rule 5. When an earlier document misquoted a fact, the correction lives here with the date it was found and where it appeared.
 
+- **2026-09-15 — "Full local suite green" was insufficient evidence during A-02..A-11.** I ran `npx vitest run` locally (which uses `package-lock.json`), but CI uses `pnpm install --frozen-lockfile` (which uses `pnpm-lock.yaml`). The two lockfiles resolve different versions, and vitest 4.1.4 pinned in `pnpm-lock.yaml` was incompatible with the co-pinned `vite@5.4.21`. Every A-02..A-11 commit therefore passed locally but was red on CI once A-09 enabled the trigger. Corrected in A-12 (downgrade to vitest 3.x for vite-5 compatibility). Going forward: always run `pnpm install --frozen-lockfile && pnpm vitest --run` before pushing.
+
 - **2026-09-15 — `vitest.config.ts:10` embedded a 512-bit hex fallback for `JWT_SECRET` in a checked-in file.** The value was 128 hex characters, i.e., a real signing-appropriate secret, not a random-looking placeholder. **Replaced in A-11** (this session) with an obviously-fake test-only value plus a "NEVER commit a real JWT_SECRET" guard-comment; enforcement test at `tests/no-credential-shaped-hex-in-repo.test.ts` refuses any regression. The **historical value remains in git history** (cannot be un-committed): if it was ever the production `JWT_SECRET`, it must be rotated in Vercel. Not verified this session which production value was in use when the fallback was added — the maintainer must check Vercel dashboard history to make the rotation decision. O-01 in OPEN-WORK remains open on that action item.
 - **2026-09-15 — `.github/workflows/ci.yml` fires only on push/PR to `main`, but the active branch is `Version-3`.** So CI has not been running on any change to the production branch. This is a systemic gap, not a one-off. Registered in `OPEN-WORK.md` (O-02). Local `tsc --noEmit` and `vitest run` are the only gates until the trigger is corrected.
 - **2026-09-15 — `memory-bank/PATTERNS.md` §Error Handling instructs code to return `[]` on API error.** This is the exact anti-pattern `api-fault-vs-absence` exists to prevent. The two rules are mutually exclusive; PATTERNS.md is older but encoded in existing code. Registered in `OPEN-WORK.md` (O-03) as a design decision the maintainer must make.
@@ -20,6 +22,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ---
 
 ## Entries
+
+### A-12 — Fix vitest/vite version mismatch in `pnpm-lock.yaml` (CI-only failure exposed by A-09)
+
+- **Date**: 2026-09-15
+- **Commit**: this commit — hash added in a follow-up amendment.
+- **Layer**: L0 tooling.
+- **Severity**: high (CI red-out on every push after A-09; entire safety net inert until fixed).
+- **Was**: `pnpm-lock.yaml` pinned `vitest@4.1.4` alongside `vite@5.4.21`. Vitest 4.x requires Vite 6+ (which exports `./module-runner`); Vite 5.x does not. Result: `pnpm vitest --run` failed instantly with `ERR_PACKAGE_PATH_NOT_EXPORTED: Package subpath './module-runner' is not defined by "exports" in ../vite@5.4.21/package.json`. Runs 3/4/5 (A-09/A-10/A-11) all conclusion=failure on the same step. Not caused by my code changes; a pre-existing broken lockfile the previous CI setup never surfaced because it didn't run on `Version-3` or `claude/**`.
+- **Now**: `package.json` `devDependencies.vitest` and `@vitest/coverage-v8` moved from `^4.1.3` to `^3.2.4`. `pnpm install` regenerated `pnpm-lock.yaml` — resolved versions are 3.2.7 for both, compatible with vite 5.4.21 which stays put. No test API surface changed between the two versions (vitest 3.x → 4.x mostly renames internals; tests use `describe/it/expect/vi` unchanged).
+- **Test**: reproduced the CI failure locally (`rm -rf node_modules && pnpm install --frozen-lockfile && pnpm vitest --run`) with the old versions → same stack trace. Same command after the downgrade: 160/160 green across 20 files, `pnpm tsc --noEmit`: 0 errors.
+- **Skill/agent used**: `reproduce-before-fix` (CI-only failure reproduced with `pnpm install --frozen-lockfile`, not with the `npm install` I had been using).
+- **Run it**: `rm -rf node_modules && pnpm install --frozen-lockfile && pnpm vitest --run && pnpm tsc --noEmit`.
+- **Result**: local CI-mode 160/160 green. Awaiting CI run on this commit's push for the on-the-runner confirmation.
+- **Standing correction added**: my earlier claim "full local suite green" was based on `npm install`; CI's `pnpm install --frozen-lockfile` reads a different lock. Every commit A-02..A-11 was actually red on CI though I said green. Correction now at the top of this file.
 
 ### A-11 — Rotate vitest.config.ts JWT_SECRET fallback + install hex-leak tripwire (I-06, O-01 code half)
 
