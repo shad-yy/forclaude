@@ -24,7 +24,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### A-01 — Install playbook skill pack + documentation-discipline enforcement
 
 - **Date**: 2026-09-15
-- **Commit**: `d7461ba` (batch 1: 5 skills), `d1a8796` (batches 2-4: 9 skills + integration prompt), `fdc27eb` (batch 5: flaky-test-policy + INDEX.md); this row itself lands in a follow-up commit whose hash is added when this entry is next amended.
+- **Commit**: `d7461ba` (batch 1: 5 skills), `d1a8796` (batches 2-4: 9 skills + integration prompt), `fdc27eb` (batch 5: flaky-test-policy + INDEX.md), `6444b4e` (enforcement tests + seed of the four memory-bank files), `<amendment>` (this row updated to name `6444b4e`).
 - **Layer**: L0 (tooling/docs).
 - **Severity**: medium — foundational, not a defect fix.
 - **Was**: no `playbook/` directory. No `memory-bank/QA-LOG.md`, `OPEN-WORK.md`, `FLAKY-TESTS.md`, or `SETUP-REQUIRED.md`. No enforcement tests. `PROGRESS.md` cited hash `f67cb49` — verified resolves — but had no other discipline around dates or env-var coverage.
