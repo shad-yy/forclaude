@@ -36,16 +36,11 @@ jobs:
       - name: Run unit tests
         run: pnpm vitest --run
 
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
-
-      - name: Start app
-        run: pnpm dev &
-
-      - name: Wait for app
-        run: npx wait-on http://localhost:3000
-
-      - name: Run e2e tests
-        run: pnpm playwright test
-
-
+      # A-14: Playwright e2e removed from the PR gate. The current suite is
+      # a production-monitor (asserts real robots.txt content, `.co.uk`
+      # canonicals, "no James Harper" author, real blog posts, real schema
+      # markup). Running it against a fresh `pnpm dev` produces 40+
+      # failures for reasons unrelated to any given PR. A separate
+      # scheduled workflow that targets the live site (or a preview
+      # deploy) is tracked as OPEN-WORK O-10.
+      # Vitest + tsc remain the blocking gate on every push and PR.
