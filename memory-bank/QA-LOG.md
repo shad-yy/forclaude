@@ -23,6 +23,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### B-03 — Remove hardcoded `/json/123/` TheSportsDB public key from route source (S-02)
+
+- **Date**: 2026-09-15
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L3 API route.
+- **Severity**: medium (silent key trap — `THESPORTSDB_API_KEY` was ignored by these routes even when correctly set in Vercel).
+- **Was**: `app/api/fixtures/today/route.ts` (3 hits) and `app/api/spotlight/route.ts` (3 hits) baked `https://www.thesportsdb.com/api/v1/json/123/…` directly into fetch URLs. `123` is TheSportsDB's public test key — routes would silently ignore a properly-configured `THESPORTSDB_API_KEY` env var. Named anti-pattern `S-02` (structural anti-pattern from the plan) and the `ci-runs-without-secrets` "|| \"123\" trap institutionalised".
+- **Now**: both routes import `ENV` from `lib/config/env.ts` and define a `SPORTSDB_BASE()` helper that reads through `ENV.THESPORTSDB_KEY` (which centralises the fallback + emits a startup warning when the env var is unset). Six URL literals replaced.
+- **Test**: `tests/no-hardcoded-sportsdb-key-in-routes.test.ts` — 2 cases: file-scanner control + no-`/json/123/`-in-executable-code assertion. Red 1/2 before fix (6 executable-code hits); green 2/2 after. Comment-strip pattern lifted from `layered-testing-strategy` so QA prose that mentions the literal doesn't self-trip.
+- **Skill/agent used**: `ci-runs-without-secrets` (the trap named in rule 5); `layered-testing-strategy` (structural scan with executableOnly comment strip).
+- **Run it**: `pnpm vitest --run tests/no-hardcoded-sportsdb-key-in-routes.test.ts`.
+- **Result**: full suite: 168/168 (23 files), tsc clean.
+- **Still open in**: `app/api/scores/today/route.ts:8` reads `process.env.THESPORTSDB_API_KEY || "123"` inline — same trap in a subtler form. Migrating it to `ENV.THESPORTSDB_KEY` is a small follow-up commit; deferred so this commit stays scoped to the URL-literal removal.
+
 ### A-15 — Mitigate GHSA-2xp9-vwfh-vxw4 by removing AVIF from Image Optimizer
 
 - **Date**: 2026-09-15

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server"
+import { ENV } from "@/lib/config/env"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+// B-03: previously hardcoded `/json/123/` (public test key), so the route
+// ignored THESPORTSDB_API_KEY when set. Now reads through ENV.THESPORTSDB_KEY
+// which centralises the fallback + startup warning in lib/config/env.ts.
+const SPORTSDB_BASE = () => `https://www.thesportsdb.com/api/v1/json/${ENV.THESPORTSDB_KEY}`
 
 function mapEvent(e: any) {
     return {
@@ -35,11 +41,11 @@ export async function GET() {
         // Fetch fixtures for today AND tomorrow
         const [todayRes, tomorrowRes] = await Promise.allSettled([
           fetch(
-            `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${todayUTC}&s=Soccer`,
+            `${SPORTSDB_BASE()}/eventsday.php?d=${todayUTC}&s=Soccer`,
             { cache: 'no-store' }
           ),
           fetch(
-            `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${tomorrowUTC}&s=Soccer`,
+            `${SPORTSDB_BASE()}/eventsday.php?d=${tomorrowUTC}&s=Soccer`,
             { cache: 'no-store' }
           ),
         ])
@@ -80,7 +86,7 @@ export async function GET() {
         if (results.length === 0) {
           try {
             const yestRes = await fetch(
-              `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${yesterdayUTC}&s=Soccer`,
+              `${SPORTSDB_BASE()}/eventsday.php?d=${yesterdayUTC}&s=Soccer`,
               { cache: 'no-store' }
             )
             if (yestRes.ok) {
