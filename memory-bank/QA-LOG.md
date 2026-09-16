@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### X-09 — Deterministic fallback IDs in mma-rapidapi.ts (`String(Math.random())` retired)
 
 - **Date**: 2026-09-16
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `75938f6`.
 - **Layer**: L5 provider.
 - **Severity**: low-medium (correctness — non-deterministic IDs quietly break downstream React keys and cache lookups; not user-visible security).
 - **Was**: `lib/api/mma-rapidapi.ts:94` (upcoming events) and `:124` (recent events) used `String(Math.random())` as the fallback id when the upstream row omitted `id`/`event_id`. Two calls with the same upstream returned different IDs each time → any consumer using `id` as a React `key` re-mounted every render, and any ID-based cache lookup missed.
