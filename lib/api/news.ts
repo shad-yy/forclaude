@@ -178,52 +178,10 @@ export async function getLatestSportsNews(
 }
 
 import { NewsArticle as SharedNewsArticle, NewsResponse } from "@/lib/api/types"
-
-/**
- * Nuclear dedup — catches duplicates by URL, normalized title,
- * image URL (sans query-string), and description content hash.
- */
-function nuclearDedup(articles: any[]): any[] {
-  if (!articles?.length) return []
-
-  const seenUrls = new Set<string>()
-  const seenTitleKeys = new Set<string>()
-  const seenImages = new Set<string>()
-
-  return articles.filter(article => {
-    if (!article || !article.title) return false
-
-    // URL dedup — exact match only
-    const url = (article.link || article.url || '').trim()
-    if (url && seenUrls.has(url)) return false
-
-    // Title dedup — use 60 chars to avoid false positives
-    const titleKey = (article.title || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 60)
-
-    if (titleKey.length >= 15 && seenTitleKeys.has(titleKey)) {
-      return false
-    }
-
-    // Image dedup — exact same image URL only
-    const img = (article.image_url || article.urlToImage || '')
-      .split('?')[0]
-      .trim()
-
-    if (img && img.length > 20 && seenImages.has(img)) {
-      return false
-    }
-
-    // Mark as seen
-    if (url) seenUrls.add(url)
-    if (titleKey.length >= 15) seenTitleKeys.add(titleKey)
-    if (img && img.length > 20) seenImages.add(img)
-
-    return true
-  })
-}
+// X-04: was a local `function nuclearDedup(...)` here — moved to the
+// shared helper so the three copy-pastes across the repo could be
+// retired. Same defaults; tests pin the semantics.
+import { nuclearDedup } from "@/lib/api/dedup"
 
 export const newsAPI = {
   searchNews: async (params: any = {}): Promise<NewsResponse> => {

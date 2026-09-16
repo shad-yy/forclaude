@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### X-04 — One `nuclearDedup` for all three news call sites (dedupe copy-paste)
+
+- **Date**: 2026-09-16
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L3 API route + L2 client (news library).
+- **Severity**: low (cleanup — no bug, but three semantically-close copies of the same 30-line function meant three places to fix any dedup edge case).
+- **Was**: `function nuclearDedup(articles)` was declared THREE times in the repo — `lib/api/news.ts:186`, `app/api/news/route.ts:12`, `app/api/search/news/route.ts:5`. Each variant had subtle differences: the search-bar variant used a 40-char title cutoff and enabled description dedup; the others used 60-char and image dedup only.
+- **Now**: one helper at `lib/api/dedup.ts` exposing `nuclearDedup<T>(articles, opts?)` with named options (titleMaxChars, requireTitle, dedupOnImage, dedupOnDescription, etc.). Defaults match the canonical `lib/api/news.ts` variant. The search-bar route passes its more aggressive options explicitly; behaviour is unchanged. As a small bonus while touching the file, `/api/search/news` also migrated from `status:500 + articles:[]` to hybrid `status:503 + no-store + {error}` (api-fault-vs-absence).
+- **Test**: `tests/nuclear-dedup.test.ts` — 10 assertions: 8 behavioural (URL/title/image/description dedup, short-title exemption, order preservation, empty input, requireTitle:false), plus 2 structural tripwires: (a) `git grep` refuses any re-copy of `function nuclearDedup` outside `lib/api/dedup.ts`, (b) all three legacy callers must import from the shared helper. Red before migration; green after.
+- **Skill/agent used**: cleanup pass — direct application of "Don't add features/abstractions beyond what the task requires" + "Three similar lines is better than a premature abstraction". Here it was 3 × ~30 lines, so factoring paid.
+- **Run it**: `pnpm vitest --run tests/nuclear-dedup.test.ts`.
+- **Result**: closes X-04. Full suite 219/219 across 33 files; tsc clean.
+
 ### B-02 — News scraper stops shipping to the browser (S-01 last real violation)
 
 - **Date**: 2026-09-16
