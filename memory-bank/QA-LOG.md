@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### X-06 — One `requireAdmin` guard for five admin routes (also closes a config-detail leak)
 
 - **Date**: 2026-09-16
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `afa241b`.
 - **Layer**: L3 API route + L4 auth.
 - **Severity**: medium (silent drift risk + a small info-leak: `metrics`/`health`/`health-report`/`extend` returned an error body naming `JWT_SECRET` when the env var was missing — tells any client which env var is misconfigured, a `runtime-env-and-middleware-safety` rule 4 violation).
 - **Was**: five admin routes — `app/api/admin/{metrics,health,health/report,provision-test-trial}/route.ts` + `app/api/auth/admin/extend/route.ts` — each open-coded a ~20-line JWT preamble (cookie read, secret check, `jwtVerify`, error responses). Behaviours differed subtly: three returned 500 for missing `JWT_SECRET` with a config-detail leak; one returned 401 (no leak); one 500 (leak). Any admin auth policy change had to be touched in five places.
