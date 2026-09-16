@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### X-09 — Deterministic fallback IDs in mma-rapidapi.ts (`String(Math.random())` retired)
+
+- **Date**: 2026-09-16
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L5 provider.
+- **Severity**: low-medium (correctness — non-deterministic IDs quietly break downstream React keys and cache lookups; not user-visible security).
+- **Was**: `lib/api/mma-rapidapi.ts:94` (upcoming events) and `:124` (recent events) used `String(Math.random())` as the fallback id when the upstream row omitted `id`/`event_id`. Two calls with the same upstream returned different IDs each time → any consumer using `id` as a React `key` re-mounted every render, and any ID-based cache lookup missed.
+- **Now**: `fallbackEventId(e, i)` derives a stable id from the event's own natural key (name + date, normalised to `[a-z0-9|-]`). Same input → same id, forever. Falls back to `mma-event-fallback-<index>` only when both name and date are also empty. Both call sites updated to pass the mapper index.
+- **Test**: `tests/mma-rapidapi-stable-ids.test.ts` — 3 assertions with `fetch` stubbed to a fixed payload and Upstash unset so the internal cache no-ops: (1) same input across two calls yields the same IDs, (2) no id matches the `Math.random`-shaped `/^0\.\d{10,}$/` pattern, (3) distinct events in the same batch get distinct IDs. Red 2/3 before; green 3/3 after.
+- **Skill/agent used**: cleanup pass; also aligns with `stale-while-revalidate-cache` §3 (deterministic keys let SWR de-dupe requests).
+- **Run it**: `pnpm vitest --run tests/mma-rapidapi-stable-ids.test.ts`.
+- **Result**: closes X-09. Full suite 231/231 across 35 files; tsc clean.
+
 ### X-06 — One `requireAdmin` guard for five admin routes (also closes a config-detail leak)
 
 - **Date**: 2026-09-16

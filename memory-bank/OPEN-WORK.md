@@ -78,6 +78,22 @@ Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `p
 - **Why it isn't done**: A-02 fixed the three raw-response leaks (lines ~240, ~271, ~310) but left two `console.error` calls that log error objects wholesale: `[CMS8K SESSION] Error creating line via session:` (~329) and `[CMS8K] Get credentials error:` (~426). Error messages from `fetch` failures may include the request URL with query params — those params carry the panel session cookie in some paths. Not yet audited whether any real error object surfaces a cookie in practice.
 - **What would close it**: run the two failure paths against a mock that throws with a URL-carrying error, verify no cookie appears; if it does, redact via `redactObject` before logging.
 
+## O-13 — Two known-dead files pending user-approved deletion (X-01 + X-02)
+
+- **Since**: 2026-09-16
+- **Layer**: L0 dead code
+- **Owner**: unassigned — maintainer approval required
+- **Why it isn't done**: `git rm lib/api/api-client.ts lib/cache/apiCache.ts` in this session was blocked by the auto-mode classifier as an "irreversible local destruction". `api-client.ts` (265 lines) and `apiCache.ts` (175 lines) both have zero importers across `app/`, `components/`, and `lib/` (verified by `grep -rn "from ['\"]@/lib/…"` this session), zero tests reference them, and neither is called dynamically anywhere I can see. But 440 lines is enough that a mistaken delete would hurt, so the classifier's caution stands until a human confirms.
+- **What would close it**: maintainer confirms none of these are loaded via a script, worker, edge function, or CI job outside the code I searched, then runs `git rm lib/api/api-client.ts lib/cache/apiCache.ts` and lands as a cleanup commit.
+
+## O-14 — `components/layout/search-bar.tsx` news branch never renders results
+
+- **Since**: 2026-09-16 (discovered while touching `/api/search/news` for X-04)
+- **Layer**: L1 UI
+- **Owner**: unassigned
+- **Why it isn't done**: pre-existing bug, out of scope for the X-04 dedup consolidation. The site-wide search bar fetches `/api/search/news?q=…` and then does `if (Array.isArray(newsJson))` (`components/layout/search-bar.tsx:115`), but the route responds with `{ status, articles, totalResults }` — an object, not an array. `Array.isArray(...)` is always false, so the news branch of the search-bar has never rendered results. Only surfaced now because I read the caller to check whether X-04's shape change would break anything (it didn't — the branch was already dead).
+- **What would close it**: either (a) change the caller to `Array.isArray(newsJson?.articles) ? newsJson.articles.slice(0, 2)…`, or (b) change `/api/search/news` to return a bare array. Prefer (a) since three other callers of similar shape (`teams`, `players`, `leagues`) already return bare arrays; keeping news consistent with a wrapped object may be intentional for pagination.
+
 ## O-11 — Two critical Next.js RCEs live on production (< 15.5.24) — one MITIGATED
 
 **Update 2026-09-15:** GHSA-2xp9-vwfh-vxw4 (AVIF RCE) attack path closed by A-15 (`next.config.mjs` `images.formats` no longer includes `image/avif`). This is a **mitigation, not a fix** — the underlying `next` version is still vulnerable and would be re-exposed the moment AVIF is reintroduced. Regression tripwire at `tests/next-image-avif-disabled.test.ts`. The other CVE (GHSA-p293-qw3h-jr36, Windows-host RCE) still stands; production is Vercel/Linux so attack surface there is dev machines only. The proper fix (patch bump to `next@15.5.24+`) remains scheduled below.
