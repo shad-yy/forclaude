@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { jwtVerify } from 'jose'
-import { ENV } from '@/lib/config/env'
+import { requireAdmin } from '@/lib/auth/admin-guard'
 import { createTrialAccount } from '@/lib/panel/cms8k'
 
 export const dynamic = 'force-dynamic'
@@ -16,24 +15,9 @@ export const dynamic = 'force-dynamic'
  * Auth: admin-session cookie only.
  */
 export async function GET(req: NextRequest) {
-  const token = req.cookies.get('admin-session')?.value
-  if (!token || !ENV.JWT_SECRET) {
-    return NextResponse.json(
-      { error: 'Unauthorized — admin session required' },
-      { status: 401 },
-    )
-  }
-
-  let adminSub: string | undefined
-  try {
-    const { payload } = await jwtVerify(token, new TextEncoder().encode(ENV.JWT_SECRET))
-    adminSub = typeof payload.sub === 'string' ? payload.sub : undefined
-  } catch {
-    return NextResponse.json(
-      { error: 'Unauthorized — admin session invalid or expired' },
-      { status: 401 },
-    )
-  }
+  const auth = await requireAdmin(req)
+  if (!auth.ok) return auth.response
+  const adminSub = typeof auth.payload.sub === 'string' ? auth.payload.sub : undefined
 
   const testName = 'DiagTest' + Math.floor(100 + Math.random() * 900)
   console.log(`[PROVISION-DIAG] admin=${adminSub ?? 'unknown'} running trial creation for ${testName}`)

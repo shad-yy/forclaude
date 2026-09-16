@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### X-06 — One `requireAdmin` guard for five admin routes (also closes a config-detail leak)
+
+- **Date**: 2026-09-16
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L3 API route + L4 auth.
+- **Severity**: medium (silent drift risk + a small info-leak: `metrics`/`health`/`health-report`/`extend` returned an error body naming `JWT_SECRET` when the env var was missing — tells any client which env var is misconfigured, a `runtime-env-and-middleware-safety` rule 4 violation).
+- **Was**: five admin routes — `app/api/admin/{metrics,health,health/report,provision-test-trial}/route.ts` + `app/api/auth/admin/extend/route.ts` — each open-coded a ~20-line JWT preamble (cookie read, secret check, `jwtVerify`, error responses). Behaviours differed subtly: three returned 500 for missing `JWT_SECRET` with a config-detail leak; one returned 401 (no leak); one 500 (leak). Any admin auth policy change had to be touched in five places.
+- **Now**: one guard `lib/auth/admin-guard.ts::requireAdmin(request?)`. Usage: `const auth = await requireAdmin(); if (!auth.ok) return auth.response; /* use auth.payload */`. Standardised responses: missing/invalid session → 401 with a bounded message; missing/malformed `JWT_SECRET` → 503 + no-store with a generic `"Admin authentication temporarily unavailable"` (no env-var name). Takes an optional `NextRequest` so routes that already have one (e.g. `provision-test-trial`) can bypass `next/headers`'s `cookies()`.
+- **Test**: `tests/admin-guard.test.ts` — 9 assertions: 4 behavioural (no cookie → 401, bad token → 401, missing `JWT_SECRET` → 503 with body not matching `/JWT_SECRET/i`, valid token → payload); 5 structural tripwires (one per admin route: must import `requireAdmin` and must not call `jwtVerify` directly). Red 5/9 before migration; green 9/9 after.
+- **Skill/agent used**: `runtime-env-and-middleware-safety` (rule 4 — never leak env var names in a public error body), `layered-testing-strategy` (structural tripwire so per-route drift back to hand-rolled auth is caught).
+- **Run it**: `pnpm vitest --run tests/admin-guard.test.ts`.
+- **Result**: closes X-06. Full suite 228/228 across 34 files; tsc clean.
+
 ### X-04 — One `nuclearDedup` for all three news call sites (dedupe copy-paste)
 
 - **Date**: 2026-09-16
