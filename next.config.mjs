@@ -85,7 +85,12 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    formats: ['image/webp', 'image/avif'],
+    // A-15 (2026-09-15): AVIF removed to mitigate GHSA-2xp9-vwfh-vxw4
+    // (Next.js Image Optimizer AVIF RCE, fixed only in next@15.5.24+).
+    // The site runs next@14.2.35; the full 14→15 upgrade is O-11.
+    // Reintroduce 'image/avif' after that upgrade lands. Enforcer at
+    // tests/next-image-avif-disabled.test.ts refuses regression.
+    formats: ['image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,

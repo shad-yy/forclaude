@@ -23,6 +23,21 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### A-15 — Mitigate GHSA-2xp9-vwfh-vxw4 by removing AVIF from Image Optimizer
+
+- **Date**: 2026-09-15
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 config (Next.js Image Optimizer).
+- **Severity**: critical (surfaced by C-01 first-run) — mitigation, not a full fix.
+- **Was**: `next.config.mjs:88` declared `formats: ['image/webp', 'image/avif']`. Next.js @ 14.2.35 is vulnerable to `GHSA-2xp9-vwfh-vxw4` — the Image Optimizer allowed unauthenticated RCE when serving AVIF responses. Fix landed in `next@15.5.24`; a full major upgrade (O-11) is a separate project because of Next 15's breaking changes (async `params`, React 19 requirement, etc.).
+- **Now**: `image/avif` removed from `images.formats`. Attack path requires an AVIF response from the Image Optimizer; with AVIF disabled, the endpoint negotiates only WebP (or the original format). The underlying `next` binary is still vulnerable but has no live entry point.
+- **Trade-off** (accepted): modern browsers no longer get the ~20% size savings of AVIF over WebP. LCP may regress marginally on image-heavy pages. Acceptable while we wait to land the Next 15 upgrade.
+- **Test**: `tests/next-image-avif-disabled.test.ts` — 2 cases: config file has an `images.formats` list; the list does NOT include `image/avif`. Red 1/2 before fix (AVIF was in the list); green 2/2 after. Regression tripwire — reintroducing AVIF fails the test with a message pointing back to the CVE.
+- **Skill/agent used**: `runtime-env-and-middleware-safety` (config-not-code fix), `documentation-discipline` (structural tripwire prevents regression).
+- **Run it**: `pnpm vitest --run tests/next-image-avif-disabled.test.ts`.
+- **Result**: full suite: 166/166 (22 files), tsc clean.
+- **Still open**: O-11 stays open — the other CVE (`GHSA-p293-qw3h-jr36` Windows-host RCE) is unmitigable in config, and the AVIF mitigation should be REVERTED once `next` is patched. The regression test's own docstring names the CVE so a future maintainer knows why AVIF is disabled and when they can re-enable it.
+
 ### C-01 — Install scheduled dependency-audit workflow (finds 2 critical Next.js RCEs live)
 
 - **Date**: 2026-09-15
