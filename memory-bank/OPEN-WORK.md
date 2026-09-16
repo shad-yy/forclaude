@@ -38,13 +38,9 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: separate task in this session's queue. Being fixed red-first in the next turn.
 - **What would close it**: `A-02` entry with the fix commit and a test that middleware never throws under a stripped environment.
 
-## O-05 — `middleware.ts:6` uses in-memory `Map` for admin rate limiting on serverless
+## O-05 — CLOSED 2026-09-16 by B-06
 
-- **Since**: 2026-09-15
-- **Layer**: L4 (middleware)
-- **Owner**: unassigned
-- **Why it isn't done**: fixing requires wiring Upstash Redis into middleware (edge runtime), which needs verifying `@upstash/redis` behaviour under Next 14's edge runtime and re-testing every admin path. Not same-day. Queued as its own A-XX after A-02 lands.
-- **What would close it**: Redis-backed rate limiter shared across serverless instances, per `two-layer-rate-limiting` implementation.
+Was: three per-file `new Map<string, …>` limiters — `middleware.ts:6`, `app/api/auth/admin/route.ts:7`, `app/api/subscribe/route.ts:14` — each per-serverless-instance so their declared ceilings scaled with `<number of lambdas>` (S-06). B-06 consolidated all three onto `lib/security/rate-limit.ts::checkRateLimit()`, a shared Redis-backed fixed-window limiter using `@upstash/redis` (fetch-based; safe in edge middleware). Falls back to a per-process Map with a one-shot warning when `UPSTASH_REDIS_REST_URL/TOKEN` are unset — matches previous behaviour for dev/keyless CI, but production must set both. Enforcement: `tests/rate-limit-helper.test.ts` refuses any `new Map<string,` in the three touched files (structural regression tripwire).
 
 ## O-06 — `next.config.mjs` sets `typescript.ignoreBuildErrors: true` and `eslint.ignoreDuringBuilds: true`
 

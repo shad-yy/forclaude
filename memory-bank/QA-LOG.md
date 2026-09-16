@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### B-06 — One Redis-backed rate limiter for all three IP gates (S-06 fix)
+
+- **Date**: 2026-09-16
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L4 middleware + L3 API route.
+- **Severity**: high (silent security ceiling — production ceilings scaled with lambda count; `5 per 15 min` became `5 × <instances>`).
+- **Was**: three per-file `new Map<string, ...>` limiters — `middleware.ts:6`, `app/api/auth/admin/route.ts:7`, `app/api/subscribe/route.ts:14`. Each per-serverless-instance. Under fan-out (Vercel typically warms multiple lambdas for burst traffic) an attacker gets `advertised limit × <instances>` free attempts. This is the S-06 anti-pattern verbatim.
+- **Now**: one shared limiter at `lib/security/rate-limit.ts` exposing `checkRateLimit({ key, limit, windowSeconds })`. Fixed-window semantics via Upstash `INCR` + `EXPIRE` on first hit — matches what the previous three limiters were doing, just made cross-instance. Uses `@upstash/redis` (fetch-based) so it runs in edge middleware. Falls back to a per-process Map with one warning `[RateLimit] UPSTASH_REDIS_REST_URL/TOKEN unset — falling back to per-instance in-memory limits.` when env vars are missing (dev / keyless CI) — same behaviour as before, no worse. Redis errors also fall through to the fallback (never turn rate limiting into a 500).
+- **Test**: `tests/rate-limit-helper.test.ts` — 6 assertions across 3 describes: (1) Redis path allows up-to-limit then blocks, (2) buckets isolated by key, (3) fallback still enforces within one process, (4-6) structural refusal of any `new Map<string,` in the three migrated files (regression tripwire so the anti-pattern can't grow back). Red 6/6 before fix, green 6/6 after. Full suite 207/207 across 31 files; `tsc --noEmit` clean.
+- **Skill/agent used**: `two-layer-rate-limiting` (shared L1 in Redis), `runtime-env-and-middleware-safety` (never throw from middleware — the fallback keeps middleware alive when Upstash is unset).
+- **Run it**: `pnpm vitest --run tests/rate-limit-helper.test.ts`.
+- **Result**: closes S-06 and O-05. Production must have `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` set (already in `SETUP-REQUIRED.md`); otherwise rate limits stay per-instance and the deploy logs the one-shot warning.
+
 ### C-05 — Key-less reproduction script
 
 - **Date**: 2026-09-16
