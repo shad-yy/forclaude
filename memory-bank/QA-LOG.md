@@ -23,6 +23,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### B-04.1 — Migrate `/api/leagues` to fault-vs-absence (route 1 of 12)
+
+- **Date**: 2026-09-16
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L3 API route.
+- **Severity**: high (SEO — Google reads 200-with-empty as "gone" and downweights the URL).
+- **Was**: `app/api/leagues/route.ts:14-20` — the catch block returned `{data:[], error:"Data temporarily unavailable"}` with status 200. Grandfathered S-03 anti-pattern per B-01 decision.
+- **Now**: catch returns HTTP 503 with `Cache-Control: no-store` and an honest "we could not check just now" error field. The try-path unchanged: resolver returning `[]` legitimately (no throw) still returns 200 with empty data. This preserves the fault/absence distinction the skill demands.
+- **Test**: `tests/routes-fault-vs-absence/leagues.test.ts` — 3 cases: thrown fault → 503 with no-store; resolver returns `[]` → 200 with empty; happy path → 200 with data (control). Red 1/3 before fix (thrown fault previously produced 200); green 3/3 after.
+- **Skill/agent used**: `api-fault-vs-absence` §Rule 4 (page-level fallback); `layered-testing-strategy` (module mock on unifiedSportsAPI, red-first with control).
+- **Run it**: `pnpm vitest --run tests/routes-fault-vs-absence/leagues.test.ts`.
+- **Result**: full suite: 179/179 (26 files), tsc clean.
+- **Follow-up**: 11 grandfathered S-03 routes remain. Same pattern applies. Each becomes its own commit.
+
 ### B-07 — Key `/api/subscribe` rate limit on IP, not email (S-07)
 
 - **Date**: 2026-09-15
