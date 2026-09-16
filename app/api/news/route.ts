@@ -72,9 +72,13 @@ export async function GET(request: Request) {
       },
     })
   } catch (error) {
+    // B-04.12: already returned 500 (correct status), but the body said
+    // `articles: []` which reads like an absence claim on a fault. Now
+    // the body just names the error so clients don't misinterpret it.
+    console.warn("[API] GET /api/news fault:", error)
     return NextResponse.json(
-      { status: "error", articles: [], totalResults: 0 },
-      { status: 500 }
+      { error: "News temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }

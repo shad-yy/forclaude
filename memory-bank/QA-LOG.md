@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### B-04.8..12 — Migrate final 5 grandfathered S-03 routes (B-04 COMPLETE)
+
+- **Date**: 2026-09-16
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L3 API route.
+- **Severity**: high (SEO deindexing risk on fault-as-empty).
+- **Was**: 5 remaining routes — `search`, `events/[id]/lineups`, `spotlight`, `fixtures/today`, `news` — still swallowed faults into empty payloads at status 200. `spotlight` had the additional deeper anti-pattern (`Promise.allSettled(...).map(r => fulfilled ? value : [])` — the exact `api-fault-vs-absence` example — silently masking total upstream outage into empty results).
+- **Now**: all five migrated. Standard 3-line catch rewrite for search / lineups / fixtures / news. **spotlight** got an additional inline fault detection: `anySuccess = results.some(r => r.status === 'fulfilled' && r.value.ok)`; when false (total outage), throws → caught by outer 503 branch. Partial degradation (1-2 fetches fail) still degrades gracefully with the successful data.
+- **Test**: `tests/routes-fault-vs-absence/batch-8-to-12.test.ts` — 7 cases across 5 describes. Red 5/7 before fix (including a false-positive on spotlight caught by iteration — the initial fix relied on outer catch but Promise.allSettled masked all rejections; fixed by adding the `anySuccess` gate). Green 7/7 after.
+- **Skill/agent used**: `api-fault-vs-absence` §D-01b (fault-as-lie), §Anti-patterns rule 3 (allSettled masking), `layered-testing-strategy` (module mocks with per-route describes).
+- **Run it**: `pnpm vitest --run tests/routes-fault-vs-absence/`.
+- **Result**: full suite: 201/201 (30 files), tsc clean. **B-04 fully closed — all 12 grandfathered S-03 routes migrated to hybrid rule.**
+
 ### B-04.1 — Migrate `/api/leagues` to fault-vs-absence (route 1 of 12)
 
 - **Date**: 2026-09-16

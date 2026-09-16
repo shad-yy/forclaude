@@ -114,7 +114,13 @@ export async function GET() {
           }
         })
     } catch (error) {
-        console.error(`[Fixtures Today API] Error:`, error)
-        return NextResponse.json({ events: [], upcoming: [], results: [], label: "error", count: 0 })
+        // B-04.11: fault → 503+no-store per hybrid rule. The inner
+        // Promise.allSettled already masks per-endpoint failures into
+        // empty arrays — only structural errors reach this catch.
+        console.error(`[Fixtures Today API] fault:`, error)
+        return NextResponse.json(
+          { error: "Fixtures temporarily unavailable — we could not check just now." },
+          { status: 503, headers: { "Cache-Control": "no-store" } }
+        )
     }
 }

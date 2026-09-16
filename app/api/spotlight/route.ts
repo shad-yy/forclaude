@@ -134,6 +134,17 @@ export async function GET() {
       ),
     ])
 
+    // B-04.10: distinguish total outage from partial degradation. If NONE
+    // of the three upstream fetches produced a usable response, treat as
+    // a fault (throw → caught below → 503). Previously `Promise.allSettled`
+    // silently masked total outage into empty results (the skill's exact
+    // anti-pattern: allSettled(...).map(r => fulfilled ? value : [])).
+    const anySuccess = [todaySoccerRes, tomorrowSoccerRes, todayAllRes]
+      .some(r => r.status === 'fulfilled' && r.value.ok)
+    if (!anySuccess) {
+      throw new Error('Spotlight upstream: all three requests failed or non-2xx')
+    }
+
     const extractEvents = async (res: PromiseSettledResult<Response>) => {
       if (res.status === 'fulfilled' && res.value.ok) {
         const data = await res.value.json()
@@ -213,12 +224,12 @@ export async function GET() {
       }
     })
   } catch (error) {
-    console.error('[Spotlight API] Error:', error)
-    return NextResponse.json({
-      spotlight: [],
-      heroImages: [],
-      count: 0,
-      generated: new Date().toISOString(),
-    })
+    // B-04.10: fault → 503+no-store per hybrid rule. Previously returned
+    // an empty spotlight with status 200 — invisible degradation.
+    console.error('[Spotlight API] fault:', error)
+    return NextResponse.json(
+      { error: "Spotlight temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
+    )
   }
 }

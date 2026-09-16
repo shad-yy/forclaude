@@ -17,10 +17,11 @@ export async function GET(request: NextRequest) {
       { headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=300" } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/search error:", error)
+    // B-04.8: fault → 503+no-store per hybrid rule.
+    console.warn("[API] GET /api/search fault:", error)
     return NextResponse.json(
-      { data: { teams: [], players: [], events: [] }, error: "Search temporarily unavailable" },
-      { status: 200 }
+      { error: "Search temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }
