@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### C-05 — Key-less reproduction script
+
+- **Date**: 2026-09-16
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 dev tooling.
+- **Severity**: medium (workflow-enabler; the earlier CI failures in A-12/A-13/A-14 would have been caught with this locally in seconds rather than after push).
+- **Was**: no standard way to reproduce a CI-only failure without altering the working tree. `reproduce-before-fix` §Anti-patterns explicitly warns against renaming `.env.local` (`.env.local.bak` may already exist and get overwritten).
+- **Now**: `scripts/repro-keyless.sh [<sha>]` creates a detached git worktree at `/tmp/repro-<sha>`, refuses to run if `.env`/`.env.local` are present (fail-safe), runs `pnpm install --frozen-lockfile --ignore-scripts && pnpm tsc --noEmit && pnpm vitest --run` in that clean environment, preserves the worktree on failure for inspection, auto-cleans on success. Documented in `SETUP-REQUIRED.md`.
+- **Test**: n/a for the script itself — invocation is manual. The script exit code is the signal. Verified locally that a `.env` file present triggers the fail-safe (exit 2).
+- **Skill/agent used**: `reproduce-before-fix`, `ci-runs-without-secrets`.
+- **Run it**: `scripts/repro-keyless.sh HEAD`.
+- **Result**: full suite unchanged at 201/201; script installed.
+
 ### B-04.8..12 — Migrate final 5 grandfathered S-03 routes (B-04 COMPLETE)
 
 - **Date**: 2026-09-16

@@ -62,6 +62,17 @@ Values live in the bundle after build. Deleting in the dashboard does not change
 
 ---
 
+## Reproducing CI-only failures locally
+
+Use `scripts/repro-keyless.sh` (C-05, `ci-runs-without-secrets` + `reproduce-before-fix`). It creates a detached git worktree at `/tmp/repro-<sha>`, refuses to run if `.env`/`.env.local` are present, and runs `pnpm install --frozen-lockfile --ignore-scripts && pnpm tsc --noEmit && pnpm vitest --run` against that clean worktree. On failure the worktree is preserved for inspection; on success it is auto-removed.
+
+```bash
+scripts/repro-keyless.sh              # HEAD
+scripts/repro-keyless.sh 8f13feb      # a specific commit
+```
+
+**Do not** try to reproduce a key-less CI failure by renaming `.env.local` in this working tree — see `reproduce-before-fix` §Anti-patterns (a `.env.local.bak` may already exist and get overwritten).
+
 ## Deleted-secret stories
 
 Per `documentation-discipline` rule: every secret removed on a specific date, do not reintroduce.
