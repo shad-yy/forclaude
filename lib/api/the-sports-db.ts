@@ -16,10 +16,35 @@ let lastRequestTime = 0
 let rateLimitQueue: Promise<void> = Promise.resolve()
 let queueLock = false
 
-// Circuit breaker: track consecutive 429s
+// Circuit breaker: track consecutive 429s.
+//
+// B-05: key on the OPERATION (the .php file), not the specific
+// parameters. Previously a raw endpoint like `lookupleague.php?id=4328`
+// was the map key, so 4328/4335/4344 each counted separately and the
+// 5-failure threshold was never reached in practice — the breaker
+// never tripped. Now normalized via normalizeEndpointKey below.
 const circuitBreaker = new Map<string, { failures: number; lastFailure: number }>()
 const CIRCUIT_BREAKER_THRESHOLD = 5
 const CIRCUIT_BREAKER_RESET_MS = 60000 // 1 minute
+
+/**
+ * Reduce an endpoint (relative path with query params, or a full URL) to
+ * a stable circuit-breaker key. Strips the query string; returns the URL
+ * pathname for a full URL; empty input returns empty string.
+ *
+ * Exported so `tests/circuit-breaker-key.test.ts` (B-05) can lock the
+ * behaviour.
+ */
+export function normalizeEndpointKey(endpoint: string): string {
+  try {
+    if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
+      return new URL(endpoint).pathname
+    }
+  } catch {
+    // fall through to the split-on-? fallback
+  }
+  return endpoint.split("?")[0]
+}
 
 // Track request statistics
 let requestStats = {
@@ -72,12 +97,13 @@ async function enqueueRateLimit() {
 }
 
 function checkCircuitBreaker(endpoint: string): boolean {
-  const breaker = circuitBreaker.get(endpoint)
+  const key = normalizeEndpointKey(endpoint)
+  const breaker = circuitBreaker.get(key)
   if (!breaker) return true
 
   // Reset if enough time has passed
   if (Date.now() - breaker.lastFailure > CIRCUIT_BREAKER_RESET_MS) {
-    circuitBreaker.delete(endpoint)
+    circuitBreaker.delete(key)
     return true
   }
 
@@ -86,14 +112,15 @@ function checkCircuitBreaker(endpoint: string): boolean {
 }
 
 function recordCircuitBreakerFailure(endpoint: string) {
-  const breaker = circuitBreaker.get(endpoint) || { failures: 0, lastFailure: 0 }
+  const key = normalizeEndpointKey(endpoint)
+  const breaker = circuitBreaker.get(key) || { failures: 0, lastFailure: 0 }
   breaker.failures++
   breaker.lastFailure = Date.now()
-  circuitBreaker.set(endpoint, breaker)
+  circuitBreaker.set(key, breaker)
 }
 
 function resetCircuitBreaker(endpoint: string) {
-  circuitBreaker.delete(endpoint)
+  circuitBreaker.delete(normalizeEndpointKey(endpoint))
 }
 
 // Log API key status on module load

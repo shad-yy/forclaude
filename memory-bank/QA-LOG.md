@@ -23,6 +23,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### B-05 — Normalise circuit-breaker key so per-endpoint failures accumulate (S-04)
+
+- **Date**: 2026-09-15
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L5 provider (TheSportsDB).
+- **Severity**: medium (breaker never tripped in practice — same class as an alarm you disabled).
+- **Was**: `lib/api/the-sports-db.ts:74-96` stored breaker state under the raw `endpoint` string. Every exported call template like `lookupleague.php?id=${leagueId}` produced a different key per league id (4328, 4335, 4344, …). Five consecutive 429s across different ids never accumulated under one key, so the `CIRCUIT_BREAKER_THRESHOLD = 5` was structurally unreachable in the common case. Structural anti-pattern S-04.
+- **Now**: exported `normalizeEndpointKey(endpoint)` — strips query string from a relative endpoint; returns `URL.pathname` for a full URL. All three breaker functions (`checkCircuitBreaker`, `recordCircuitBreakerFailure`, `resetCircuitBreaker`) call it before touching the map. Five failures against `lookupleague.php` with varying `?id=` now collapse to one key and trip the breaker as intended.
+- **Test**: `tests/circuit-breaker-key.test.ts` — 5 cases: relative endpoint strips query; full URL returns pathname; no-params endpoint intact; empty/edge inputs stable; three different-id calls key IDENTICALLY (the S-04 attack path). Red 5/5 before fix (module didn't export the helper); green 5/5 after.
+- **Skill/agent used**: `layered-testing-strategy` (unit test on the extracted helper, not a runtime simulation).
+- **Run it**: `pnpm vitest --run tests/circuit-breaker-key.test.ts`.
+- **Result**: full suite: 173/173 (24 files), tsc clean.
+- **Follow-up**: none for S-04. Broader X-08 (spin-wait in `enqueueRateLimit`) untouched.
+
 ### B-03 — Remove hardcoded `/json/123/` TheSportsDB public key from route source (S-02)
 
 - **Date**: 2026-09-15
