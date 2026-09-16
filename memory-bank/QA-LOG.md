@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### B-02 — News scraper stops shipping to the browser (S-01 last real violation)
 
 - **Date**: 2026-09-16
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `8b561b8`.
 - **Layer**: L1 UI + L3 API route (new proxies).
 - **Severity**: medium (bundle bloat + partial-abstraction leak; not an active exploit but a PATTERNS.md non-negotiable).
 - **Was**: `app/news/NewsClientPage.tsx:12` (`"use client"`) directly imported `@/lib/api/news`, so the news scraper module and its transitive deps shipped into the browser bundle. Per O-12 scoping, this was the ONLY real S-01 violation left in the codebase — the other 6 originally cited were either Server Components (allowed) or client components using `unifiedSportsAPI` (the higher-level abstraction PATTERNS.md points clients to).
