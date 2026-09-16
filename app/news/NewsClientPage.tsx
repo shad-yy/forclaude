@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Search, Filter, X } from "lucide-react"
-import { newsAPI } from "@/lib/api/news"
+// B-02 — this file is `"use client"`. It must NOT import
+// `@/lib/api/news` (the low-level scraper) or the scraper ships in
+// the browser bundle (PATTERNS.md non-negotiable). All news reads go
+// through the `/api/news/*` proxy routes.
 import { type NewsArticle, type NewsResponse, type NewsSource } from "@/lib/api/types"
 import { NewsCard } from "@/components/news/news-card"
 import { NewsFilters } from "@/components/news/news-filters"
@@ -55,19 +58,25 @@ export default function NewsClientPage({
 
   const articlesPerPage = 12
 
-  const fetchNews = async (page = 1, query = "", filterOptions = filters) => {
+  const fetchNews = async (page = 1, query = "", _filterOptions = filters) => {
     try {
       setLoading(true)
       setError(null)
 
-      const response = await newsAPI.searchNews({
+      // B-02: went through /api/news/search proxy — the scraper stays
+      // on the server. The underlying `newsAPI.searchNews` only ever
+      // consumed `q` + `pageSize`, so the proxy accepts just those.
+      const params = new URLSearchParams({
         q: query || "sports",
-        category: filterOptions.category || undefined,
-        sources: filterOptions.source || undefined,
-        sortBy: filterOptions.sortBy as "relevancy" | "popularity" | "publishedAt",
-        page,
-        pageSize: articlesPerPage,
+        pageSize: String(articlesPerPage),
       })
+      const res = await fetch(`/api/news/search?${params.toString()}`)
+      if (!res.ok) {
+        // api-fault-vs-absence: 503 is a fault; render error, not
+        // an empty state that looks like "no results".
+        throw new Error(`News search returned ${res.status}`)
+      }
+      const response = (await res.json()) as NewsResponse
 
       if (response && Array.isArray(response.articles)) {
         setArticles(response.articles)
@@ -84,19 +93,25 @@ export default function NewsClientPage({
     } finally {
       setLoading(false)
     }
+
+    // `page` is threaded through the caller but the current proxy
+    // returns all deduped results in one payload; pagination is done
+    // client-side against `articles.length`. Reference it so the
+    // unused-parameter lint stays quiet without changing signature.
+    void page
   }
 
   const fetchTrendingKeywords = async () => {
     try {
-      const trending = await newsAPI.getTrendingSportsNews()
-      if (Array.isArray(trending)) {
-        // Extract keywords from trending articles
-        const keywords = trending
-          .flatMap((article) => article.title.split(" "))
-          .filter((word) => word.length > 4)
-          .slice(0, 10)
-        setTrendingKeywords(keywords)
-      }
+      const res = await fetch("/api/news/trending")
+      if (!res.ok) throw new Error(`Trending news returned ${res.status}`)
+      const body = (await res.json()) as { articles: Array<{ title: string }> }
+      const trending = Array.isArray(body?.articles) ? body.articles : []
+      const keywords = trending
+        .flatMap((article) => (article.title || "").split(" "))
+        .filter((word) => word.length > 4)
+        .slice(0, 10)
+      setTrendingKeywords(keywords)
     } catch (err) {
       console.error("Failed to fetch trending keywords:", err)
       setTrendingKeywords([])

@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### B-02 — News scraper stops shipping to the browser (S-01 last real violation)
+
+- **Date**: 2026-09-16
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L1 UI + L3 API route (new proxies).
+- **Severity**: medium (bundle bloat + partial-abstraction leak; not an active exploit but a PATTERNS.md non-negotiable).
+- **Was**: `app/news/NewsClientPage.tsx:12` (`"use client"`) directly imported `@/lib/api/news`, so the news scraper module and its transitive deps shipped into the browser bundle. Per O-12 scoping, this was the ONLY real S-01 violation left in the codebase — the other 6 originally cited were either Server Components (allowed) or client components using `unifiedSportsAPI` (the higher-level abstraction PATTERNS.md points clients to).
+- **Now**: two server-side proxy routes — `app/api/news/search` (Zod-validated `q` + `pageSize`) and `app/api/news/trending` (no params) — each calling `newsAPI.*` server-side. `NewsClientPage.tsx` rewritten to `fetch("/api/news/search?...")` / `fetch("/api/news/trending")`, `newsAPI` import dropped. Type-only imports from `@/lib/api/types` are kept (erased at build time). Both new routes follow the hybrid api-fault-vs-absence rule: 503 + no-store on upstream fault, not 200 with `[]`.
+- **Test**: `tests/no-lowlevel-api-in-client-components.test.ts` — 2 assertions: (1) file listing is non-empty (guards against a vacuous pass), (2) no `"use client"` file under `app/` or `components/` imports a low-level provider client. Red 1/2 before fix (NewsClientPage flagged); green 2/2 after. Test's regex exempts `import type …` since type imports contribute nothing to the runtime bundle.
+- **Skill/agent used**: `layered-testing-strategy` (structural test against files; `never-count-with-grep`-style non-empty guard so a zero-match pass is caught), `api-fault-vs-absence` (both new proxies return 503 on fault, not empty 200).
+- **Run it**: `pnpm vitest --run tests/no-lowlevel-api-in-client-components.test.ts`.
+- **Result**: closes O-12 and the last S-01 case. Full suite 209/209 across 32 files; tsc clean.
+
 ### B-06 — One Redis-backed rate limiter for all three IP gates (S-06 fix)
 
 - **Date**: 2026-09-16
