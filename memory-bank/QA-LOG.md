@@ -23,6 +23,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### B-07 — Key `/api/subscribe` rate limit on IP, not email (S-07)
+
+- **Date**: 2026-09-15
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L3 API route.
+- **Severity**: medium (rate-limit bypass — one caller could vary the email to fire arbitrarily many subscribe requests per minute from one IP; each hit a Resend email send).
+- **Was**: `app/api/subscribe/route.ts:38` did `rateLimitMap.get(validEmail)`. Anyone submitting `a@x.com`, `b@x.com`, `c@x.com`… from one IP inside the 60s window paid nothing per request; each request hit the outbound Resend fetch. Structural anti-pattern S-07.
+- **Now**: `rateKey = getClientIp(request.headers) ?? '0.0.0.0'` (helper from A-05). IP is unforgeable via header spoof (A-05 also handles the `X-Forwarded-For: 0.0.0.0` case). Cooldown fires per IP per 60 s regardless of email. The map is still in-memory per-serverless-instance — that's S-06, migrating to Redis is a separate task (B-06).
+- **Test**: `tests/subscribe-rate-limit.test.ts` — 2 cases: primary (same IP + different email → second 429), control (different IP + different email → both 200). Red 1/2 before fix, green 2/2 after.
+- **Skill/agent used**: `two-layer-rate-limiting` inbound-per-IP rule; `layered-testing-strategy` for the primary + discrimination-control pattern.
+- **Run it**: `pnpm vitest --run tests/subscribe-rate-limit.test.ts`.
+- **Result**: full suite: 175/175 (25 files), tsc clean.
+- **Still open**: `S-06` (three in-memory `Map` rate limiters remain per-instance). This fix closes S-07 fully but not S-06 — the illusory-ceiling problem is unchanged, `subscribe` just no longer has a trivial per-email bypass.
+
 ### B-05 — Normalise circuit-breaker key so per-endpoint failures accumulate (S-04)
 
 - **Date**: 2026-09-15
