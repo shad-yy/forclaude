@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### X-04 — One `nuclearDedup` for all three news call sites (dedupe copy-paste)
 
 - **Date**: 2026-09-16
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `3137fbb`.
 - **Layer**: L3 API route + L2 client (news library).
 - **Severity**: low (cleanup — no bug, but three semantically-close copies of the same 30-line function meant three places to fix any dedup edge case).
 - **Was**: `function nuclearDedup(articles)` was declared THREE times in the repo — `lib/api/news.ts:186`, `app/api/news/route.ts:12`, `app/api/search/news/route.ts:5`. Each variant had subtle differences: the search-bar variant used a 40-char title cutoff and enabled description dedup; the others used 60-char and image dedup only.
