@@ -66,6 +66,14 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: A-02 fixed the three raw-response leaks (lines ~240, ~271, ~310) but left two `console.error` calls that log error objects wholesale: `[CMS8K SESSION] Error creating line via session:` (~329) and `[CMS8K] Get credentials error:` (~426). Error messages from `fetch` failures may include the request URL with query params — those params carry the panel session cookie in some paths. Not yet audited whether any real error object surfaces a cookie in practice.
 - **What would close it**: run the two failure paths against a mock that throws with a URL-carrying error, verify no cookie appears; if it does, redact via `redactObject` before logging.
 
+## O-12 — B-02 scope correction: only 1 of 7 flagged files is a real PATTERNS.md violation
+
+- **Since**: 2026-09-15 (spun out of B-02 scoping)
+- **Layer**: L1 UI
+- **Owner**: unassigned
+- **Why it isn't done**: original plan cited 7 files under S-01 (React components importing low-level clients). Re-inspection this session (grep + `"use client"` check) shows only **`app/news/NewsClientPage.tsx:12`** is a genuine violation — it is `"use client"` and imports low-level `newsAPI` directly, so the news scraper module + its transitive deps ship into the browser bundle. The other 6 are either (a) Server Components (`app/match/[id]/page.tsx`) which are allowed to import providers, or (b) client components importing `unifiedSportsAPI` — the higher-level abstraction which PATTERNS.md explicitly designates as the layer clients should reach. PATTERNS.md rule wording: *"Never import LOW-LEVEL clients (`theSportsDB` / `newsAPI` / `ufcScraper`) directly into React components."* — `unifiedSportsAPI` is not on that list. So B-02's actual scope is 1 file, not 7.
+- **What would close it**: (a) add two proxy routes — `app/api/news/search/route.ts` and `app/api/news/trending/route.ts` — each accepting Zod-validated query params and calling `newsAPI.searchNews` / `newsAPI.getTrendingSportsNews` server-side; (b) rewrite `NewsClientPage.tsx:63,91` to `fetch("/api/news/search?…")` / `fetch("/api/news/trending")`; (c) drop the `newsAPI` import; (d) red-first test that greps `components/**` + `app/**/*.tsx` for `"use client"` files importing `@/lib/api/news|the-sports-db|mma-rapidapi|ufc|espn|football-data` and refuses any match.
+
 ## O-08 — CLOSED 2026-09-15 by A-10 + A-13
 
 Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `pnpm exec playwright test --list`). Closed by A-10 (config rewrite) + A-13 (`.test.ts` → `.spec.ts` rename + convention settle). The 3 spec files (`e2e/smartlivetv.spec.ts`, `e2e/smoke.spec.ts`, `tests/mobile-responsiveness.spec.ts`) now list as 120 tests across 3 device projects. Whether they PASS is a separate concern (see O-10).
