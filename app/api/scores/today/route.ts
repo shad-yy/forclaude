@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
+import { ENV } from "@/lib/config/env"
 
 const TODAY_SCORES_TTL = 30 // 30 seconds — fresh enough for live scores, saves API quota
 
+// B-03 follow-up: read TheSportsDB key through ENV (centralised fallback +
+// startup warning in lib/config/env.ts). Previously did `process.env.THESPORTSDB_API_KEY
+// || "123"` inline — subtler form of the same trap B-03 fixed elsewhere.
 export async function GET(_request: NextRequest) {
   try {
     const today = new Date().toISOString().split('T')[0]
-    const apiKey = process.env.THESPORTSDB_API_KEY || "123"
-    const url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsday.php?d=${today}&s=Soccer`
+    const url = `https://www.thesportsdb.com/api/v1/json/${ENV.THESPORTSDB_KEY}/eventsday.php?d=${today}&s=Soccer`
 
     // Use next.js fetch cache for server-side deduplication (30s revalidation)
     const res = await fetch(url, { next: { revalidate: TODAY_SCORES_TTL } })

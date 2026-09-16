@@ -31,15 +31,15 @@ describe("B-03 no hardcoded TheSportsDB test key in route source", () => {
     expect(files.length, "walker found no route files — path is wrong").toBeGreaterThan(20);
   });
 
+  // Strip fenced `/* */` and line `//` comments so a QA comment
+  // documenting the removal does not trip the enforcer.
+  function executableOnly(src: string): string {
+    return src
+      .replace(/\/\*[\s\S]*?\*\//g, c => c.replace(/[^\n]/g, " "))
+      .replace(/^[ \t]*\/\/.*$/gm, "");
+  }
+
   it("no `/json/123/` literal in executable code under app/api/", () => {
-    // Strip fenced `/* */` and line `//` comments so a QA comment
-    // documenting the removal (e.g. "no longer hardcode `/json/123/`")
-    // does not trip the enforcer.
-    function executableOnly(src: string): string {
-      return src
-        .replace(/\/\*[\s\S]*?\*\//g, c => c.replace(/[^\n]/g, " "))
-        .replace(/^[ \t]*\/\/.*$/gm, "");
-    }
     const offenders: string[] = [];
     for (const f of files) {
       const src = executableOnly(readFileSync(f, "utf8"));
@@ -50,6 +50,24 @@ describe("B-03 no hardcoded TheSportsDB test key in route source", () => {
     expect(
       offenders,
       "these lines bake the public test key into the URL; route ignores THESPORTSDB_API_KEY when it is set",
+    ).toEqual([]);
+  });
+
+  it("no inline `THESPORTSDB_API_KEY || \"123\"` (or single-quoted) fallback under app/api/", () => {
+    // Companion enforcer: same trap in a subtler form — route reads env
+    // but falls back to the public test key inline, bypassing the
+    // centralised warning in lib/config/env.ts.
+    const offenders: string[] = [];
+    const pattern = /THESPORTSDB_API_KEY\s*\|\|\s*["']123["']/;
+    for (const f of files) {
+      const src = executableOnly(readFileSync(f, "utf8"));
+      src.split("\n").forEach((line, i) => {
+        if (pattern.test(line)) offenders.push(`${f}:${i + 1}`);
+      });
+    }
+    expect(
+      offenders,
+      "these lines fall back to the public test key inline — route through ENV.THESPORTSDB_KEY instead",
     ).toEqual([]);
   });
 });
