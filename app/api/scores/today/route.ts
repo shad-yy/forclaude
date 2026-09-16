@@ -48,10 +48,13 @@ export async function GET(_request: NextRequest) {
       { headers: { 'Cache-Control': `public, s-maxage=${TODAY_SCORES_TTL}, stale-while-revalidate=90` } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/scores/today error:", error)
+    // B-04.3: previously returned {matches:[], message:"No matches scheduled today"}
+    // with status 200 — a false claim about a normal future state, asserted during
+    // an outage. Now surfaces the fault honestly (api-fault-vs-absence §D-01b).
+    console.warn("[API] GET /api/scores/today fault:", error)
     return NextResponse.json(
-      { matches: [], message: "No matches scheduled today" },
-      { status: 200 }
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }
