@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### X-11 — Extract 6 email templates from orders/route.ts (also closes small email XSS)
+
+- **Date**: 2026-09-17
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L3 API route + L0 email templating.
+- **Severity**: medium (simplification + small XSS surface in owner/customer emails).
+- **Was**: `app/api/orders/route.ts` inlined SIX HTML email bodies totalling ~200 lines mid-route — owner notification, five device-specific setup instruction blocks (map + matcher), customer confirmation, provision-failure notice, credentials email, and auto-provisioned notice. Every field change required editing a giant template literal buried under order logic. Additionally, user-supplied `name` / `message` / `whatsapp` / `error` / panel `credentials` were interpolated raw into HTML — an owner opening a crafted order in a rich HTML mail client could execute `<img src=x onerror=…>`.
+- **Now**: six named renderers at `lib/email/templates.ts` — `renderOwnerNotification`, `renderSetupInstructions`, `renderCustomerConfirmation`, `renderProvisionFailure`, `renderCredentialsEmail`, `renderAutoProvisionSuccess`. Each escapes user-supplied strings via a small `escapeHtml(v)` helper covering the five OWASP characters (`&<>"'`). The device-matcher logic (firestick / smart-tv / android / iphone / default) moved into `renderSetupInstructions(deviceText)` — one call, no exposed map. Trusted HTML (e.g. the pre-rendered device block passed into the customer confirmation) is embedded unescaped.
+- **Test**: `tests/email-templates.test.ts` — 20 assertions: 6 escape/behavioural (escaping semantics, coerce null/undefined), 12 renderer behaviour (correct field surfacing, trial/order labelling, device matcher precedence), 2 structural tripwires (route must import the renderers; no more `html: \`` blocks > 15 lines in `orders/route.ts`). Red 2/20 before route migration; green 20/20 after. Full suite 262/262 across 39 files.
+- **Skill/agent used**: `simplify` (extraction as the fix, no ad-hoc rewrite), `security-review`-style HTML-escape pass covering the six templates. The XSS fix was in scope because I was already touching the code — not a separate initiative.
+- **Run it**: `pnpm vitest --run tests/email-templates.test.ts`.
+- **Result**: closes X-11. Orders route went 567 → 380 lines (-33%). tsc clean.
+
 ### C-03 — TheSportsDB contract tests + Zod schemas + recorded captures (pilot)
 
 - **Date**: 2026-09-17

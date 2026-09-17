@@ -5,6 +5,19 @@ import { createTrialAccount } from '@/lib/panel/cms8k'
 import { checkFraud, recordFraudFingerprints, logBlockedRequest, canonicalEmail, isFraudInfraReady } from '@/lib/fraud/detect'
 import { verifyCaptcha } from '@/lib/security/captcha'
 import { getClientIp } from '@/lib/security/client-ip'
+// X-11: five HTML email bodies used to live inline in this file
+// (~200 lines of styling buried in the middle of order logic).
+// Moved to lib/email/templates.ts, which also HTML-escapes
+// user-supplied fields (name / message / whatsapp / error / creds)
+// to close a small email-client XSS surface.
+import {
+  renderOwnerNotification,
+  renderCustomerConfirmation,
+  renderProvisionFailure,
+  renderCredentialsEmail,
+  renderSetupInstructions,
+  renderAutoProvisionSuccess,
+} from '@/lib/email/templates'
 
 const orderSchema = z.object({
   name: z.string().min(2).max(100).trim(),
@@ -148,108 +161,13 @@ export async function POST(req: NextRequest) {
             from: 'Smart Live TV <noreply@smartlivetv.co.uk>',
             to: [notifyEmail],
             subject: `New ${plan === 'Free Trial Request' ? 'Trial Request' : 'Order'}: ${plan} — ${name}`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                <h2 style="color: #00e676;">New ${plan === 'Free Trial Request' ? 'Trial Request' : 'Order'} Received</h2>
-                <table style="border-collapse: collapse; width: 100%;">
-                  <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Name</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${name}</td></tr>
-                  <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Email</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${email}</td></tr>
-                  <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>WhatsApp</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${whatsapp || 'Not provided'}</td></tr>
-                  <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Plan</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${plan}</td></tr>
-                  <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Message</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${message || 'None'}</td></tr>
-                  <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Time (UTC)</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${new Date().toUTCString()}</td></tr>
-                </table>
-                <p style="margin-top: 16px; color: #666;">Reply to this email to reach the customer at ${email}</p>
-              </div>
-            `,
+            html: renderOwnerNotification({ name, email, whatsapp, plan, message, isTrial }),
             reply_to: email,
           }),
         })
 
-        // Build device-specific inline setup instructions
-        const setupInstructions: Record<string, string> = {
-          firestick: `
-            <div style="background: #f0f9f4; border: 1px solid #d0e8da; border-radius: 8px; padding: 20px; margin: 16px 0;">
-              <h4 style="margin: 0 0 12px; color: #166534;">📺 Setup Instructions for Firestick</h4>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 1 — Enable Sideloading</p>
-              <p style="margin: 0 0 4px;">Go to <strong>Settings → My Fire TV → About</strong> → click your device name <strong>7 times</strong> quickly.</p>
-              <p style="margin: 0 0 12px;">Then go back to <strong>My Fire TV → Developer Options → Install Unknown Apps</strong> → turn <strong>ON</strong> for Downloader.</p>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 2 — Install the Downloader App</p>
-              <p style="margin: 0 0 12px;">Search for <strong>"Downloader"</strong> in the Amazon Appstore (orange icon) and install it — it's free.</p>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 3 — Install Your IPTV Player</p>
-              <p style="margin: 0 0 4px;">Open Downloader and type one of these codes:</p>
-              <table style="width: 100%; border-collapse: collapse; margin: 8px 0 12px;">
-                <tr style="background: #fff;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>IPTV Smarters</strong> (easiest)</td><td style="padding: 8px; border: 1px solid #d0e8da; font-family: monospace; font-weight: bold; color: #166534;">250931</td></tr>
-                <tr style="background: #f8fdf9;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>TiviMate</strong> (best quality)</td><td style="padding: 8px; border: 1px solid #d0e8da; font-family: monospace; font-weight: bold; color: #166534;">278077</td></tr>
-                <tr style="background: #fff;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>XCIPTV</strong> (Netflix-style)</td><td style="padding: 8px; border: 1px solid #d0e8da; font-family: monospace; font-weight: bold; color: #166534;">548268</td></tr>
-              </table>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 4 — Enter Your Credentials</p>
-              <p style="margin: 0;">Open the app → select <strong>"Xtream Codes API"</strong> or <strong>"Login"</strong> → enter the Server URL, Username, and Password we send you on WhatsApp.</p>
-            </div>`,
-          'smart-tv': `
-            <div style="background: #f0f9f4; border: 1px solid #d0e8da; border-radius: 8px; padding: 20px; margin: 16px 0;">
-              <h4 style="margin: 0 0 12px; color: #166534;">📺 Setup Instructions for Smart TV (Samsung / LG)</h4>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 1 — Open Your TV's App Store</p>
-              <p style="margin: 0 0 12px;">Press the <strong>Home</strong> button → go to <strong>Apps</strong> or <strong>Smart Hub</strong> (Samsung) or <strong>LG Content Store</strong> (LG).</p>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 2 — Install an IPTV Player</p>
-              <p style="margin: 0 0 4px;">Search for one of these apps (all available in your TV's store):</p>
-              <table style="width: 100%; border-collapse: collapse; margin: 8px 0 12px;">
-                <tr style="background: #fff;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>IBO Player</strong> ⭐ (recommended)</td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">Set up from your phone — no typing on remote!</td></tr>
-                <tr style="background: #f8fdf9;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>Smarters Player Lite</strong></td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">Free, easy, familiar</td></tr>
-                <tr style="background: #fff;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>Flix IPTV</strong></td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">Lightweight, great on older TVs</td></tr>
-              </table>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 3 — Enter Your Credentials</p>
-              <p style="margin: 0 0 4px;">Open the app → select <strong>"Xtream Codes"</strong> login → enter the Server URL, Username, and Password we send you.</p>
-              <p style="margin: 8px 0 0; font-size: 13px; color: #555;"><strong>💡 IBO Player tip:</strong> Open <strong>iboplayer.com</strong> on your phone, enter the MAC address shown on your TV — you can set everything up from your phone without typing on the remote!</p>
-            </div>`,
-          android: `
-            <div style="background: #f0f9f4; border: 1px solid #d0e8da; border-radius: 8px; padding: 20px; margin: 16px 0;">
-              <h4 style="margin: 0 0 12px; color: #166534;">📱 Setup Instructions for Android</h4>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 1 — Download an IPTV Player</p>
-              <p style="margin: 0 0 4px;">Go to the <strong>Google Play Store</strong> and search for one of these:</p>
-              <table style="width: 100%; border-collapse: collapse; margin: 8px 0 12px;">
-                <tr style="background: #fff;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>Televizo</strong> ⭐ (best for phones)</td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">Free, smooth touch controls</td></tr>
-                <tr style="background: #f8fdf9;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>IPTV Smarters Pro</strong></td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">Free, easy, everyone knows it</td></tr>
-                <tr style="background: #fff;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>XCIPTV</strong></td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">Free, Netflix-style for movies</td></tr>
-              </table>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 2 — Enter Your Credentials</p>
-              <p style="margin: 0;">Open the app → select <strong>"Xtream Codes API"</strong> or <strong>"Add User"</strong> → enter the Server URL, Username, and Password we send you on WhatsApp.</p>
-            </div>`,
-          iphone: `
-            <div style="background: #f0f9f4; border: 1px solid #d0e8da; border-radius: 8px; padding: 20px; margin: 16px 0;">
-              <h4 style="margin: 0 0 12px; color: #166534;">📱 Setup Instructions for iPhone / iPad</h4>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 1 — Download an IPTV Player</p>
-              <p style="margin: 0 0 4px;">Go to the <strong>App Store</strong> and search for one of these:</p>
-              <table style="width: 100%; border-collapse: collapse; margin: 8px 0 12px;">
-                <tr style="background: #fff;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>UHF</strong> ⭐ (best for iPhone)</td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">iCloud sync, Picture-in-Picture</td></tr>
-                <tr style="background: #f8fdf9;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>Smarters Player Lite</strong></td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">Free, easy, universal</td></tr>
-                <tr style="background: #fff;"><td style="padding: 8px; border: 1px solid #d0e8da;"><strong>IPTVX</strong></td><td style="padding: 8px; border: 1px solid #d0e8da; font-size: 12px;">Netflix-style layout for movies</td></tr>
-              </table>
-              <p style="margin: 0 0 12px; font-weight: bold; color: #333;">Step 2 — Enter Your Credentials</p>
-              <p style="margin: 0;">Open the app → select <strong>"Xtream Codes"</strong> login → enter the Server URL, Username, and Password we send you on WhatsApp.</p>
-            </div>`,
-          default: `
-            <div style="background: #f0f9f4; border: 1px solid #d0e8da; border-radius: 8px; padding: 20px; margin: 16px 0;">
-              <h4 style="margin: 0 0 12px; color: #166534;">📺 Quick Setup</h4>
-              <p style="margin: 0 0 8px;"><strong>1.</strong> Download any IPTV player app (e.g. <strong>IPTV Smarters Pro</strong>) from your device's app store.</p>
-              <p style="margin: 0 0 8px;"><strong>2.</strong> Open the app → select <strong>"Xtream Codes API"</strong> or <strong>"Login"</strong>.</p>
-              <p style="margin: 0;"><strong>3.</strong> Enter the Server URL, Username, and Password we send you on WhatsApp. That's it!</p>
-            </div>`,
-        }
-
-        // Match device to the right instructions
-        let deviceInstructions = setupInstructions.default
-        if (extractedDevice.includes('firestick') || extractedDevice.includes('fire tv') || extractedDevice.includes('fire stick')) {
-          deviceInstructions = setupInstructions.firestick
-        } else if (extractedDevice.includes('smart tv') || extractedDevice.includes('samsung') || extractedDevice.includes('lg') || extractedDevice.includes('sony') || extractedDevice.includes('tv box') || extractedDevice.includes('android tv box')) {
-          deviceInstructions = setupInstructions['smart-tv']
-        } else if (extractedDevice.includes('android')) {
-          deviceInstructions = setupInstructions.android
-        } else if (extractedDevice.includes('iphone') || extractedDevice.includes('ipad') || extractedDevice.includes('ios') || extractedDevice.includes('apple')) {
-          deviceInstructions = setupInstructions.iphone
-        }
-
         // Confirm to customer — FULLY SELF-CONTAINED email
+        const deviceInstructions = renderSetupInstructions(extractedDevice)
         await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -262,46 +180,13 @@ export async function POST(req: NextRequest) {
             subject: isTrial
               ? `Your Free Trial is Being Activated — Here's How to Set Up 📺`
               : `Your Smart Live TV Order — Here's Everything You Need 📺`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; color: #333; line-height: 1.6;">
-                <div style="background: linear-gradient(135deg, #0a0a0f, #1a1a2e); padding: 24px; text-align: center; border-radius: 12px 12px 0 0;">
-                  <h1 style="color: #00e676; margin: 0; font-size: 22px;">${isTrial ? '🎉 Your Free Trial is Being Activated!' : '✅ Order Received!'}</h1>
-                </div>
-                
-                <div style="background: #fff; padding: 24px; border: 1px solid #eee; border-top: none;">
-                  <p>Hi ${name},</p>
-                  
-                  ${isTrial 
-                    ? `<p>We're setting up your <strong>24-hour free trial</strong> right now. Your login credentials will be sent to your WhatsApp${whatsapp ? ` (<strong>${whatsapp}</strong>)` : ''} within <strong>5 minutes</strong>.</p>
-                       <p>While you wait, <strong>get your device ready</strong> — follow the steps below so you can start watching instantly when your credentials arrive.</p>`
-                    : `<p>Thank you for your <strong>${plan}</strong> order! We're setting up your account and will send your credentials to your WhatsApp${whatsapp ? ` (<strong>${whatsapp}</strong>)` : ''} within <strong>5 minutes</strong>.</p>
-                       <p>Your purchase is protected by our <strong>7-day money-back guarantee</strong>.</p>`
-                  }
-
-                  ${deviceInstructions}
-
-                  <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 20px 0;">
-                    <h4 style="margin: 0 0 8px; color: #92400e;">📋 What You'll Receive on WhatsApp</h4>
-                    <p style="margin: 0 0 4px;">We'll send you 3 things:</p>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
-                      <tr><td style="padding: 4px 8px;">🔗</td><td style="padding: 4px 0;"><strong>Server URL</strong> — the server address</td></tr>
-                      <tr><td style="padding: 4px 8px;">👤</td><td style="padding: 4px 0;"><strong>Username</strong> — your unique login</td></tr>
-                      <tr><td style="padding: 4px 8px;">🔑</td><td style="padding: 4px 0;"><strong>Password</strong> — your secure password</td></tr>
-                    </table>
-                    <p style="margin: 8px 0 0; font-size: 13px; color: #92400e;">Just enter these 3 things into your IPTV app and you're in!</p>
-                  </div>
-
-                  <div style="text-align: center; margin: 24px 0;">
-                    <p style="margin: 0 0 8px; font-weight: bold; color: #333;">Need help? We're here for you:</p>
-                    <a href="https://wa.me/447429313810" style="display: inline-block; background: #25D366; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">💬 Message us on WhatsApp</a>
-                  </div>
-                </div>
-
-                <div style="background: #f8f9fa; padding: 16px 24px; border-radius: 0 0 12px 12px; border: 1px solid #eee; border-top: none; text-align: center;">
-                  <p style="margin: 0; color: #666; font-size: 13px;">Smart Live TV · <a href="https://smartlivetv.co.uk" style="color: #00a652; text-decoration: none;">smartlivetv.co.uk</a></p>
-                </div>
-              </div>
-            `,
+            html: renderCustomerConfirmation({
+              name,
+              whatsapp,
+              plan,
+              isTrial,
+              deviceInstructionsHtml: deviceInstructions,
+            }),
           }),
         })
       } catch (emailErr) {
@@ -430,17 +315,7 @@ async function provisionTrialAndNotify({
         from: 'Smart Live TV <noreply@smartlivetv.co.uk>',
         to: [process.env.ORDER_NOTIFY_EMAIL || 'support@smartlivetv.co.uk'],
         subject: `⚠️ AUTO-PROVISION FAILED — Manual action needed for ${name}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px;">
-            <div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 20px;">
-              <h3 style="color: #991b1b; margin: 0 0 12px;">Auto-provisioning failed</h3>
-              <p><strong>Customer:</strong> ${name} (${email})</p>
-              <p><strong>WhatsApp:</strong> ${whatsapp}</p>
-              <p><strong>Error:</strong> ${result.error}</p>
-              <p>Please create their trial manually on the panel and send credentials via WhatsApp.</p>
-            </div>
-          </div>
-        `,
+        html: renderProvisionFailure({ name, email, whatsapp, error: result.error ?? '' }),
       }),
     })
     return
@@ -482,56 +357,7 @@ async function provisionTrialAndNotify({
       from: 'Smart Live TV <noreply@smartlivetv.co.uk>',
       to: [email],
       subject: `🔑 Your Smart Live TV Credentials — You're Ready to Watch!`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; color: #333; line-height: 1.6;">
-          <div style="background: linear-gradient(135deg, #0a0a0f, #1a1a2e); padding: 24px; text-align: center; border-radius: 12px 12px 0 0;">
-            <h1 style="color: #00e676; margin: 0; font-size: 22px;">🎉 You're All Set, ${name}!</h1>
-            <p style="color: #aaa; margin: 8px 0 0; font-size: 14px;">Your 24-hour free trial is live</p>
-          </div>
-
-          <div style="background: #fff; padding: 24px; border: 1px solid #eee; border-top: none;">
-            <p>Your Smart Live TV trial account is ready. Here are your login details:</p>
-
-            <div style="background: #0a0a0f; border-radius: 10px; padding: 20px; margin: 20px 0; border: 2px solid #00e676;">
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 10px 0; color: #888; font-size: 13px; width: 100px;">🔗 Server</td>
-                  <td style="padding: 10px 0; color: #00e676; font-family: monospace; font-size: 14px; word-break: break-all;">${credentials.server}</td>
-                </tr>
-                <tr style="border-top: 1px solid #1a1a2e;">
-                  <td style="padding: 10px 0; color: #888; font-size: 13px;">👤 Username</td>
-                  <td style="padding: 10px 0; color: #fff; font-family: monospace; font-size: 16px; font-weight: bold; letter-spacing: 1px;">${credentials.username}</td>
-                </tr>
-                <tr style="border-top: 1px solid #1a1a2e;">
-                  <td style="padding: 10px 0; color: #888; font-size: 13px;">🔑 Password</td>
-                  <td style="padding: 10px 0; color: #fff; font-family: monospace; font-size: 16px; font-weight: bold; letter-spacing: 1px;">${credentials.password}</td>
-                </tr>
-              </table>
-            </div>
-
-            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px; margin: 16px 0;">
-              <p style="margin: 0; color: #92400e; font-size: 13px;">⏰ <strong>Your trial expires in 24 hours.</strong> If you'd like to continue watching, reply to this email or message us on WhatsApp.</p>
-            </div>
-
-            <h3 style="color: #111; margin: 24px 0 12px;">📲 How to Enter These in Your App</h3>
-            <ol style="padding-left: 20px; margin: 0 0 20px; color: #444;">
-              <li style="margin-bottom: 8px;">Open your IPTV app (IPTV Smarters, TiviMate, etc.)</li>
-              <li style="margin-bottom: 8px;">Select <strong>"Xtream Codes API"</strong> or <strong>"Add Playlist"</strong></li>
-              <li style="margin-bottom: 8px;">Enter the <strong>Server URL</strong>, <strong>Username</strong>, and <strong>Password</strong> from above</li>
-              <li style="margin-bottom: 8px;">Hit <strong>Connect</strong> — you'll see 230,000+ channels load!</li>
-            </ol>
-
-            <div style="text-align: center; margin: 24px 0;">
-              <p style="margin: 0 0 10px; color: #555;">Having trouble setting up? We'll help you in minutes:</p>
-              <a href="https://wa.me/447429313810" style="display: inline-block; background: #25D366; color: #fff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">💬 Message us on WhatsApp</a>
-            </div>
-          </div>
-
-          <div style="background: #f8f9fa; padding: 16px 24px; border-radius: 0 0 12px 12px; border: 1px solid #eee; border-top: none; text-align: center;">
-            <p style="margin: 0; color: #666; font-size: 13px;">Smart Live TV · <a href="https://smartlivetv.co.uk" style="color: #00a652; text-decoration: none;">smartlivetv.co.uk</a></p>
-          </div>
-        </div>
-      `,
+      html: renderCredentialsEmail({ name, credentials }),
     }),
   })
 
@@ -546,20 +372,7 @@ async function provisionTrialAndNotify({
       from: 'Smart Live TV <noreply@smartlivetv.co.uk>',
       to: [process.env.ORDER_NOTIFY_EMAIL || 'support@smartlivetv.co.uk'],
       subject: `✅ Auto-provisioned trial: ${name} (${credentials.username})`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px;">
-          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px;">
-            <h3 style="color: #166534; margin: 0 0 12px;">Trial auto-created ✅</h3>
-            <p><strong>Customer:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>WhatsApp:</strong> ${whatsapp || 'Not provided'}</p>
-            <p><strong>Panel username:</strong> <code>${credentials.username}</code></p>
-            <p><strong>Panel password:</strong> <code>${credentials.password}</code></p>
-            <p><strong>Expires:</strong> ${credentials.expiresAt}</p>
-            <p style="margin: 0; color: #166534; font-size: 13px;">Credentials email already sent to customer automatically.</p>
-          </div>
-        </div>
-      `,
+      html: renderAutoProvisionSuccess({ name, email, whatsapp, credentials }),
     }),
   })
 
