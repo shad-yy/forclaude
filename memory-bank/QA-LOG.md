@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### X-11 — Extract 6 email templates from orders/route.ts (also closes small email XSS)
 
 - **Date**: 2026-09-17
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `b2184fd`.
 - **Layer**: L3 API route + L0 email templating.
 - **Severity**: medium (simplification + small XSS surface in owner/customer emails).
 - **Was**: `app/api/orders/route.ts` inlined SIX HTML email bodies totalling ~200 lines mid-route — owner notification, five device-specific setup instruction blocks (map + matcher), customer confirmation, provision-failure notice, credentials email, and auto-provisioned notice. Every field change required editing a giant template literal buried under order logic. Additionally, user-supplied `name` / `message` / `whatsapp` / `error` / panel `credentials` were interpolated raw into HTML — an owner opening a crafted order in a rich HTML mail client could execute `<img src=x onerror=…>`.
