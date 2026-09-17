@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### O-14 — search-bar news branch now actually renders results
+
+- **Date**: 2026-09-17
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L1 UI.
+- **Severity**: medium (silent UX — the site-wide search's news category was always empty, users just saw teams/players/leagues where they should have also seen news).
+- **Was**: `components/layout/search-bar.tsx:115` did `if (Array.isArray(newsJson))` on the `/api/search/news` response body. But that route returns `{status, articles, totalResults}` (has always done so), so `Array.isArray({...})` is always false. Result: the news branch pushed nothing into `searchResults` for as long as the code has existed.
+- **Now**: caller reads `newsJson?.articles` explicitly and array-checks the inner value. Chose the caller-side fix (option a from the O-14 entry) rather than changing the route shape — the route body is `{status, articles, totalResults}` for a reason (pagination hooks), and other callers of `/api/search/{teams,players,leagues}` legitimately return bare arrays so a per-endpoint shape difference stands.
+- **Test**: `tests/search-bar-news-contract.test.ts` — 2 assertions: (1) `/api/search/news` returns an object with `.articles`, not a bare array (pins the contract); (2) `components/layout/search-bar.tsx`'s news branch reads `newsJson.articles` and does NOT re-introduce `Array.isArray(newsJson)` (structural tripwire — regex checks the news branch specifically so teams/players/leagues' legitimate `Array.isArray` usage doesn't trigger). Red 1/2 before the fix (structural), green 2/2 after.
+- **Skill/agent used**: `layered-testing-strategy` — a contract test at the caller/route seam that would catch shape drift in either direction.
+- **Run it**: `pnpm vitest --run tests/search-bar-news-contract.test.ts`.
+- **Result**: closes O-14. Full suite 235/235 across 37 files; tsc clean.
+
 ### C-02 — MSW installed at the network seam
 
 - **Date**: 2026-09-17

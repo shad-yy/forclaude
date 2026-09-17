@@ -94,13 +94,9 @@ Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `p
 - **Why it isn't done**: this session's earlier standing correction (see top of QA-LOG) established that CI is `pnpm install --frozen-lockfile` against `pnpm-lock.yaml`, and treats `package-lock.json` as legacy. Any `pnpm add` widens the drift; any `npm install` widens the drift the other way. Choosing which lockfile is canonical is a policy call (retiring package-lock.json means every contributor must have pnpm installed), so I did not delete it unilaterally.
 - **What would close it**: (a) confirm pnpm is the intended package manager (already declared in `packageManager` field? check `package.json`); (b) `git rm package-lock.json`; (c) add a short `README.md` line saying "use pnpm, not npm — CI verifies with `--frozen-lockfile`"; (d) optionally add a pre-install hook to abort `npm install` explicitly.
 
-## O-14 — `components/layout/search-bar.tsx` news branch never renders results
+## O-14 — CLOSED 2026-09-17 by search-bar caller fix
 
-- **Since**: 2026-09-16 (discovered while touching `/api/search/news` for X-04)
-- **Layer**: L1 UI
-- **Owner**: unassigned
-- **Why it isn't done**: pre-existing bug, out of scope for the X-04 dedup consolidation. The site-wide search bar fetches `/api/search/news?q=…` and then does `if (Array.isArray(newsJson))` (`components/layout/search-bar.tsx:115`), but the route responds with `{ status, articles, totalResults }` — an object, not an array. `Array.isArray(...)` is always false, so the news branch of the search-bar has never rendered results. Only surfaced now because I read the caller to check whether X-04's shape change would break anything (it didn't — the branch was already dead).
-- **What would close it**: either (a) change the caller to `Array.isArray(newsJson?.articles) ? newsJson.articles.slice(0, 2)…`, or (b) change `/api/search/news` to return a bare array. Prefer (a) since three other callers of similar shape (`teams`, `players`, `leagues`) already return bare arrays; keeping news consistent with a wrapped object may be intentional for pagination.
+Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/api/search/news`'s response, which is `{status, articles, totalResults}` — an object, not an array. `Array.isArray(...)` was always false; the news branch of the site-wide search rendered nothing. Fixed by reading `newsJson?.articles` explicitly (option (a) from the original entry, chosen because changing the route shape would ripple through other callers). Regression tripwire at `tests/search-bar-news-contract.test.ts` refuses the plain `Array.isArray(newsJson)` shape re-appearing and pins the route's response shape.
 
 ## O-11 — Two critical Next.js RCEs live on production (< 15.5.24) — one MITIGATED
 

@@ -112,11 +112,17 @@ export function SearchBar({ className }: { className?: string }) {
       }
 
       if (newsRes.status === "fulfilled" && newsRes.value.ok) {
-        const newsJson = await newsRes.value.json().catch(() => [])
-        if (Array.isArray(newsJson)) {
-          const newsSearchResults = newsJson
+        // O-14: /api/search/news returns { status, articles, totalResults },
+        // not a bare array. The previous `Array.isArray(newsJson)` check
+        // was always false, so the news branch of the search bar never
+        // rendered results. Read `.articles` explicitly and array-check
+        // that instead.
+        const newsJson = await newsRes.value.json().catch(() => null) as { articles?: unknown } | null
+        const newsArticles = Array.isArray(newsJson?.articles) ? newsJson.articles : []
+        if (newsArticles.length > 0) {
+          const newsSearchResults = newsArticles
             .slice(0, 2)
-            .filter((a) => a && a.title)
+            .filter((a: any) => a && a.title)
             .map((article: any, idx: number) => ({
               id: `news-${idx}`,
               title: article.title,
