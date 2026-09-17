@@ -9,6 +9,10 @@ export default defineConfig({
     // renamed to .spec.ts and dropped from vitest excludes.
     include: ["tests/**/*.test.ts"],
     exclude: ["node_modules/**"],
+    // C-02: MSW server lifecycle (start / reset-handlers / close).
+    // The setup file is not itself a test — it just installs
+    // beforeAll/afterEach/afterAll hooks for every suite that runs.
+    setupFiles: ["tests/msw/setup.ts"],
     env: {
       // A-11 (2026-09-15): NEVER commit a real JWT_SECRET value here. The
       // previous 128-char hex fallback (see standing correction O-01 in

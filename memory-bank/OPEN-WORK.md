@@ -86,6 +86,14 @@ Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `p
 - **Why it isn't done**: `git rm lib/api/api-client.ts lib/cache/apiCache.ts` in this session was blocked by the auto-mode classifier as an "irreversible local destruction". `api-client.ts` (265 lines) and `apiCache.ts` (175 lines) both have zero importers across `app/`, `components/`, and `lib/` (verified by `grep -rn "from ['\"]@/lib/…"` this session), zero tests reference them, and neither is called dynamically anywhere I can see. But 440 lines is enough that a mistaken delete would hurt, so the classifier's caution stands until a human confirms.
 - **What would close it**: maintainer confirms none of these are loaded via a script, worker, edge function, or CI job outside the code I searched, then runs `git rm lib/api/api-client.ts lib/cache/apiCache.ts` and lands as a cleanup commit.
 
+## O-15 — Two package lockfiles committed (`pnpm-lock.yaml` + `package-lock.json`)
+
+- **Since**: 2026-09-17 (surfaced during C-02's `pnpm add -D msw` — only `pnpm-lock.yaml` moved; `package-lock.json` is out of sync with `package.json` now, in the same way it has been on and off this project for a while)
+- **Layer**: L0 dev tooling
+- **Owner**: unassigned — maintainer decision
+- **Why it isn't done**: this session's earlier standing correction (see top of QA-LOG) established that CI is `pnpm install --frozen-lockfile` against `pnpm-lock.yaml`, and treats `package-lock.json` as legacy. Any `pnpm add` widens the drift; any `npm install` widens the drift the other way. Choosing which lockfile is canonical is a policy call (retiring package-lock.json means every contributor must have pnpm installed), so I did not delete it unilaterally.
+- **What would close it**: (a) confirm pnpm is the intended package manager (already declared in `packageManager` field? check `package.json`); (b) `git rm package-lock.json`; (c) add a short `README.md` line saying "use pnpm, not npm — CI verifies with `--frozen-lockfile`"; (d) optionally add a pre-install hook to abort `npm install` explicitly.
+
 ## O-14 — `components/layout/search-bar.tsx` news branch never renders results
 
 - **Since**: 2026-09-16 (discovered while touching `/api/search/news` for X-04)

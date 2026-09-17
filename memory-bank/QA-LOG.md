@@ -23,6 +23,22 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### C-02 — MSW installed at the network seam
+
+- **Date**: 2026-09-17
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 test infrastructure.
+- **Severity**: medium (unlocks C-03 contract tests; retires the ad-hoc `vi.stubGlobal("fetch", …)` pattern for future tests).
+- **Was**: no HTTP-level mocking. Tests either `vi.mock('@upstash/redis')`-style module-mocked one dep at a time, or `vi.stubGlobal("fetch", ...)`-ed the whole fetch surface with a single fake. Fetches deep inside a resolver chain (route → resolver → provider client → fetch) had no way to be reshaped by URL, so any test that wanted "just this one upstream returns 503" had to `vi.mock` the entire provider module and lose real-code coverage.
+- **Now**: MSW 2.15 (dev dep) with a small harness:
+    - `tests/msw/server.ts` — `setupServer()` with an empty handler list. Every test declares only the upstream states it needs.
+    - `tests/msw/handlers.ts` — helper factories: `down(url, status?)`, `rateLimited(url)`, `ok(url, body, init?)`, `hangs(url)`. Named so a test reads like "the upstream is down" not "the mock returns 503".
+    - `tests/msw/setup.ts` — wired into `vitest.config.ts::test.setupFiles`; `beforeAll(server.listen({ onUnhandledRequest: "warn" }))`, `afterEach(server.resetHandlers)`, `afterAll(server.close)`. `warn` (not `error`) on unhandled so ancillary calls a test does not care about (analytics, telemetry) don't cascade into unrelated failures.
+- **Test**: `tests/msw-seam-demo.test.ts` — 2 assertions using `/api/spotlight` as the demonstrator: (1) `server.use(down(/eventsday\.php/, 503))` propagates through spotlight's own `anySuccess` gate and the route returns 503 + `no-store` — proves the seam intercepts fetch called by library code deep in the resolver chain. (2) A second test registers a distinct `HttpResponse.json({ events: [] })` handler and asserts a 200 — proves `resetHandlers` really isolates suites.
+- **Skill/agent used**: `layered-testing-strategy` (seam at the network boundary, not the module boundary), `contract-tests-recorded-captures` (prerequisite — C-03 recorded captures ride MSW handlers).
+- **Run it**: `pnpm vitest --run tests/msw-seam-demo.test.ts`.
+- **Result**: closes C-02. Full suite 233/233 across 36 files; tsc clean. MSW setup adds ~2s to total setup time (`setup: 2.64s` vs. previously <1s). Package-lock.json is intentionally NOT updated — CI uses pnpm-lock.yaml (standing correction), and the two lockfiles drifting is a separate follow-up (should the maintainer decide to retire package-lock.json entirely, O-15 below).
+
 ### X-09 — Deterministic fallback IDs in mma-rapidapi.ts (`String(Math.random())` retired)
 
 - **Date**: 2026-09-16
