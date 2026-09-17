@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### O-14 — search-bar news branch now actually renders results
 
 - **Date**: 2026-09-17
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `268cf27`.
 - **Layer**: L1 UI.
 - **Severity**: medium (silent UX — the site-wide search's news category was always empty, users just saw teams/players/leagues where they should have also seen news).
 - **Was**: `components/layout/search-bar.tsx:115` did `if (Array.isArray(newsJson))` on the `/api/search/news` response body. But that route returns `{status, articles, totalResults}` (has always done so), so `Array.isArray({...})` is always false. Result: the news branch pushed nothing into `searchResults` for as long as the code has existed.
