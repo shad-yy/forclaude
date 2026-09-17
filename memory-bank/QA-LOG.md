@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### C-03 — TheSportsDB contract tests + Zod schemas + recorded captures (pilot)
 
 - **Date**: 2026-09-17
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `b42f8c5`.
 - **Layer**: L0 test infrastructure + L5 provider contract.
 - **Severity**: medium (before this, an upstream field rename could silently corrupt data instead of failing loudly at the seam).
 - **Was**: no schema at the provider boundary. `lib/api/the-sports-db.ts` cast raw fetch bodies straight into TS `SportsDbLeague` / `SportsDbEvent` interfaces — those interfaces are hints, not runtime checks. A missing required field just became `undefined`, and any code path relying on it silently misbehaved. Also no HTTP-level test at the upstream URL, so a shape change would only surface as flake or wrong-data in prod.
