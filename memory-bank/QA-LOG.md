@@ -23,6 +23,22 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### C-03 — TheSportsDB contract tests + Zod schemas + recorded captures (pilot)
+
+- **Date**: 2026-09-17
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 test infrastructure + L5 provider contract.
+- **Severity**: medium (before this, an upstream field rename could silently corrupt data instead of failing loudly at the seam).
+- **Was**: no schema at the provider boundary. `lib/api/the-sports-db.ts` cast raw fetch bodies straight into TS `SportsDbLeague` / `SportsDbEvent` interfaces — those interfaces are hints, not runtime checks. A missing required field just became `undefined`, and any code path relying on it silently misbehaved. Also no HTTP-level test at the upstream URL, so a shape change would only surface as flake or wrong-data in prod.
+- **Now**: pilot pattern for two TheSportsDB endpoints (lookupleague + eventsday), the most-used ones in the app:
+    - **Zod schemas** at `lib/api/schemas/thesportsdb.ts` (`LookupLeagueResponseSchema`, `EventsDayResponseSchema`) with pragmatic looseness — required fields the resolvers actually read are `.min(1)`; the many optional fields TheSportsDB is known to null or omit are `.nullable().optional()`; unknown extra fields pass through so a new upstream field never breaks the parse.
+    - **Recorded captures** at `tests/fixtures/thesportsdb/{lookupleague-4328.json, eventsday-soccer-2024-10-19.json}` — one file per response shape, with a `README.md` documenting origin and refresh policy (shapes reconstructed from `lib/types/sportsdb.ts::SportsDbLeague`/`SportsDbEvent` interfaces cross-checked against TheSportsDB public docs; keys are the free-tier placeholders since we have no API key in this session).
+    - **Contract tests** at `tests/contracts/thesportsdb.contract.test.ts` — 7 assertions across 2 describes. For each endpoint: (a) schema parses the recorded capture cleanly; (b) schema REJECTS a mangled fixture missing a required field (proves discrimination — the `contract-tests-recorded-captures` skill's anti-pattern is a schema that never fails); (c) schema REJECTS an empty required-id (same). Plus one end-to-end assertion using MSW to serve the capture at the real TheSportsDB URL and calling `theSportsDB.lookupLeague("4328")` — proves the resolver code path handles the captured shape without throwing. Plus one "tolerates optional-field omission" test to lock in the pragmatic looseness policy.
+- **Test**: `tests/contracts/thesportsdb.contract.test.ts`, 7/7 green first run. Discrimination tests would fail if the schema were replaced with `z.any()` — the whole point.
+- **Skill/agent used**: `contract-tests-recorded-captures` (the entire recipe), `layered-testing-strategy` (schema at the network boundary, one direction of the seam), enabled by C-02 (MSW).
+- **Run it**: `pnpm vitest --run tests/contracts/thesportsdb.contract.test.ts`.
+- **Result**: pilot complete. The remaining 4 providers (RapidAPI MMA, ESPN, NewsData, football-data) can follow the same pattern — new schema module, capture(s), one contract test file per provider. Full suite 242/242 across 38 files; tsc clean.
+
 ### O-14 — search-bar news branch now actually renders results
 
 - **Date**: 2026-09-17
