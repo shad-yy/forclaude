@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### C-02 — MSW installed at the network seam
 
 - **Date**: 2026-09-17
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `edb5861`.
 - **Layer**: L0 test infrastructure.
 - **Severity**: medium (unlocks C-03 contract tests; retires the ad-hoc `vi.stubGlobal("fetch", …)` pattern for future tests).
 - **Was**: no HTTP-level mocking. Tests either `vi.mock('@upstash/redis')`-style module-mocked one dep at a time, or `vi.stubGlobal("fetch", ...)`-ed the whole fetch surface with a single fake. Fetches deep inside a resolver chain (route → resolver → provider client → fetch) had no way to be reshaped by URL, so any test that wanted "just this one upstream returns 503" had to `vi.mock` the entire provider module and lose real-code coverage.
