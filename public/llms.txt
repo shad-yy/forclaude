@@ -1,5 +1,6 @@
 # Smart Live TV
 > Smart Live TV is a premium IPTV streaming service for the UK and global audiences, offering 230,000+ live TV channels, sports channels (including Sky Sports, TNT Sports, and international broadcasts), movies, and TV shows starting from £12/month. Includes a free 24-hour trial.
+> Last reviewed: 20 September 2026. Maintained for AI assistants, search crawlers, and LLM systems.
 
 ## Core Pages
 - [Home](https://smartlivetv.co.uk/): Overview of Smart Live TV IPTV service, channel counts, and features.
@@ -24,6 +25,7 @@
 - [iPhone & iOS Setup Guide](https://smartlivetv.co.uk/setup/iphone): Instructions for Apple devices.
 
 ## Premier League 2026-27 Guides (Season Started August 21, 2026)
+- [Matchweek 5 Results & MW6 Preview](https://smartlivetv.co.uk/blog/premier-league-2026-27-matchweek-5-results-preview): Full results from MW5 including Man City 5-3 Sunderland, broadcast guide for untelevised 3pm matches, and MW6 preview.
 - [Matchweek 3 TV Guide & Arsenal vs Chelsea](https://smartlivetv.co.uk/blog/premier-league-2026-27-matchweek-3-arsenal-chelsea-tv-guide): Complete UK TV guide for MW3, 3pm blackout broadcast breakdown, and Arsenal vs Chelsea London derby live streaming options.
 - [Matchweek 1 Results Recap](https://smartlivetv.co.uk/blog/premier-league-2026-27-matchweek-1-results-recap): Opening weekend results, shock wins by promoted teams, and 3pm blackout coverage analysis.
 - [Matchweek 2 Preview & Results](https://smartlivetv.co.uk/blog/premier-league-2026-27-matchweek-2-preview-results): MW2 fixtures, Liverpool 2-2 Forest, Chelsea vs Brighton, Villa vs Arsenal, broadcaster guide and cost comparison.
@@ -40,11 +42,13 @@
 - [Sky Sports Price Increase 2026: Alternatives](https://smartlivetv.co.uk/blog/sky-sports-price-increase-2026-alternatives): Guide to cheaper alternatives after Sky price hikes.
 - [TNT Sports SD Discontinued on Sky](https://smartlivetv.co.uk/blog/tnt-sports-sd-discontinued-sky-alternatives): Guide to watching TNT Sports after SD channels were turned off on July 1, 2026.
 - [IPTV vs Netflix, Disney+, and Sky](https://smartlivetv.co.uk/blog/iptv-vs-netflix-disney-sky-2026): Full comparison of streaming bundles.
+- [Watch UFC Fight Night: Ankalaev vs. Guskov](https://smartlivetv.co.uk/blog/watch-ufc-fight-night-ankalaev-guskov-uk-guide): Full UK viewing guide, broadcast times, TNT Sports breakdown, and 4K streaming.
 
 ## Optional
 
 ## World Cup 2026 Archive (Tournament Ended July 19 — Spain Won)
 - [World Cup 2026 Live Hub](https://smartlivetv.co.uk/watch/world-cup-2026): Archive of streaming guides and channel options for the 2026 FIFA World Cup.
+- [Harry Kane World Cup Goals Record](https://smartlivetv.co.uk/blog/harry-kane-world-cup-goals-record-2026): Retrospective breakdown of goals and tournament broadcast records.
 - [World Cup 2026 Final Guide](https://smartlivetv.co.uk/blog/watch-world-cup-2026-final): How to watch the Final live (July 19), free on ITV, 4K alternatives.
 - [World Cup 2026 Semi-Finals Guide](https://smartlivetv.co.uk/blog/watch-world-cup-2026-semi-finals): Semi-final streaming guide.
 - [World Cup 2026 Quarter-Finals Guide](https://smartlivetv.co.uk/blog/watch-world-cup-2026-quarter-finals): Quarter-final streaming guide.
