@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### X-05 — One `withRetry()` for the two live retry ladders
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `3785585`.
 - **Layer**: L5 provider + L6 cache.
 - **Severity**: low (simplification — no bug; the two ladders had already-correct, independently-evolved retry policies).
 - **Was**: two hand-rolled recursive retry ladders — `lib/api/the-sports-db.ts::sportsdbFetch` (fixed `[200,600,1800]ms` backoff, retries only 5xx/network errors, never retries 429, integrates circuit-breaker recording) and `lib/cache.ts::fetchWithRetry` (exponential backoff from 1000ms doubling, 3 retries, skips rate-limit-shaped errors by message-sniffing). A third copy in `lib/api/api-client.ts` (X-01) is dead code — zero importers — and was NOT migrated since consolidating unreachable code has no runtime value; it stays flagged for deletion under O-13.
