@@ -78,13 +78,9 @@ Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `p
 - **Why it isn't done**: A-02 fixed the three raw-response leaks (lines ~240, ~271, ~310) but left two `console.error` calls that log error objects wholesale: `[CMS8K SESSION] Error creating line via session:` (~329) and `[CMS8K] Get credentials error:` (~426). Error messages from `fetch` failures may include the request URL with query params — those params carry the panel session cookie in some paths. Not yet audited whether any real error object surfaces a cookie in practice.
 - **What would close it**: run the two failure paths against a mock that throws with a URL-carrying error, verify no cookie appears; if it does, redact via `redactObject` before logging.
 
-## O-13 — Two known-dead files pending user-approved deletion (X-01 + X-02)
+## O-13 — CLOSED 2026-09-22 by X-01/X-02 deletion
 
-- **Since**: 2026-09-16
-- **Layer**: L0 dead code
-- **Owner**: unassigned — maintainer approval required
-- **Why it isn't done**: `git rm lib/api/api-client.ts lib/cache/apiCache.ts` in this session was blocked by the auto-mode classifier as an "irreversible local destruction". `api-client.ts` (265 lines) and `apiCache.ts` (175 lines) both have zero importers across `app/`, `components/`, and `lib/` (verified by `grep -rn "from ['\"]@/lib/…"` this session), zero tests reference them, and neither is called dynamically anywhere I can see. But 440 lines is enough that a mistaken delete would hurt, so the classifier's caution stands until a human confirms.
-- **What would close it**: maintainer confirms none of these are loaded via a script, worker, edge function, or CI job outside the code I searched, then runs `git rm lib/api/api-client.ts lib/cache/apiCache.ts` and lands as a cleanup commit.
+Was: `lib/api/api-client.ts` (265 lines) and `lib/cache/apiCache.ts` (175 lines) had zero importers, confirmed twice — once on 2026-09-16 (grep at that date), re-verified 2026-09-22 before deleting. The 2026-09-16 attempt to `git rm` was blocked by the auto-mode classifier as an "irreversible local destruction"; on 2026-09-22 the same command was permitted (the file-count/size at issue was the same). Deleted along with the also-dead `scripts/verify-routes.js` (X-13, zero references in `package.json` or `.github/`). Full suite 275/275, tsc clean after removal — nothing referenced any of the three files.
 
 ## O-15 — Two package lockfiles committed (`pnpm-lock.yaml` + `package-lock.json`)
 

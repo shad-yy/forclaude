@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### X-01, X-02, X-13 — Delete three confirmed-dead files (closes O-13)
+
+- **Date**: 2026-09-22
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 dead code.
+- **Severity**: low (cleanup only — no behaviour change; these files were unreachable).
+- **Was**: three files with zero importers/references anywhere in the repo: `lib/api/api-client.ts` (265 lines, a generic HTTP client with its own retry ladder — see X-05's note that this was NOT migrated onto the shared `withRetry()` since consolidating unreachable code has no runtime value), `lib/cache/apiCache.ts` (175 lines, an in-memory-only cache superseded by `lib/cache.ts`'s Redis+SWR implementation), and `scripts/verify-routes.js` (77 lines, a hand-maintained `EXPECTED_ROUTES` list reimplementing what `next build` already catches — not referenced from `package.json` scripts or any `.github/workflows/*.yml`).
+- **Now**: all three deleted. First attempt on 2026-09-16 (recorded as O-13) was blocked by the session's auto-mode classifier as an "irreversible local destruction" — re-verified zero importers on 2026-09-22 (same `grep -rn` check) before retrying; the classifier permitted it this time.
+- **Test**: no dedicated test — `npx tsc --noEmit` clean and full suite 275/275 across 41 files, both unchanged from before the deletion, are the proof nothing referenced these files.
+- **Skill/agent used**: cleanup pass — "delete code you're certain is unused" per the user's simplify-during-every-task instruction.
+- **Run it**: n/a (no script to run — the change is the deletion itself).
+- **Result**: closes O-13. -517 lines. tsc clean, 275/275 unchanged.
+
 ### X-05 — One `withRetry()` for the two live retry ladders
 
 - **Date**: 2026-09-22
