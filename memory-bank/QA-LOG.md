@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### C-03 — football-data.org contract tests + Zod schema + recorded capture (3rd provider)
+
+- **Date**: 2026-09-22
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 test infrastructure + L5 provider contract.
+- **Severity**: medium (same category as the first two providers).
+- **Was**: `lib/api/football-data.ts::getUEFAMatches`/`getUEFAResults` cast the `/competitions/{id}/matches` response straight into the pre-existing `FDMatch` TS interface with no runtime check.
+- **Now**: `lib/api/schemas/football-data.ts::FDMatchesResponseSchema` formalises the `{matches: [...]}` wrapper and per-match shape (nested `homeTeam`/`awayTeam`/`score.fullTime`) into a Zod schema, cross-checked against football-data.org's public v4 API docs (football-data.org/documentation/api) — real, verifiable documentation, not a guess. **Scope note**: `FDStanding` also exists in `football-data.ts` but has zero live callers (grepped `app/` + `lib/` — nothing calls a standings endpoint through this client), so it got no schema; encoding a guess about an endpoint nothing in the app exercises would add speculative surface for no reason. This session has no `FOOTBALL_DATA_API_KEY` (the app calls the API unauthenticated when unset, rate-limited to 10 req/min per `SETUP-REQUIRED.md`), so the fixture is reconstructed from public docs + the existing interface, not a live capture — documented in `tests/fixtures/football-data/README.md`.
+- **Test**: `tests/contracts/football-data.contract.test.ts` — 7 assertions: schema parses the capture cleanly; REJECTS a match missing `homeTeam`; REJECTS a match missing `score.fullTime`; tolerates a scheduled match's null scores alongside a finished match's real scores in the same array; tolerates a match omitting the optional `venue` field; resolver handles the shape via MSW without throwing; resolver treats a 429 as an absence (returns `[]`, matches the client's own existing behaviour) rather than crashing.
+- **Skill/agent used**: `contract-tests-recorded-captures`; same "don't schema an endpoint you can't verify" discipline applied to `FDStanding` as was applied when skipping MMA RapidAPI for the 2nd provider.
+- **Run it**: `pnpm vitest --run tests/contracts/football-data.contract.test.ts`.
+- **Result**: C-03 now has 3 of 5 providers covered (TheSportsDB, NewsData.io, football-data.org). Remaining: ESPN and RapidAPI MMA — both undocumented/reverse-engineered APIs where the app's own resolver code hedges field names, so neither has a verifiable shape to capture without a live key. Full suite 292/292 across 44 files; tsc clean.
+
 ### C-03 — NewsData.io contract tests + Zod schema + recorded capture (2nd provider)
 
 - **Date**: 2026-09-22
