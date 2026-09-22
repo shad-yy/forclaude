@@ -28,7 +28,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### O-06 — Configure ESLint from scratch, fix all 38 errors, enable `eslint.ignoreDuringBuilds: false` (verified by a real build)
 
 - **Date**: 2026-09-22
-- **Commit**: `2c07374`.
+- **Commit**: `84c2c3e`.
 - **Layer**: L0 build config + L1 UI (37 files) + L1 correctness bug (1 component).
 - **Severity**: medium (closes a real silent-failure gap — ESLint errors, including a genuine Rules-of-Hooks violation, could previously reach production with zero build-time signal).
 - **Was**: no ESLint config existed anywhere in the repo (confirmed this same session, see the prior O-06 entry below). `eslint.ignoreDuringBuilds: true` was load-bearing, not deferred debt.
