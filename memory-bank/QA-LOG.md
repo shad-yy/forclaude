@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### O-16 — Align CI's Node version with production (20 → 24)
+
+- **Date**: 2026-09-22
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 CI config.
+- **Severity**: medium (no known bug, but a real coverage gap — a Node-24-only behaviour difference could pass CI and only surface in production).
+- **Was**: `.github/workflows/ci.yml` pinned `node-version: 20`. The live Vercel project (confirmed via `mcp__Vercel__get_project` on `prj_6l3Vinw91zW08AIkwqhRV5vMeI8h` while investigating O-15) runs `nodeVersion: "24.x"` for actual production requests. Every test/typecheck run was on a different major Node version than what real users hit.
+- **Now**: `ci.yml`'s `node-version` bumped to `24`. `dependency-audit.yml` and `auto-index.yml` still pin Node 20 — deliberately left alone, since neither runs the app's test/typecheck suite (one is `pnpm audit`, the other pings IndexNow), so they weren't the behaviour-drift risk this item was about.
+- **Test**: this session's sandbox runs Node 22.22.2 (neither 20 nor 24), so a local `pnpm vitest --run` here isn't authoritative evidence for a Node-version-specific change. Verification is the real CI run on the pushed commit, which provisions the exact declared Node version via `actions/setup-node@v4`.
+- **Skill/agent used**: verify-before-claiming — flagged the local-Node-mismatch limitation explicitly rather than reporting local-suite-green as if it proved the CI change works, per this session's own standing-correction precedent (pnpm vs npm lockfile discrepancy, same category of "local env doesn't match what's being verified").
+- **Run it**: n/a — the change is the CI workflow itself; verification happens by pushing and reading the resulting Actions run.
+- **Result**: closes O-16.
+
 ### X-08 — Remove redundant `queueLock` spin-wait from the TheSportsDB rate limiter
 
 - **Date**: 2026-09-22

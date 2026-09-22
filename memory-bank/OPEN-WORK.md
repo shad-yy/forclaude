@@ -6,13 +6,9 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
-## O-16 — Node version mismatch: CI runs 20.x, Vercel production runs 24.x
+## O-16 — CLOSED 2026-09-22 by aligning ci.yml to Node 24
 
-- **Since**: 2026-09-22 (surfaced while checking the Vercel project config for O-15)
-- **Layer**: L0 CI/deploy config
-- **Owner**: unassigned
-- **Why it isn't done**: discovered incidentally via `mcp__Vercel__get_project` (`nodeVersion: "24.x"`) while verifying the install-command question for O-15 — not something this session set out to audit. `.github/workflows/ci.yml:26` pins `node-version: 20`. Every test/typecheck run in CI is on Node 20; every real production request runs on Node 24. A Node-version-sensitive behaviour difference (e.g. a runtime API added/changed between 20 and 24) would pass CI and only surface in production.
-- **What would close it**: pick one Node version and align both — either bump `ci.yml` to `node-version: 24` (matches prod, safer default) or pin the Vercel project to Node 20 in project settings (keeps the currently-tested version). Then re-run the full suite under the chosen version once to confirm no behaviour actually differs.
+Was: CI ran tests/typecheck on Node 20 (`.github/workflows/ci.yml`) while the live Vercel project runs Node 24.x in production (confirmed via `mcp__Vercel__get_project`) — a Node-24-only behaviour difference could pass CI and only surface live. Closed by bumping `ci.yml`'s `node-version` from `20` to `24` to match production (the safer default — test what you actually ship). `dependency-audit.yml` and `auto-index.yml` still pin Node 20 but were left alone: neither runs the app's test/typecheck suite (one runs `pnpm audit`, the other pings IndexNow), so they aren't the behaviour-drift risk O-16 was about. Verified via a real CI run on the pushed commit (this session's sandbox runs Node 22, so local verification wasn't authoritative for a Node-version change — the real GitHub Actions run, which provisions the exact declared version, is).
 
 ## O-01 — `vitest.config.ts:10` embeds a 512-bit `JWT_SECRET` fallback in a checked-in file
 

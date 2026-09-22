@@ -24,7 +24,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # O-16: was 20 — the live Vercel project (confirmed via
+          # mcp__Vercel__get_project) runs nodeVersion "24.x" for
+          # production. Testing on a different major than what ships
+          # means a Node-24-only behaviour change could pass CI and
+          # only surface in production. Aligned to match.
+          node-version: 24
           cache: 'pnpm'
 
       - name: Install dependencies
