@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### C-03 — NewsData.io contract tests + Zod schema + recorded capture (2nd provider)
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `1d01abe`.
 - **Layer**: L0 test infrastructure + L5 provider contract.
 - **Severity**: medium (same category as the TheSportsDB pilot — closes the same "silent shape-drift" gap for a second provider).
 - **Was**: `lib/api/news.ts::getLatestSportsNews` cast NewsData.io's response straight into the pre-existing `NewsArticle` TS interface with no runtime check. That interface's fields (`article_id`, `pubDate`, `image_url`, `source_icon`, `creator[]`, `category[]`, `country[]`) already matched NewsData.io's real field names — presumably written against a real response at some point — but nothing enforced it stayed that way.
