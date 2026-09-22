@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### C-03 — NewsData.io contract tests + Zod schema + recorded capture (2nd provider)
+
+- **Date**: 2026-09-22
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 test infrastructure + L5 provider contract.
+- **Severity**: medium (same category as the TheSportsDB pilot — closes the same "silent shape-drift" gap for a second provider).
+- **Was**: `lib/api/news.ts::getLatestSportsNews` cast NewsData.io's response straight into the pre-existing `NewsArticle` TS interface with no runtime check. That interface's fields (`article_id`, `pubDate`, `image_url`, `source_icon`, `creator[]`, `category[]`, `country[]`) already matched NewsData.io's real field names — presumably written against a real response at some point — but nothing enforced it stayed that way.
+- **Now**: `lib/api/schemas/newsdata.ts::NewsDataResponseSchema` formalises the wrapper (`{status, totalResults, results}`) and per-article shape into a Zod schema, cross-checked against NewsData.io's public docs (newsdata.io/documentation) — not fabricated. **Important honesty note**: this session has no `NEWS_API_KEY`, so `tests/fixtures/newsdata/success-football-news.json` is reconstructed from (a) those public docs and (b) the pre-existing `NewsArticle` interface, not a live capture. Documented explicitly in `tests/fixtures/newsdata/README.md` so a future session knows to replace it with a real capture if a key ever becomes available. (Contrast: I initially considered MMA RapidAPI as the 2nd provider but backed out — that resolver code hedges nearly every field with 3-4 alternate key names, meaning even the codebase's own author wasn't sure of RapidAPI's exact shape; writing a "recorded capture" for a shape I have neither docs nor a live example for would have meant fabricating data, so I picked NewsData.io instead, which has real public documentation.)
+- **Test**: `tests/contracts/newsdata.contract.test.ts` — 6 assertions: schema parses the capture cleanly; schema REJECTS a mangled article missing `article_id`; schema REJECTS an empty required `link`; schema tolerates the many nullable fields being null (fixture row 2); resolver handles the captured shape via MSW without throwing; resolver treats a non-`"success"` status as a fault (falls back to `FALLBACK_ARTICLES`, never throws) rather than crashing. The two resolver-path tests stub `NEWS_API_KEY` since `getLatestSportsNews` short-circuits to fallback articles before ever calling fetch when the key is unset.
+- **Skill/agent used**: `contract-tests-recorded-captures`; honesty check against "never make up data" before treating an unverifiable API (RapidAPI MMA) as ground truth.
+- **Run it**: `pnpm vitest --run tests/contracts/newsdata.contract.test.ts`.
+- **Result**: C-03 now has 2 of 5 providers covered (TheSportsDB, NewsData.io). Remaining: ESPN (also undocumented/reverse-engineered — same caveat as MMA RapidAPI would apply), RapidAPI MMA, football-data.org (has public docs — next safe candidate). Full suite 285/285 across 43 files; tsc clean.
+
 ### O-15 — Retire `package-lock.json`, enforce pnpm-only (also surfaces O-16)
 
 - **Date**: 2026-09-22
