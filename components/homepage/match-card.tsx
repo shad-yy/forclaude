@@ -210,7 +210,7 @@ export function MatchCard() {
                         {tab === "results" && currentList.some(m => m.isYesterday) && !currentList.some(m => !m.isYesterday) && (
                             <p className="text-xs text-gray-500 mb-4 flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-gray-600 inline-block" />
-                                Yesterday's Results
+                                Yesterday&apos;s Results
                             </p>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

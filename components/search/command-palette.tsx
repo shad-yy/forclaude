@@ -281,7 +281,7 @@ export function CommandPalette() {
                 >
                   {flatResults.length === 0 ? (
                     <div className="py-12 text-center text-gray-600 text-sm">
-                      No results for "{query}"
+                      No results for &quot;{query}&quot;
                     </div>
                   ) : (
                     Object.entries(grouped).map(([type, results]) => (

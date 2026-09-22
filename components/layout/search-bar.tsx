@@ -324,7 +324,7 @@ export function SearchBar({ className }: { className?: string }) {
               </div>
             ) : query.length > 2 ? (
               <div className="p-4 text-center">
-                <p className="text-sm text-gray-400">No results found for "{query}"</p>
+                <p className="text-sm text-gray-400">No results found for &quot;{query}&quot;</p>
               </div>
             ) : (
               <div className="p-4">

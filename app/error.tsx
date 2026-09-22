@@ -29,7 +29,7 @@ export default function Error({
         </CardHeader>
         <CardContent>
           <p className="text-lg text-gray-300 mb-8">
-            We encountered an unexpected error. This has been logged and we'll look into it.
+            We encountered an unexpected error. This has been logged and we&apos;ll look into it.
           </p>
 
           {process.env.NODE_ENV === "development" && (

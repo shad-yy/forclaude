@@ -121,7 +121,7 @@ export function LeagueTables() {
                     <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-4">
                         Live Standings <span className="text-accent-primary">— Stream Every Game</span>
                     </h2>
-                    <p className="text-text-secondary">See who's on top and never miss a critical matchup.</p>
+                    <p className="text-text-secondary">See who&apos;s on top and never miss a critical matchup.</p>
                 </div>
 
                 {/* Swipeable Tabs */}

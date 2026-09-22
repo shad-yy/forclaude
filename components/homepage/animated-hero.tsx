@@ -170,7 +170,7 @@ export function AnimatedHero() {
           >
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-white opacity-100" style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}>Today's Matches</span>
+              <span className="text-white opacity-100" style={{ color: '#ffffff', opacity: 1, visibility: 'visible' }}>Today&apos;s Matches</span>
             </div>
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-blue-400" />

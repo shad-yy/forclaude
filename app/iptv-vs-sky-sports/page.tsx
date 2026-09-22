@@ -355,7 +355,7 @@ export default function IptvVsSkySportsPage() {
       {/* 5. WHAT SMART LIVE TV INCLUDES THAT SKY DOESN'T */}
       <section className="py-16 px-4 max-w-5xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-white mb-3">What Smart Live TV includes that Sky doesn't</h2>
+          <h2 className="text-3xl font-bold text-white mb-3">What Smart Live TV includes that Sky doesn&apos;t</h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
             Get complete freedom and access to all global entertainment without limits or geographical blockades.
           </p>

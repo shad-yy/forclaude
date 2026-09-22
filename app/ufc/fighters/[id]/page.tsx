@@ -91,7 +91,7 @@ export default async function UFCFighterPage({ params }: UFCFighterPageProps) {
                     {fighter.name}
                   </h1>
                   {fighter.nickname && (
-                    <p className="text-xl text-red-400 italic mb-4">"{fighter.nickname}"</p>
+                    <p className="text-xl text-red-400 italic mb-4">&quot;{fighter.nickname}&quot;</p>
                   )}
                   <div className="flex flex-wrap justify-center md:justify-start gap-3">
                     <Badge

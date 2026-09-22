@@ -54,7 +54,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-bold text-white mb-3">5. Limitation of Liability</h2>
-            <p>Smart Live TV's liability is limited to the amount paid in the 
+            <p>Smart Live TV&apos;s liability is limited to the amount paid in the 
             current billing month. We are not responsible for indirect or 
             consequential damages arising from use of the service.</p>
           </section>

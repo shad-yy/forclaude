@@ -84,5 +84,10 @@ See `memory-bank/PROGRESS.md` §4 for the current queue. Summary:
 *   `next`, `postcss`, `sharp`, `undici` carry high-severity advisories. Resolving them
     needs a breaking Next.js 14 → 16 upgrade — its own task with its own regression pass.
 *   `/api/espn/mma/ufc/scoreboard` returns 503; the UFC widget degrades silently.
-*   `next.config.mjs` sets `typescript.ignoreBuildErrors` and `eslint.ignoreDuringBuilds`,
-    so failures reach production silently. Run `tsc` yourself before deploying.
+*   `next.config.mjs`'s `typescript.ignoreBuildErrors` and `eslint.ignoreDuringBuilds` are
+    both `false` — a real `next build` now fails on any TypeScript or ESLint **error**
+    (not a warning). Verified 2026-09-22 with a full local build (`Linting and checking
+    validity of types` step ran, printed the 46 remaining ESLint warnings, and proceeded
+    to static generation; exit 0). See `memory-bank/QA-LOG.md` O-06 for the 46 remaining
+    warnings (41 `@next/next/no-img-element`, 4 `react-hooks/exhaustive-deps`, 1
+    `@next/next/no-before-interactive-script-outside-document`) — none block the build.

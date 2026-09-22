@@ -71,7 +71,7 @@ export default function FreeTrialPage() {
             Request Your Free Trial
           </h2>
           <p className="text-gray-400 text-sm">
-            Fill in the form below. We'll send your credentials 
+            Fill in the form below. We&apos;ll send your credentials 
             to WhatsApp within 5 minutes.
           </p>
         </div>
@@ -94,7 +94,7 @@ export default function FreeTrialPage() {
             </div>
             <div>
               <div className="font-bold text-white text-sm">Message Us on WhatsApp</div>
-              <div className="text-gray-500 text-sm">Tell us what device you'll be watching on (Firestick, Smart TV, Android or iPhone).</div>
+              <div className="text-gray-500 text-sm">Tell us what device you&apos;ll be watching on (Firestick, Smart TV, Android or iPhone).</div>
             </div>
           </div>
           <div className="flex items-start gap-4">
@@ -103,7 +103,7 @@ export default function FreeTrialPage() {
             </div>
             <div>
               <div className="font-bold text-white text-sm">We Send Your Trial Credentials</div>
-              <div className="text-gray-500 text-sm">Within 5 minutes you'll receive your login details and a setup guide for your specific device.</div>
+              <div className="text-gray-500 text-sm">Within 5 minutes you&apos;ll receive your login details and a setup guide for your specific device.</div>
             </div>
           </div>
           <div className="flex items-start gap-4">
@@ -123,7 +123,7 @@ export default function FreeTrialPage() {
       <FadeIn direction="up">
       <section className="max-w-2xl mx-auto">
         <h2 className="text-2xl font-bold text-white text-center mb-8">
-          What's Included in Your Trial
+          What&apos;s Included in Your Trial
         </h2>
 
         <StaggerIn className="grid grid-cols-1 md:grid-cols-2 gap-3">

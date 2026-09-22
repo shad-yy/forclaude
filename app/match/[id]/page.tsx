@@ -341,7 +341,7 @@ export default async function MatchPage(
       {/* Bottom CTA */}
       <section className="py-20 px-4 text-center border-t border-[#00e676]/10" style={{ background: 'linear-gradient(to bottom, #0a0a0f, rgba(0,230,118,0.03))' }}>
         <h2 className="text-3xl font-extrabold text-white mb-3">
-          Don't Miss This Match
+          Don&apos;t Miss This Match
         </h2>
         <p className="text-gray-400 mb-8">
           Free 24-hour trial. No card. Works anywhere in the world.

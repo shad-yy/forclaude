@@ -25,6 +25,25 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### O-06 — Configure ESLint from scratch, fix all 38 errors, enable `eslint.ignoreDuringBuilds: false` (verified by a real build)
+
+- **Date**: 2026-09-22
+- **Commit**: `2c07374`.
+- **Layer**: L0 build config + L1 UI (37 files) + L1 correctness bug (1 component).
+- **Severity**: medium (closes a real silent-failure gap — ESLint errors, including a genuine Rules-of-Hooks violation, could previously reach production with zero build-time signal).
+- **Was**: no ESLint config existed anywhere in the repo (confirmed this same session, see the prior O-06 entry below). `eslint.ignoreDuringBuilds: true` was load-bearing, not deferred debt.
+- **Now**: `pnpm add -D eslint@^8 eslint-config-next@14.2.35` (version-pinned to match the installed `next@14.2.35`) + `.eslintrc.json` extending `next/core-web-vitals` — the exact default `create-next-app` generates, so no ruleset judgment call was needed. First run surfaced 84 findings across 44 files (38 errors, 46 warnings). Fixed all 38 errors:
+  - **37 `react/no-unescaped-entities`** across 20 files — raw `'`/`"` characters inside JSX text nodes. Fixed programmatically: parsed ESLint's `line:column` for every finding, verified the exact character at that position matched what ESLint reported (0 mismatches — no drift from stale line numbers), then substituted `&apos;`/`&quot;` right-to-left within each line so multiple fixes on one line don't shift the columns of findings not yet applied. Purely mechanical — no behaviour change, these render identically.
+  - **1 `react-hooks/rules-of-hooks`** — `components/setup/RecommendedApps.tsx:224` called `useState` AFTER `if (!apps) return null`. A genuine Rules-of-Hooks violation: if `device` ever changes between a key present in `DEVICE_APPS` and one absent from it without the component remounting, React's hook call order desyncs across renders (the classic failure mode is "Rendered fewer hooks than expected" or silent state corruption). Fixed by moving the `useState` call above the early return.
+  - Left the 46 warnings as a separate, honestly-scoped follow-up (**O-17**) rather than rushing fixes that need per-case judgment (image migration needs a `remotePatterns` allowlist check per host; hook-dependency fixes risk introducing infinite-fetch loops if applied blindly).
+  - Flipped `next.config.mjs`'s `eslint.ignoreDuringBuilds` to `false`.
+  - **Verified with a real production build, not just `next lint`**: ran the safe build command from `CLAUDE.md` (`node -r ./polyfill-self.cjs node_modules/next/dist/bin/next build` — avoids the IndexNow-pinging `npm run build`), confirmed no dev server was running first (port 3000 free). Build log shows "Linting and checking validity of types" ran, printed the 46 remaining warnings, then proceeded through "Collecting page data" → "Generating static pages (103/103)" to exit 0. This is the authoritative signal — `next build`'s ESLint gate only fails on errors, not warnings, confirmed empirically rather than assumed from Next.js documentation.
+  - Corrected `CLAUDE.md`'s "Known open issues" section, which still named both flags as `true`.
+- **Test**: `tsc --noEmit` clean, full suite 300/300 across 46 files (unchanged — no test-affecting behaviour changed; the entity substitutions are render-identical and the hook-order fix only matters for a `device` prop transition this codebase's routing doesn't currently produce, though the fix is correct regardless).
+- **Skill/agent used**: `documentation-discipline` (verify via a real build rather than trust `next lint`'s exit code alone); mechanical-fix verification (character-level drift check before any substitution, right-to-left ordering to avoid column-shift bugs).
+- **Run it**: `pnpm lint` (should show only the 46 O-17 warnings); `node -r ./polyfill-self.cjs node_modules/next/dist/bin/next build` (full verification).
+- **Result**: closes O-06 for real (both flags `false`, both verified). O-17 opened for the 46 remaining warnings.
+
 ### O-06 — Correct scope: TypeScript half already fixed pre-session, ESLint half is unconfigured-from-scratch, not deferred debt
 
 - **Date**: 2026-09-22

@@ -110,7 +110,7 @@ export default function PlayersPage({ searchParams }: PlayersPageProps) {
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">Football Players</h1>
-        <p className="text-lg text-gray-400">Discover players from the world's top football teams</p>
+        <p className="text-lg text-gray-400">Discover players from the world&apos;s top football teams</p>
       </div>
 
       {/* Search and Filters */}

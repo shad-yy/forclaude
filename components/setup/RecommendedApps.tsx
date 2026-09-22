@@ -218,10 +218,13 @@ const DEVICE_APPS: Record<string, AppInfo[]> = {
 }
 
 export function RecommendedApps({ device }: { device: string }) {
+  // react-hooks/rules-of-hooks: useState must run on every render,
+  // before any early return, or React's hook order desyncs across
+  // renders where `device` changes between a valid and invalid key.
+  const [expanded, setExpanded] = useState<string | null>(null)
+
   const apps = DEVICE_APPS[device]
   if (!apps) return null
-
-  const [expanded, setExpanded] = useState<string | null>(null)
 
   const deviceLabel = device === 'firestick' ? 'Firestick' :
     device === 'smart-tv' ? 'Smart TV' :

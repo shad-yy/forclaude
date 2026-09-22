@@ -204,7 +204,7 @@ async function SearchResults({ query, activeTab }: { query: string; activeTab: s
 
           {safeTeams.length === 0 && safePlayers.length === 0 && safeEvents.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No results found for "{query}"</p>
+              <p className="text-muted-foreground">No results found for &quot;{query}&quot;</p>
             </div>
           )}
         </div>
@@ -334,7 +334,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Search</h1>
-        {query && <p className="text-muted-foreground">Results for "{query}"</p>}
+        {query && <p className="text-muted-foreground">Results for &quot;{query}&quot;</p>}
       </div>
 
       <SearchForm initialQuery={query} activeTab={activeTab} />
