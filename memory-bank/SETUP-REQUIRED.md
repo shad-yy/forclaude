@@ -62,6 +62,18 @@ Values live in the bundle after build. Deleting in the dashboard does not change
 
 ---
 
+## Package manager: pnpm only (O-15)
+
+This repo has exactly one lockfile, `pnpm-lock.yaml`. CI (`.github/workflows/ci.yml`, `dependency-audit.yml`) runs `pnpm install --frozen-lockfile`; Vercel auto-detects pnpm from that same lockfile (confirmed via the project's Vercel config — no `installCommand` override is set). A `package-lock.json` used to also be committed and drift out of sync with every `pnpm add`/`pnpm remove` (it was deleted 2026-09-22, see QA-LOG O-15).
+
+`scripts/ensure-pnpm.js` runs as the `preinstall` script and aborts with a clear message if invoked under `npm` or `yarn` — this stops the drift from recurring locally. It reads `npm_config_user_agent`, which every package manager sets; it cannot see or block Vercel's own install step (which never runs `npm install` for this project, per the auto-detection above).
+
+```bash
+pnpm install       # not npm install / yarn install
+pnpm tsc --noEmit
+pnpm vitest --run
+```
+
 ## Reproducing CI-only failures locally
 
 Use `scripts/repro-keyless.sh` (C-05, `ci-runs-without-secrets` + `reproduce-before-fix`). It creates a detached git worktree at `/tmp/repro-<sha>`, refuses to run if `.env`/`.env.local` are present, and runs `pnpm install --frozen-lockfile --ignore-scripts && pnpm tsc --noEmit && pnpm vitest --run` against that clean worktree. On failure the worktree is preserved for inspection; on success it is auto-removed.

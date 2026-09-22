@@ -23,6 +23,21 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### O-15 — Retire `package-lock.json`, enforce pnpm-only (also surfaces O-16)
+
+- **Date**: 2026-09-22
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L0 dev tooling / deploy config.
+- **Severity**: low (cleanup + drift-prevention — no bug in the running app; risk was purely a stale lockfile misleading a future contributor).
+- **Was**: two lockfiles committed — `pnpm-lock.yaml` (used by CI and, per this session's verification, by Vercel) and `package-lock.json` (unused, drifting further out of sync every time a dependency was added via `pnpm add`, as happened in C-02). Nothing enforced pnpm locally — a contributor running `npm install` would silently regenerate `package-lock.json` and widen the drift.
+- **Verified before deleting anything** (production blast radius — did not want to guess): called `mcp__Vercel__get_project` on the live project (`prj_6l3Vinw91zW08AIkwqhRV5vMeI8h`, team `team_w88T85yCQ3prLacgtQ0EoT68`) and confirmed no `installCommand` override is configured — Vercel's Next.js auto-detection picks a package manager from whichever lockfile is present, and with `pnpm-lock.yaml` in the repo root it already uses `pnpm install` for the production build. `package-lock.json` was never actually consulted for deploys.
+- **Now**: `package-lock.json` deleted. `scripts/ensure-pnpm.js` added as the `preinstall` script — reads `npm_config_user_agent` (set by every package manager) and aborts with a clear message if it doesn't contain `pnpm`. Verified live against a real `pnpm install --frozen-lockfile` (guard fired and passed, install completed in 2.3s). Policy documented in `SETUP-REQUIRED.md`. No `packageManager` field added to `package.json` — CI pins pnpm major version 9 (`pnpm/action-setup@v4`, `version: 9`) while this session's local pnpm is 10.33.0; guessing an exact patch version for the field would have violated "never make up data", so left unset.
+- **Bonus finding while verifying Vercel config**: `nodeVersion: "24.x"` on the live project vs. `node-version: 20` in `ci.yml` — CI tests on a different major Node version than production runs. Recorded as **O-16**, not fixed here (out of scope for a lockfile cleanup; picking which version is canonical is its own small decision).
+- **Test**: `tests/ensure-pnpm-guard.test.ts` — 4 assertions spawning the real guard script as a child process with a spoofed `npm_config_user_agent` (pnpm → exit 0; npm → exit 1 with message; yarn → exit 1; unset → exit 1 defensive default). No real package-manager install was run inside a test (would touch `node_modules` and the network) — a live `pnpm install --frozen-lockfile` was run once manually instead, outside the test suite, to confirm the guard doesn't break the real install path.
+- **Skill/agent used**: verify-before-acting on a production-affecting change (checked Vercel's actual config rather than assuming from lockfile-priority documentation); `documentation-discipline` (SETUP-REQUIRED.md updated in the same commit as the behaviour change).
+- **Run it**: `pnpm vitest --run tests/ensure-pnpm-guard.test.ts`.
+- **Result**: closes O-15. Full suite 279/279 across 42 files (was 275/275 across 41); tsc clean.
+
 ### X-01, X-02, X-13 — Delete three confirmed-dead files (closes O-13)
 
 - **Date**: 2026-09-22

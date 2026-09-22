@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "node scripts/ensure-pnpm.js",
     "generate-posts": "node scripts/generate-posts.js",
     "dev": "npm run generate-posts && node -r ./polyfill-self.cjs node_modules/next/dist/bin/next dev",
     "build": "npm run generate-posts && node --max-old-space-size=8192 -r ./polyfill-self.cjs node_modules/next/dist/bin/next build && node scripts/ping-indexnow.js",

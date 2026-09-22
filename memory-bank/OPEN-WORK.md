@@ -6,6 +6,14 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
+## O-16 — Node version mismatch: CI runs 20.x, Vercel production runs 24.x
+
+- **Since**: 2026-09-22 (surfaced while checking the Vercel project config for O-15)
+- **Layer**: L0 CI/deploy config
+- **Owner**: unassigned
+- **Why it isn't done**: discovered incidentally via `mcp__Vercel__get_project` (`nodeVersion: "24.x"`) while verifying the install-command question for O-15 — not something this session set out to audit. `.github/workflows/ci.yml:26` pins `node-version: 20`. Every test/typecheck run in CI is on Node 20; every real production request runs on Node 24. A Node-version-sensitive behaviour difference (e.g. a runtime API added/changed between 20 and 24) would pass CI and only surface in production.
+- **What would close it**: pick one Node version and align both — either bump `ci.yml` to `node-version: 24` (matches prod, safer default) or pin the Vercel project to Node 20 in project settings (keeps the currently-tested version). Then re-run the full suite under the chosen version once to confirm no behaviour actually differs.
+
 ## O-01 — `vitest.config.ts:10` embeds a 512-bit `JWT_SECRET` fallback in a checked-in file
 
 - **Since**: 2026-09-15
@@ -82,13 +90,9 @@ Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `p
 
 Was: `lib/api/api-client.ts` (265 lines) and `lib/cache/apiCache.ts` (175 lines) had zero importers, confirmed twice — once on 2026-09-16 (grep at that date), re-verified 2026-09-22 before deleting. The 2026-09-16 attempt to `git rm` was blocked by the auto-mode classifier as an "irreversible local destruction"; on 2026-09-22 the same command was permitted (the file-count/size at issue was the same). Deleted along with the also-dead `scripts/verify-routes.js` (X-13, zero references in `package.json` or `.github/`). Full suite 275/275, tsc clean after removal — nothing referenced any of the three files.
 
-## O-15 — Two package lockfiles committed (`pnpm-lock.yaml` + `package-lock.json`)
+## O-15 — CLOSED 2026-09-22 by pnpm-only enforcement
 
-- **Since**: 2026-09-17 (surfaced during C-02's `pnpm add -D msw` — only `pnpm-lock.yaml` moved; `package-lock.json` is out of sync with `package.json` now, in the same way it has been on and off this project for a while)
-- **Layer**: L0 dev tooling
-- **Owner**: unassigned — maintainer decision
-- **Why it isn't done**: this session's earlier standing correction (see top of QA-LOG) established that CI is `pnpm install --frozen-lockfile` against `pnpm-lock.yaml`, and treats `package-lock.json` as legacy. Any `pnpm add` widens the drift; any `npm install` widens the drift the other way. Choosing which lockfile is canonical is a policy call (retiring package-lock.json means every contributor must have pnpm installed), so I did not delete it unilaterally.
-- **What would close it**: (a) confirm pnpm is the intended package manager (already declared in `packageManager` field? check `package.json`); (b) `git rm package-lock.json`; (c) add a short `README.md` line saying "use pnpm, not npm — CI verifies with `--frozen-lockfile`"; (d) optionally add a pre-install hook to abort `npm install` explicitly.
+Was: `package-lock.json` and `pnpm-lock.yaml` both committed, drifting apart on every `pnpm add`/`pnpm remove`. Before deleting anything, verified with the Vercel MCP tools (`get_project` on `prj_6l3Vinw91zW08AIkwqhRV5vMeI8h`) that the live project has no `installCommand` override — Vercel auto-detects pnpm from `pnpm-lock.yaml`, so it never used `package-lock.json` for the actual production build. `.github/workflows/ci.yml` and `dependency-audit.yml` both hard-code `pnpm install --frozen-lockfile`. Closed by: deleting `package-lock.json`; adding `scripts/ensure-pnpm.js` as a `preinstall` guard (reads `npm_config_user_agent`, aborts with a clear message under `npm`/`yarn`) so the drift cannot silently recur locally; documenting the policy in `SETUP-REQUIRED.md`. Verified live with a real `pnpm install --frozen-lockfile` (guard passed, 2.3s). No `packageManager` field was added — CI pins pnpm major version 9 (`pnpm/action-setup@v4` with `version: 9`) while this session's pnpm is 10.33.0; pinning an exact patch I hadn't verified existed would have been a guess, so left unset rather than fabricate a value.
 
 ## O-14 — CLOSED 2026-09-17 by search-bar caller fix
 
