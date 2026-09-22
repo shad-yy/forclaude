@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### C-03 — football-data.org contract tests + Zod schema + recorded capture (3rd provider)
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `b504454`.
 - **Layer**: L0 test infrastructure + L5 provider contract.
 - **Severity**: medium (same category as the first two providers).
 - **Was**: `lib/api/football-data.ts::getUEFAMatches`/`getUEFAResults` cast the `/competitions/{id}/matches` response straight into the pre-existing `FDMatch` TS interface with no runtime check.
