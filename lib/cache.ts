@@ -5,6 +5,7 @@
  */
 
 import { Redis } from "@upstash/redis"
+import { withRetry } from "@/lib/api/retry"
 
 // ─── Named constants ────────────────────────────────────────────────────────
 const RATE_LIMIT_PAUSE_MS = 30_000       // 30 seconds pause after hitting 429
@@ -220,28 +221,28 @@ export async function swrSet<T>(key: string, data: T, ttlSeconds: number): Promi
 
 // ─── Fetch with exponential backoff retry ─────────────────────────────────────
 
-async function fetchWithRetry<T>(
-  fetcher: () => Promise<T>,
-  retries = FETCH_RETRY_COUNT,
-  delay = FETCH_RETRY_INITIAL_DELAY_MS,
-): Promise<T> {
-  try {
-    return await fetcher()
-  } catch (err: unknown) {
-    const isRateLimit =
-      err instanceof Error &&
-      (err.name === "RateLimitError" || err.message.includes("Rate limit") || err.message.includes("429"))
+// X-05: delegates attempt-counting + backoff sleep to the shared
+// lib/api/retry.ts::withRetry helper. Semantics preserved exactly:
+// exponential backoff starting at FETCH_RETRY_INITIAL_DELAY_MS
+// (doubling each retry), FETCH_RETRY_COUNT retries, rate-limit
+// errors never retried.
+function isRateLimitError(err: unknown): boolean {
+  return (
+    err instanceof Error &&
+    (err.name === "RateLimitError" || err.message.includes("Rate limit") || err.message.includes("429"))
+  )
+}
 
-    // Never retry rate limit errors
-    if (isRateLimit) throw err
-
-    if (retries <= 0) throw err
-
-    const message = err instanceof Error ? err.message : String(err)
-    console.warn(`[Cache Fetch Queue] Fetch failed. Retrying in ${delay}ms... Error:`, message)
-    await new Promise((resolve) => setTimeout(resolve, delay))
-    return fetchWithRetry(fetcher, retries - 1, delay * 2)
-  }
+async function fetchWithRetry<T>(fetcher: () => Promise<T>): Promise<T> {
+  return withRetry(() => fetcher(), {
+    maxRetries: FETCH_RETRY_COUNT,
+    backoffMs: (attempt) => FETCH_RETRY_INITIAL_DELAY_MS * 2 ** attempt,
+    shouldRetry: (err) => !isRateLimitError(err),
+    onRetry: (err, _attempt, delayMs) => {
+      const message = err instanceof Error ? err.message : String(err)
+      console.warn(`[Cache Fetch Queue] Fetch failed. Retrying in ${delayMs}ms... Error:`, message)
+    },
+  })
 }
 
 // ─── TTL constants ─────────────────────────────────────────────────────────────

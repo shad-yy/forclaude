@@ -23,6 +23,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### X-05 — One `withRetry()` for the two live retry ladders
+
+- **Date**: 2026-09-22
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L5 provider + L6 cache.
+- **Severity**: low (simplification — no bug; the two ladders had already-correct, independently-evolved retry policies).
+- **Was**: two hand-rolled recursive retry ladders — `lib/api/the-sports-db.ts::sportsdbFetch` (fixed `[200,600,1800]ms` backoff, retries only 5xx/network errors, never retries 429, integrates circuit-breaker recording) and `lib/cache.ts::fetchWithRetry` (exponential backoff from 1000ms doubling, 3 retries, skips rate-limit-shaped errors by message-sniffing). A third copy in `lib/api/api-client.ts` (X-01) is dead code — zero importers — and was NOT migrated since consolidating unreachable code has no runtime value; it stays flagged for deletion under O-13.
+- **Now**: `lib/api/retry.ts::withRetry(fn, options)` — generic attempt-counting + backoff-sleep loop. `fn` returns a value or throws; `shouldRetry(error, attempt)` decides whether to retry (default: always, until `maxRetries`); `backoffMs` accepts either a fixed array (clamped to the last entry once exhausted) or a function of the attempt number; `onRetry` is a hook for logging. `lib/cache.ts::fetchWithRetry` now delegates to it with `shouldRetry: !isRateLimitError` and an exponential backoff function — byte-for-byte equivalent behaviour, same log message. `the-sports-db.ts::sportsdbFetch` restructured so its per-attempt logic (circuit-breaker re-check, rate-limit enqueue, fetch, status branching) runs inside `withRetry`'s callback: definitive outcomes (success, 429, other 4xx, circuit-breaker-open) `return` directly so `withRetry` does not retry them; only 5xx (via a `RetryableError` carrying the response) and thrown network errors trigger a retry. The `retryCount` parameter and the two recursive self-calls are gone.
+- **Test**: `tests/retry-helper.test.ts` — 8 assertions on the helper's own contract (first-try success, N-retries-then-success, exhaustion, `shouldRetry:false` short-circuits with zero retries, attempt numbering, fixed-array + function backoff schedules). `tests/sportsdb-retry-policy.test.ts` — 5 assertions pinning `sportsdbFetch`'s retry POLICY specifically: 500 retried to success on 3rd attempt, 500 exhausts at 3 total attempts, 429 never retried, 404 never retried, network error retried to success. Uses `vi.useFakeTimers()` + `vi.runAllTimersAsync()` so the real 2400ms internal rate-limit throttle and the real backoff sleeps resolve instantly instead of costing wall-clock time (all 5 tests complete in 265ms). `lib/cache.ts`'s migration is covered indirectly by the existing full suite (no dedicated new test — its call sites were already exercised).
+- **Skill/agent used**: cleanup pass (three-similar-things → one abstraction, justified here since both were >20 lines of near-identical retry-loop bookkeeping); `flaky-test-policy` (fake timers instead of real sleeps — avoids a slow, wall-clock-dependent test).
+- **Run it**: `pnpm vitest --run tests/retry-helper.test.ts tests/sportsdb-retry-policy.test.ts`.
+- **Result**: closes X-05. Full suite 275/275 across 41 files (was 262/262 across 39 — +13 tests, +2 files); tsc clean; full run completes in ~9s (no wall-clock retry delays leaked into CI time).
+
 ### X-11 — Extract 6 email templates from orders/route.ts (also closes small email XSS)
 
 - **Date**: 2026-09-17

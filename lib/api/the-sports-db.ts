@@ -4,6 +4,7 @@
 
 import { errorLogger } from "@/lib/admin/error-logger"
 import { getCache, setCache, cache, swrGet } from "@/lib/cache"
+import { withRetry, RetryableError } from "@/lib/api/retry"
 
 const API_KEY = process.env.THESPORTSDB_API_KEY || "123"
 const typeofWindow = typeof window !== "undefined"
@@ -187,12 +188,21 @@ function deduplicateRequest<T>(
   return promise
 }
 
-// Unified fetch wrapper with retries and exponential backoff
-// Enhanced to handle full endpoint paths or relative paths
+// X-05: retry/backoff mechanics (attempt counting, sleeping between
+// tries) delegate to the shared lib/api/retry.ts::withRetry helper.
+// Retry POLICY is unchanged: 5xx and network errors retry up to 2
+// times on a [200, 600, 1800]ms schedule; 429 and other 4xx never
+// retry. A thrown RetryableError signals "try again"; every other
+// return path (success, 429, other 4xx, circuit-breaker-open) is a
+// definitive result returned without throwing, so withRetry does not
+// retry it.
+const SPORTSDB_RETRY_BACKOFF_MS = [200, 600, 1800]
+
+// Unified fetch wrapper with retries and exponential backoff.
+// Enhanced to handle full endpoint paths or relative paths.
 async function sportsdbFetch(
   endpoint: string,
   params: Record<string, string | number> = {},
-  retryCount = 0,
 ): Promise<SportsDBFetchResult> {
   // If endpoint already includes full URL, use it; otherwise construct from BASE_URL
   let url: URL
@@ -204,81 +214,90 @@ async function sportsdbFetch(
   }
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v))
 
-  // Check circuit breaker
-  if (!checkCircuitBreaker(endpoint)) {
-    return {
-      ok: false,
-      status: 429,
-      url: url.toString(),
-      body: null,
-      error: 'Circuit breaker open - too many rate limit errors',
-    }
-  }
-
-  // Mask API key in logs — full redaction, do not leak any key characters
-  const masked = url.toString().replace(/(json\/).+?(\/)/, '$1***REDACTED***$2')
-  if (retryCount === 0) {
-    console.log('[TheSportsDB] REQUEST', masked)
-  } else {
-    console.log(`[TheSportsDB] RETRY ${retryCount + 1}/2`, masked)
-  }
-
   try {
-    await enqueueRateLimit()
-    const res = await fetch(url.toString(), {
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:120.0)',
+    return await withRetry<SportsDBFetchResult>(
+      async (attempt) => {
+        // Re-checked every attempt (matches the previous recursive
+        // implementation, which re-ran this check on each retry too)
+        // — a breaker that opens mid-retry-sequence still short-circuits
+        // the next attempt.
+        if (!checkCircuitBreaker(endpoint)) {
+          return {
+            ok: false,
+            status: 429,
+            url: url.toString(),
+            body: null,
+            error: 'Circuit breaker open - too many rate limit errors',
+          }
+        }
+
+        // Mask API key in logs — full redaction, do not leak any key characters
+        const masked = url.toString().replace(/(json\/).+?(\/)/, '$1***REDACTED***$2')
+        if (attempt === 0) {
+          console.log('[TheSportsDB] REQUEST', masked)
+        } else {
+          console.log(`[TheSportsDB] RETRY ${attempt + 1}/2`, masked)
+        }
+
+        await enqueueRateLimit()
+        const res = await fetch(url.toString(), {
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:120.0)',
+          },
+          cache: 'no-store',
+        })
+
+        const text = await res.text()
+        let body: unknown
+        try {
+          body = JSON.parse(text)
+        } catch {
+          // Not JSON — log via errorLogger (async, non-blocking)
+          errorLogger.logWarning(
+            `Non-JSON response from ${url.toString()}: ${text.substring(0, 200)}`,
+            'TheSportsDB',
+            { endpoint, status: res.status },
+          )
+          body = text.substring(0, 2000)
+        }
+
+        if (!res.ok) {
+          // Don't retry 429 (rate limit) - fail immediately
+          if (res.status === 429) {
+            recordCircuitBreakerFailure(endpoint)
+            requestStats.rateLimited++
+            console.warn(`[TheSportsDB] Rate limit exceeded for ${endpoint}`, { endpoint, status: 429 })
+            return { ok: false, status: 429, url: url.toString(), body: null, error: 'Rate limit exceeded' }
+          }
+
+          // Retry only server errors (5xx) — throw to trigger withRetry.
+          if (res.status >= 500) {
+            throw new RetryableError(`HTTP ${res.status} from ${endpoint}`, {
+              status: res.status,
+              url: url.toString(),
+              body,
+            })
+          }
+
+          console.warn(`[TheSportsDB] ${endpoint} HTTP ${res.status}`)
+          return { ok: false, status: res.status, url: url.toString(), body }
+        }
+
+        // Success - reset circuit breaker
+        resetCircuitBreaker(endpoint)
+        return { ok: true, status: res.status, url: url.toString(), body }
       },
-      cache: 'no-store',
-    })
-
-    const text = await res.text()
-    let body: unknown
-    try {
-      body = JSON.parse(text)
-    } catch {
-      // Not JSON — log via errorLogger (async, non-blocking)
-      errorLogger.logWarning(
-        `Non-JSON response from ${url.toString()}: ${text.substring(0, 200)}`,
-        'TheSportsDB',
-        { endpoint, status: res.status },
-      )
-      body = text.substring(0, 2000)
-    }
-
-    if (!res.ok) {
-      // Don't retry 429 (rate limit) - fail immediately
-      if (res.status === 429) {
-        recordCircuitBreakerFailure(endpoint)
-        requestStats.rateLimited++
-        console.warn(`[TheSportsDB] Rate limit exceeded for ${endpoint}`, { endpoint, status: 429 })
-        // Don't retry - return immediately
-        return { ok: false, status: 429, url: url.toString(), body: null, error: 'Rate limit exceeded' }
-      }
-
-      // Retry only server errors (5xx)
-      if (res.status >= 500 && retryCount < 2) {
-        const backoffMs = [200, 600, 1800][retryCount]
-        await sleep(backoffMs)
-        return sportsdbFetch(endpoint, params, retryCount + 1)
-      }
-
-      console.warn(`[TheSportsDB] ${endpoint} HTTP ${res.status}`)
-    } else {
-      // Success - reset circuit breaker
-      resetCircuitBreaker(endpoint)
-    }
-
-    return { ok: res.ok, status: res.status, url: url.toString(), body }
+      { maxRetries: 2, backoffMs: SPORTSDB_RETRY_BACKOFF_MS },
+    )
   } catch (err) {
-    // Retry on network errors
-    if (retryCount < 2) {
-      const backoffMs = [200, 600, 1800][retryCount]
-      await sleep(backoffMs)
-      return sportsdbFetch(endpoint, params, retryCount + 1)
+    // Retries exhausted. Distinguish a final 5xx (RetryableError,
+    // carries the last response) from a network-level failure
+    // (fetch/text/json threw directly).
+    if (err instanceof RetryableError && err.cause && typeof err.cause === 'object') {
+      const cause = err.cause as { status: number; url: string; body: unknown }
+      return { ok: false, status: cause.status, url: cause.url, body: cause.body }
     }
-
     const errorMsg = err instanceof Error ? err.message : String(err)
     return { ok: false, status: 0, url: url.toString(), body: null, error: errorMsg }
   }
