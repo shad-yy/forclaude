@@ -23,6 +23,20 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### X-08 — Remove redundant `queueLock` spin-wait from the TheSportsDB rate limiter
+
+- **Date**: 2026-09-22
+- **Commit**: this commit — hash added in follow-up.
+- **Layer**: L5 provider.
+- **Severity**: low (simplification — no bug; ~10ms of unnecessary polling jitter per contended call, no correctness issue found or introduced).
+- **Was**: `lib/api/the-sports-db.ts::enqueueRateLimit` combined a `queueLock` busy-wait (`while (queueLock) await sleep(10)`) with a promise chain (`rateLimitQueue = rateLimitQueue.then(run, run)`) to serialize concurrent callers against TheSportsDB's 25 req/min ceiling. The two mechanisms were redundant.
+- **Why it was provably redundant**: JS guarantees synchronous execution between `await` points. Inside `enqueueRateLimit`, there is no `await` between reading `rateLimitQueue` and reassigning it — so if two calls fire "concurrently" (e.g. `Promise.all([enqueueRateLimit(), enqueueRateLimit()])`), the first call's synchronous prefix (read `rateLimitQueue`, chain `.then(run)`, reassign) fully completes before the second call's synchronous prefix runs. The second call's read therefore always sees the first call's already-updated value — no interleaving is possible without an intervening `await`, and there is none. The promise chain alone already serializes correctly; the lock added a false sense of extra safety plus real per-call polling latency (up to 10ms when contended).
+- **Now**: the `queueLock` variable and its spin-wait loop are removed. `enqueueRateLimit` is just the promise-chain body.
+- **Test**: `tests/sportsdb-rate-limiter.test.ts` — 3 assertions, written and run against the ORIGINAL (locked) implementation first to pin its observable behaviour: (1) 3 concurrent `sportsdbFetch` calls to distinct endpoints are spaced >= `RATE_LIMIT_MS` (2400ms) apart; (2) a single call is not throttled (fires immediately); (3) call order is preserved under concurrency (no reordering). All 3 passed identically, byte-for-byte, before AND after the simplification — empirical proof the refactor is behaviour-preserving, not just an argument. Uses `vi.useFakeTimers()` + `vi.runAllTimersAsync()` (same pattern as X-05's `sportsdb-retry-policy.test.ts`) so the real 2400ms spacing resolves in ~150ms of wall-clock test time.
+- **Skill/agent used**: cleanup pass with a mathematical correctness argument, empirically verified rather than asserted — the plan's own earlier note ("adds ~10ms jitter without provable safety gain") is now a proven claim, not a guess.
+- **Run it**: `pnpm vitest --run tests/sportsdb-rate-limiter.test.ts`.
+- **Result**: closes X-08. Full suite 295/295 across 45 files; tsc clean.
+
 ### C-03 — football-data.org contract tests + Zod schema + recorded capture (3rd provider)
 
 - **Date**: 2026-09-22

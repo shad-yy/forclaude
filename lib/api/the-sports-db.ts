@@ -15,7 +15,6 @@ const BASE_URL = typeofWindow ? "/api/thesportsdb/" : `https://www.thesportsdb.c
 const RATE_LIMIT_MS = 2400
 let lastRequestTime = 0
 let rateLimitQueue: Promise<void> = Promise.resolve()
-let queueLock = false
 
 // Circuit breaker: track consecutive 429s.
 //
@@ -72,29 +71,29 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// X-08: previously combined a `queueLock` spin-wait
+// (`while (queueLock) await sleep(10)`) with this same promise chain.
+// The lock was redundant: JS guarantees synchronous execution
+// between `await` points, and there is no `await` between reading
+// `rateLimitQueue` and reassigning it below — so two calls that fire
+// "concurrently" (e.g. via `Promise.all([enqueueRateLimit(), ...])`)
+// can never race on that read-then-write; the second call's
+// assignment always sees the first call's already-updated value.
+// The chain alone serializes correctly. Pinned by
+// tests/sportsdb-rate-limiter.test.ts before this simplification and
+// unchanged after (same test, same assertions, same result).
 async function enqueueRateLimit() {
-  // Wait for lock to be released
-  while (queueLock) {
-    await sleep(10)
-  }
-
-  queueLock = true
-
-  try {
-    const run = async () => {
-      const now = Date.now()
-      const elapsed = now - lastRequestTime
-      if (elapsed < RATE_LIMIT_MS) {
-        await sleep(RATE_LIMIT_MS - elapsed)
-      }
-      lastRequestTime = Date.now()
+  const run = async () => {
+    const now = Date.now()
+    const elapsed = now - lastRequestTime
+    if (elapsed < RATE_LIMIT_MS) {
+      await sleep(RATE_LIMIT_MS - elapsed)
     }
-
-    rateLimitQueue = rateLimitQueue.then(run, run)
-    await rateLimitQueue
-  } finally {
-    queueLock = false
+    lastRequestTime = Date.now()
   }
+
+  rateLimitQueue = rateLimitQueue.then(run, run)
+  await rateLimitQueue
 }
 
 function checkCircuitBreaker(endpoint: string): boolean {
