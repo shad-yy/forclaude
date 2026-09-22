@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### O-15 — Retire `package-lock.json`, enforce pnpm-only (also surfaces O-16)
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `e8b3ef0`.
 - **Layer**: L0 dev tooling / deploy config.
 - **Severity**: low (cleanup + drift-prevention — no bug in the running app; risk was purely a stale lockfile misleading a future contributor).
 - **Was**: two lockfiles committed — `pnpm-lock.yaml` (used by CI and, per this session's verification, by Vercel) and `package-lock.json` (unused, drifting further out of sync every time a dependency was added via `pnpm add`, as happened in C-02). Nothing enforced pnpm locally — a contributor running `npm install` would silently regenerate `package-lock.json` and widen the drift.
