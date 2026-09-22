@@ -28,7 +28,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### O-02, O-03, O-04 — Correct three stale OPEN-WORK entries (fixes had landed, entries never updated)
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `ff22c3b`.
 - **Layer**: L0 documentation.
 - **Severity**: low (no code changed — this is a documentation-accuracy fix, but the kind of drift `documentation-discipline` exists specifically to prevent).
 - **Was**: `OPEN-WORK.md` still listed three items as open, a week after each was actually closed in the very same session that opened them: O-02 (CI trigger scoped to `main` only) closed 2026-09-15 by A-09; O-03 (PATTERNS.md conflicting with `api-fault-vs-absence`) closed 2026-09-15 by B-01's hybrid-rule encoding; O-04 (`middleware.ts` throwing on missing `JWT_SECRET`) closed 2026-09-15 by A-08 — whose OPEN-WORK entry additionally cited the wrong commit ("queued as A-02"). Found by doing a full `grep "^## O-"` sweep of the file on 2026-09-22 rather than trusting each entry's last-written text.
@@ -41,7 +41,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### O-09 — Audit closed: cms8k.ts error logs do not leak the panel session cookie
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `ff22c3b`.
 - **Layer**: L5 provider.
 - **Severity**: low (the audit found no leak — this entry documents a negative result, which is still worth recording since "not yet audited" was the exact open question).
 - **Was**: two `console.error` calls in `lib/panel/cms8k.ts` — `[CMS8K SESSION] Error creating line via session:` (~320) and `[CMS8K] Get credentials error:` (~417) — flagged since A-02 as unaudited: A-02 fixed three raw-response-body leaks but left these two on the theory that a thrown fetch error might embed the request URL, and the URL might carry the panel session cookie. Also found (this OPEN-WORK.md entry was duplicated verbatim at two positions in the file — a copy-paste artifact — deduplicated in the same edit).
@@ -54,7 +54,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### O-16 — Align CI's Node version with production (20 → 24)
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `c8d20f2`.
 - **Layer**: L0 CI config.
 - **Severity**: medium (no known bug, but a real coverage gap — a Node-24-only behaviour difference could pass CI and only surface in production).
 - **Was**: `.github/workflows/ci.yml` pinned `node-version: 20`. The live Vercel project (confirmed via `mcp__Vercel__get_project` on `prj_6l3Vinw91zW08AIkwqhRV5vMeI8h` while investigating O-15) runs `nodeVersion: "24.x"` for actual production requests. Every test/typecheck run was on a different major Node version than what real users hit.
@@ -271,7 +271,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### C-05 — Key-less reproduction script
 
 - **Date**: 2026-09-16
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `81a8036`.
 - **Layer**: L0 dev tooling.
 - **Severity**: medium (workflow-enabler; the earlier CI failures in A-12/A-13/A-14 would have been caught with this locally in seconds rather than after push).
 - **Was**: no standard way to reproduce a CI-only failure without altering the working tree. `reproduce-before-fix` §Anti-patterns explicitly warns against renaming `.env.local` (`.env.local.bak` may already exist and get overwritten).
@@ -284,7 +284,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### B-04.8..12 — Migrate final 5 grandfathered S-03 routes (B-04 COMPLETE)
 
 - **Date**: 2026-09-16
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `b11d0f7`.
 - **Layer**: L3 API route.
 - **Severity**: high (SEO deindexing risk on fault-as-empty).
 - **Was**: 5 remaining routes — `search`, `events/[id]/lineups`, `spotlight`, `fixtures/today`, `news` — still swallowed faults into empty payloads at status 200. `spotlight` had the additional deeper anti-pattern (`Promise.allSettled(...).map(r => fulfilled ? value : [])` — the exact `api-fault-vs-absence` example — silently masking total upstream outage into empty results).
@@ -297,7 +297,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### B-04.1 — Migrate `/api/leagues` to fault-vs-absence (route 1 of 12)
 
 - **Date**: 2026-09-16
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `6f7fccb`.
 - **Layer**: L3 API route.
 - **Severity**: high (SEO — Google reads 200-with-empty as "gone" and downweights the URL).
 - **Was**: `app/api/leagues/route.ts:14-20` — the catch block returned `{data:[], error:"Data temporarily unavailable"}` with status 200. Grandfathered S-03 anti-pattern per B-01 decision.
@@ -311,7 +311,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### B-07 — Key `/api/subscribe` rate limit on IP, not email (S-07)
 
 - **Date**: 2026-09-15
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `d51fd17`.
 - **Layer**: L3 API route.
 - **Severity**: medium (rate-limit bypass — one caller could vary the email to fire arbitrarily many subscribe requests per minute from one IP; each hit a Resend email send).
 - **Was**: `app/api/subscribe/route.ts:38` did `rateLimitMap.get(validEmail)`. Anyone submitting `a@x.com`, `b@x.com`, `c@x.com`… from one IP inside the 60s window paid nothing per request; each request hit the outbound Resend fetch. Structural anti-pattern S-07.
@@ -325,7 +325,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### B-05 — Normalise circuit-breaker key so per-endpoint failures accumulate (S-04)
 
 - **Date**: 2026-09-15
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `af6f20d`.
 - **Layer**: L5 provider (TheSportsDB).
 - **Severity**: medium (breaker never tripped in practice — same class as an alarm you disabled).
 - **Was**: `lib/api/the-sports-db.ts:74-96` stored breaker state under the raw `endpoint` string. Every exported call template like `lookupleague.php?id=${leagueId}` produced a different key per league id (4328, 4335, 4344, …). Five consecutive 429s across different ids never accumulated under one key, so the `CIRCUIT_BREAKER_THRESHOLD = 5` was structurally unreachable in the common case. Structural anti-pattern S-04.
@@ -339,7 +339,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### B-03 — Remove hardcoded `/json/123/` TheSportsDB public key from route source (S-02)
 
 - **Date**: 2026-09-15
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `8b9e804`.
 - **Layer**: L3 API route.
 - **Severity**: medium (silent key trap — `THESPORTSDB_API_KEY` was ignored by these routes even when correctly set in Vercel).
 - **Was**: `app/api/fixtures/today/route.ts` (3 hits) and `app/api/spotlight/route.ts` (3 hits) baked `https://www.thesportsdb.com/api/v1/json/123/…` directly into fetch URLs. `123` is TheSportsDB's public test key — routes would silently ignore a properly-configured `THESPORTSDB_API_KEY` env var. Named anti-pattern `S-02` (structural anti-pattern from the plan) and the `ci-runs-without-secrets` "|| \"123\" trap institutionalised".
@@ -353,7 +353,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### A-15 — Mitigate GHSA-2xp9-vwfh-vxw4 by removing AVIF from Image Optimizer
 
 - **Date**: 2026-09-15
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `e89640f`.
 - **Layer**: L0 config (Next.js Image Optimizer).
 - **Severity**: critical (surfaced by C-01 first-run) — mitigation, not a full fix.
 - **Was**: `next.config.mjs:88` declared `formats: ['image/webp', 'image/avif']`. Next.js @ 14.2.35 is vulnerable to `GHSA-2xp9-vwfh-vxw4` — the Image Optimizer allowed unauthenticated RCE when serving AVIF responses. Fix landed in `next@15.5.24`; a full major upgrade (O-11) is a separate project because of Next 15's breaking changes (async `params`, React 19 requirement, etc.).
@@ -368,7 +368,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### C-01 — Install scheduled dependency-audit workflow (finds 2 critical Next.js RCEs live)
 
 - **Date**: 2026-09-15
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `876da8f`.
 - **Layer**: L0 CI + L0 dep audit.
 - **Severity**: **critical** — surfaced 2 unpatched Next.js RCEs live on production.
 - **Was**: no scheduled dependency audit. `pnpm audit --prod` was run manually if at all; advisories that appeared between pushes could sit unreported for weeks. Coverage gap I-05 partly, and the same class of failure `daily-dependency-audit`'s 2026-09-08 incident describes verbatim.
@@ -384,7 +384,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### C-04 — Install dependabot + CodeQL + gitleaks + CODEOWNERS + PR template
 
 - **Date**: 2026-09-15
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `e04a282`.
 - **Layer**: L0 GitHub-side automation.
 - **Severity**: medium (no active exploit; closes coverage gap I-05 — the entire GitHub-side automation surface was empty).
 - **Was**: `.github/` had only `workflows/ci.yml` and `workflows/auto-index.yml`. No dependabot, no CodeQL SAST, no gitleaks secret scan, no CODEOWNERS routing, no PR template. Every PR landed without automated review sign-off routing or a body scaffold. Every dep bump had to be manual.
@@ -402,7 +402,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### A-14 — Remove Playwright e2e from PR gate (production-monitor split)
 
 - **Date**: 2026-09-15
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `1ccf1b8`.
 - **Layer**: L0 CI.
 - **Severity**: high (blocked every PR on failing e2e assertions unrelated to any given change).
 - **Was**: `.github/workflows/ci.yml` ran the Playwright suite against `pnpm dev` on `http://localhost:3000` after A-10 correctly unhardcoded `baseURL`. The specs, however, were written as **production monitors** — they assert real production content: `robots.txt` disallow list, `.co.uk` canonicals, "no 'James Harper' author anywhere on site", real blog posts, real schema markup, footer link 200s, buy-form field validation matching production copy. Against a fresh dev server they produced **40 failed / 80 passed** on run 8 (B-01) and identically on run 7 (A-13). Not a regression from B-01 or A-13 — a latent mismatch that A-09 (CI trigger fix) first surfaced.
@@ -414,7 +414,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### A-13 — Playwright picked up vitest files (extension convention + rename)
 
 - **Date**: 2026-09-15
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `670f749`.
 - **Layer**: L0 test infrastructure.
 - **Severity**: high (Playwright step of CI red on every commit after A-11 because Playwright tried to require `import { ... } from "vitest"` from files it should never have touched).
 - **Was**: A-10 set `playwright.config.ts` `testMatch: ['tests/**/*.spec.ts', 'tests/**/*.test.ts', 'e2e/**/*.spec.ts']` with an enumerated `testIgnore` list of the 19 vitest test files then existing. A-11 (`tests/no-credential-shaped-hex-in-repo.test.ts`) and this-session's B-01 (`tests/upstream-fault-error.test.ts`) added new `*.test.ts` files that weren't added to the ignore list. Playwright therefore tried to load them, encountered `import { describe, it, expect } from "vitest"` in a CJS context, and threw `Error: Vitest cannot be imported in a CommonJS module using require()`.

@@ -95,6 +95,27 @@ describe("documentation-discipline: commit hashes resolve in git", () => {
   });
 });
 
+describe("documentation-discipline: no unfilled commit-hash placeholders", () => {
+  it("no entry says 'hash added in follow-up' without the follow-up ever landing", () => {
+    // Red-first proof (2026-09-22): 14 QA-LOG entries carried this exact
+    // placeholder — some for a week — because the hex-resolves-in-git
+    // check above only rejects a WRONG hash, not a MISSING one. Found by
+    // a manual full-file sweep, not by any automated check; this test
+    // is that check, so the next forgotten follow-up fails CI instead
+    // of sitting silently in the doc.
+    const offenders: string[] = [];
+    for (const rel of HASH_SCANNED) {
+      if (!existsSync(rel)) continue;
+      const text = readFileSync(rel, "utf8");
+      if (text.includes("hash added in follow-up")) offenders.push(rel);
+    }
+    expect(
+      offenders,
+      "these files have a '- **Commit**: this commit — hash added in follow-up.' line that was never replaced with the real hash after pushing",
+    ).toEqual([]);
+  });
+});
+
 describe("documentation-discipline: no relative dates", () => {
   it("tracked docs contain no relative dates outside code fences", () => {
     const relative = /\b(yesterday|today|last week|recently|soon|later)\b/i;
