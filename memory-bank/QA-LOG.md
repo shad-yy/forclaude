@@ -25,6 +25,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### O-06 — Correct scope: TypeScript half already fixed pre-session, ESLint half is unconfigured-from-scratch, not deferred debt
+
+- **Date**: 2026-09-22
+- **Commit**: `097624b` (this doc-only correction rides the same push as the log-hygiene hardening — no code changed).
+- **Layer**: L0 build config.
+- **Severity**: medium (a real, previously-mis-scoped gap: `eslint.ignoreDuringBuilds: true` is load-bearing, not optional, and nobody could have safely flipped it based on the old entry's advice).
+- **Was**: `OPEN-WORK.md` O-06 claimed `next.config.mjs` currently sets `typescript.ignoreBuildErrors: true` and told a future reader to "run tsc, decide whether to re-enable." Checked the live file on 2026-09-22: `typescript.ignoreBuildErrors` is `false` and has been since `bcd211e`, a commit that predates this Claude session — the entry was stale about half its own subject. Separately ran `pnpm lint` directly (not just read the config) and found there is no ESLint config anywhere in the repo (`.eslintrc*` / `eslint.config.*` both absent, `eslint` not in `package.json` dependencies) — `next lint` drops into an interactive setup wizard and exits 1 unanswered. The old entry's advice ("decide whether to fix and re-enable") assumed an existing, triage-able violation list; there isn't one, because linting has never run.
+- **Now**: TypeScript half marked resolved (pre-session), backed by dozens of clean `tsc --noEmit` runs this session as corroborating evidence, not just a config-file read. ESLint half re-scoped honestly: it's an open-ended "configure from scratch + triage an unknown violation count across ~100+ files" project, same shape as O-11's Next.js upgrade — not started speculatively, since picking a ruleset and running it non-interactively risked choosing something the maintainer didn't want or surfacing an unbounded amount of unscoped work mid-session.
+- **Test**: none — this is a documentation-accuracy correction plus one diagnostic command (`pnpm lint`) run to observe the actual failure mode rather than infer it.
+- **Skill/agent used**: `documentation-discipline` (verify a doc's claim against the live file/command before acting on it, exactly the same discipline that caught O-02/O-03/O-04 minutes earlier in this same sweep); refusing to fabricate an ESLint config or a violation count I hadn't actually produced.
+- **Run it**: `pnpm lint` (reproduces the interactive-wizard failure) and `pnpm tsc --noEmit` (confirms the TypeScript half is clean).
+- **Result**: O-06 is no longer stale; its ESLint half remains a legitimate open item, now accurately scoped for whoever picks it up next.
+
 ### O-02, O-03, O-04 — Correct three stale OPEN-WORK entries (fixes had landed, entries never updated)
 
 - **Date**: 2026-09-22

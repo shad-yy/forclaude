@@ -34,13 +34,17 @@ Was: `middleware.ts` threw at top-of-function when `JWT_SECRET` was unset in pro
 
 Was: three per-file `new Map<string, …>` limiters — `middleware.ts:6`, `app/api/auth/admin/route.ts:7`, `app/api/subscribe/route.ts:14` — each per-serverless-instance so their declared ceilings scaled with `<number of lambdas>` (S-06). B-06 consolidated all three onto `lib/security/rate-limit.ts::checkRateLimit()`, a shared Redis-backed fixed-window limiter using `@upstash/redis` (fetch-based; safe in edge middleware). Falls back to a per-process Map with a one-shot warning when `UPSTASH_REDIS_REST_URL/TOKEN` are unset — matches previous behaviour for dev/keyless CI, but production must set both. Enforcement: `tests/rate-limit-helper.test.ts` refuses any `new Map<string,` in the three touched files (structural regression tripwire).
 
-## O-06 — `next.config.mjs` sets `typescript.ignoreBuildErrors: true` and `eslint.ignoreDuringBuilds: true`
+## O-06 — HALF STALE, HALF LARGER THAN DESCRIBED (corrected 2026-09-22)
 
-- **Since**: 2026-09-15 (documented as an open item in `PROGRESS.md` §4.2 previously; formalised here)
-- **Layer**: L0 (build config)
-- **Owner**: unassigned
-- **Why it isn't done**: turning either back on may fail the build against pre-existing errors. Needs a `tsc --noEmit` pass first to see what would surface. Not this session's scope.
-- **What would close it**: run `npx tsc --noEmit`, capture the count, decide whether to fix and re-enable, or file each surfaced error as its own row.
+**TypeScript half was already resolved before this session — this entry was stale about it.** `next.config.mjs`'s `typescript.ignoreBuildErrors` is currently `false`, and `git log -S "ignoreBuildErrors: false" -- next.config.mjs` shows it was flipped in `bcd211e` ("fix(audit): full-stack audit fixes..."), a commit that predates this Claude session entirely. `tsc --noEmit` has been run and come back clean dozens of times across this session's ~40 commits — real, repeated evidence the TypeScript build gate is both live and passing, not just theoretically safe to enable.
+
+**ESLint half is real, open, and BIGGER than the original text implied.** Ran `pnpm lint` (`next lint`) directly on 2026-09-22: it dropped into Next's interactive "How would you like to configure ESLint?" setup wizard and exited 1 when given no answer. There is no `.eslintrc*` or `eslint.config.*` file anywhere in the repo, and `eslint` is not even a listed dependency in `package.json`. This means `eslint.ignoreDuringBuilds: true` is not "deferred debt against a working linter" — **it is load-bearing**: without it, `next build` would fail immediately and unconditionally on every single Vercel deploy, since there's no non-interactive ESLint config for it to run at all. The original "what would close it" (run tsc, look at the count, decide) does not apply here — there's no existing lint output to triage, because linting has never run.
+
+- **Since**: 2026-09-15 (formalised); TypeScript half corrected and ESLint half re-scoped 2026-09-22.
+- **Layer**: L0 (build config).
+- **Owner**: unassigned — maintainer decision on ESLint ruleset.
+- **Why it isn't done**: setting up ESLint from scratch is open-ended in the same way the O-11 Next.js major upgrade is — the violation count and their fixability are unknown until a config exists and actually runs once, across ~100+ source files. Choosing a config non-interactively and running it risked either (a) picking a ruleset the maintainer didn't want, or (b) surfacing an unknown, possibly large number of violations with no scoped way to triage them in this session without derailing into an unbounded lint-fixing project. Per this session's own standing caution about large-blast-radius / unscoped work, this was left as a documented finding rather than started speculatively.
+- **What would close it**: (a) maintainer picks a ruleset (`next lint`'s "Strict" vs "Base", or a custom `eslint.config.mjs`); (b) run it once, capture the full violation list; (c) triage — autofix what's autofixable, file the rest as scoped follow-up items; (d) flip `eslint.ignoreDuringBuilds` to `false` only after the surfaced violations are at zero (or explicitly `// eslint-disable`d with a reason), verified by a real `next build` (not just `next lint`) passing clean.
 
 ## O-07 — CLOSED 2026-09-15 (was: IndexNow ping every build)
 
