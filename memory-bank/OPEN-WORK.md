@@ -18,29 +18,17 @@ Was: CI ran tests/typecheck on Node 20 (`.github/workflows/ci.yml`) while the li
 - **Why it isn't done**: cannot determine from the code alone whether this hex value was ever the production `JWT_SECRET`. If it was, it is leaked in git history and the production secret must be rotated. If it was never production, it is a test-only random value and only needs a comment saying so plus a rotation on the fallback itself.
 - **What would close it**: (a) confirm from Vercel dashboard history whether this value was ever the production `JWT_SECRET`; (b) if yes, rotate `JWT_SECRET` in Vercel and replace the fallback with a comment "test-only, never used in prod"; (c) if no, replace the fallback with an obviously-fake value and add the comment.
 
-## O-02 — CI trigger scoped to `main`, active branch is `Version-3`
+## O-02 — CLOSED 2026-09-15 by A-09 (was stale until 2026-09-22)
 
-- **Since**: 2026-09-15
-- **Layer**: L0 (CI)
-- **Owner**: unassigned
-- **Why it isn't done**: not touched in this session. Adding `Version-3` to the trigger is a one-line change but wants its own commit and its own verification against a real push, not bundled with the doc-discipline install.
-- **What would close it**: edit `.github/workflows/ci.yml` `on.push.branches` and `on.pull_request.branches` to include `Version-3` (and current working branch policy). Push once, confirm CI runs, confirm result is honest (not spurious).
+Was: CI trigger scoped to `main` only, missing production branch `Version-3` and dev branches `claude/**`. Closed same-session by A-09: `.github/workflows/ci.yml` `on.push.branches` now reads `["main", "Version-3", "claude/**"]`. **Found stale on 2026-09-22**: this entry still read "not touched in this session" and "queued" language for over a week after the actual fix landed — a `documentation-discipline` violation (an item whose "Why" was never updated after the work closed it). Verified 2026-09-22 by reading `ci.yml` directly and `tests/ci-trigger-covers-active-branches.test.ts` (4/4 passing).
 
-## O-03 — `memory-bank/PATTERNS.md` conflicts with `api-fault-vs-absence`
+## O-03 — CLOSED 2026-09-15 by B-01 (was stale until 2026-09-22)
 
-- **Since**: 2026-09-15
-- **Layer**: L2 (client resolvers) + L0 (doc rule)
-- **Owner**: unassigned — architectural decision
-- **Why it isn't done**: the resolver layer currently obeys PATTERNS.md's older rule ("catch, return `[]` on fault"). Switching to the skill's stricter posture means rewriting every resolver, changing every page's error boundary, and adopting the `UpstreamFaultError` class. That is a project of its own with its own regression pass — not a scope-appropriate change for a maintenance session.
-- **What would close it**: pick a direction: (a) adopt `api-fault-vs-absence` verbatim and rewrite `lib/api/*` resolvers to rethrow `UpstreamFaultError`; (b) register the local exemption in PATTERNS.md with a rationale specific to this project; (c) hybrid — apply the skill to newly-added providers only and grandfather existing ones. Each has a different cost.
+Was: `memory-bank/PATTERNS.md`'s older "always return `[]` on fault" rule conflicted with `api-fault-vs-absence`. Resolved same-session as a hybrid: new resolvers rethrow `UpstreamFaultError`; the 12 pre-existing S-03 routes were grandfathered and migrated individually under B-04 (all 12 done — see B-04 in QA-LOG). PATTERNS.md's "Hybrid rule adopted 2026-09-15" section documents this in full, citing `lib/api/errors.ts::UpstreamFaultError`. **Found stale on 2026-09-22**: this entry still framed the hybrid as an undecided architectural choice ("pick a direction... each has a different cost") a week after the decision was made and executed. Verified 2026-09-22 by reading `PATTERNS.md` directly and `tests/upstream-fault-error.test.ts` (4/4 passing).
 
-## O-04 — `middleware.ts:23-25` throws on missing `JWT_SECRET` in production
+## O-04 — CLOSED 2026-09-15 by A-08 (was stale until 2026-09-22)
 
-- **Since**: 2026-09-15
-- **Layer**: L4 (middleware)
-- **Owner**: unassigned — queued as A-02
-- **Why it isn't done**: separate task in this session's queue. Being fixed red-first in the next turn.
-- **What would close it**: `A-02` entry with the fix commit and a test that middleware never throws under a stripped environment.
+Was: `middleware.ts` threw at top-of-function when `JWT_SECRET` was unset in production — a T-ENV-20 recurrence per `runtime-env-and-middleware-safety`, with no per-route fallback (every matched route would 500). Closed same-session by A-08: the throw was removed; each request now checks `if (!ENV.JWT_SECRET)` and redirects safely instead. **Found stale on 2026-09-22**: this entry still said "queued as A-02... being fixed red-first in the next turn" a week after A-08 (not A-02) actually shipped the fix — a wrong commit reference left uncorrected. Verified 2026-09-22 by reading `middleware.ts` directly and `tests/middleware-never-throws.test.ts` (3/3 passing).
 
 ## O-05 — CLOSED 2026-09-16 by B-06
 
@@ -58,13 +46,10 @@ Was: three per-file `new Map<string, …>` limiters — `middleware.ts:6`, `app/
 
 **Closed as invalid.** My original recording was wrong on both counts: (a) `scripts/ping-indexnow.js:2-5` already gates on `VERCEL_ENV === 'production'`, so local and CI builds skip it; (b) the constant `f63234d7ee824249a5b3260c6d2c49e2` at line 12 is the **public IndexNow ownership key** — its whole purpose is to be published at `/<key>.txt` on the site's own domain, and knowing it grants nothing. Both the testing-infra audit agent and the security-surface audit agent independently confirmed. Standing correction recorded at top of `QA-LOG.md`.
 
-## O-09 — Follow-up log hygiene in `lib/panel/cms8k.ts`
+## O-09 — CLOSED 2026-09-22, audit complete: no leak found
 
-- **Since**: 2026-09-15 (spun out of A-02)
-- **Layer**: L5 (provider)
-- **Owner**: unassigned
-- **Why it isn't done**: A-02 fixed the three raw-response leaks (lines ~240, ~271, ~310) but left two `console.error` calls that log error objects wholesale: `[CMS8K SESSION] Error creating line via session:` (~329) and `[CMS8K] Get credentials error:` (~426). Error messages from `fetch` failures may include the request URL with query params — those params carry the panel session cookie in some paths. Not yet audited whether any real error object surfaces a cookie in practice.
-- **What would close it**: run the two failure paths against a mock that throws with a URL-carrying error, verify no cookie appears; if it does, redact via `redactObject` before logging.
+Was: A-02 fixed the three raw-response leaks in `lib/panel/cms8k.ts` (lines ~240, ~271, ~310) but left two `console.error` calls open as unaudited — `[CMS8K SESSION] Error creating line via session:` (~320) and `[CMS8K] Get credentials error:` (~417) — on the theory that a thrown fetch error's message might embed the request URL, and the URL might carry the panel session cookie as a query param. **Audited and closed 2026-09-22**: neither call site ever puts the cookie in the URL — both requests carry it exclusively via the `Cookie` HTTP header — and empirically, a real network-level fetch failure (reproduced with `HttpResponse.error()`, which triggers `@mswjs/interceptors`' actual `TypeError: Failed to fetch` — the same class of error native `fetch`/undici throws on a real DNS/connection failure) never embeds the request URL, headers, or query string in its `message`/`stack`/`cause`. Verified directly with a standalone probe script (`node`, MSW, `fetch()` with a `Cookie` header, catch and print the resulting error) before writing the test, so the claim is observed, not assumed. **Bonus finding while auditing**: `createTrialAccount`'s Strategy-A catch (`[CMS8K API] Error during API key trial creation:`, ~line 264) DOES have a genuine secret in its URL (`api_key` as a query param) — checked with the same technique and also found to not leak, for the same reason (fetch failures don't embed URLs).
+Test: `tests/cms8k-error-log-redaction.test.ts` — 4 assertions: session-cookie leak check on the line-creation failure path, on the credential-lookup failure path (both `api_table.php` and `get_line_info` sub-strategies), a scanner control proving the cookie really was sent on the request whose failure is then inspected (so the other assertions aren't vacuously passing), and the bonus api_key check.
 
 ## O-12 — CLOSED 2026-09-16 by B-02
 
@@ -73,14 +58,6 @@ Was: `app/news/NewsClientPage.tsx:12` (a `"use client"` file) directly imported 
 ## O-08 — CLOSED 2026-09-15 by A-10 + A-13
 
 Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `pnpm exec playwright test --list`). Closed by A-10 (config rewrite) + A-13 (`.test.ts` → `.spec.ts` rename + convention settle). The 3 spec files (`e2e/smartlivetv.spec.ts`, `e2e/smoke.spec.ts`, `tests/mobile-responsiveness.spec.ts`) now list as 120 tests across 3 device projects. Whether they PASS is a separate concern (see O-10).
-
-## O-09 — Follow-up log hygiene in `lib/panel/cms8k.ts`
-
-- **Since**: 2026-09-15 (spun out of A-02)
-- **Layer**: L5 (provider)
-- **Owner**: unassigned
-- **Why it isn't done**: A-02 fixed the three raw-response leaks (lines ~240, ~271, ~310) but left two `console.error` calls that log error objects wholesale: `[CMS8K SESSION] Error creating line via session:` (~329) and `[CMS8K] Get credentials error:` (~426). Error messages from `fetch` failures may include the request URL with query params — those params carry the panel session cookie in some paths. Not yet audited whether any real error object surfaces a cookie in practice.
-- **What would close it**: run the two failure paths against a mock that throws with a URL-carrying error, verify no cookie appears; if it does, redact via `redactObject` before logging.
 
 ## O-13 — CLOSED 2026-09-22 by X-01/X-02 deletion
 
