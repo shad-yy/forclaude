@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### X-08 — Remove redundant `queueLock` spin-wait from the TheSportsDB rate limiter
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `ff42ef3`.
 - **Layer**: L5 provider.
 - **Severity**: low (simplification — no bug; ~10ms of unnecessary polling jitter per contended call, no correctness issue found or introduced).
 - **Was**: `lib/api/the-sports-db.ts::enqueueRateLimit` combined a `queueLock` busy-wait (`while (queueLock) await sleep(10)`) with a promise chain (`rateLimitQueue = rateLimitQueue.then(run, run)`) to serialize concurrent callers against TheSportsDB's 25 req/min ceiling. The two mechanisms were redundant.
