@@ -26,7 +26,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### X-01, X-02, X-13 — Delete three confirmed-dead files (closes O-13)
 
 - **Date**: 2026-09-22
-- **Commit**: this commit — hash added in follow-up.
+- **Commit**: `db7de32`.
 - **Layer**: L0 dead code.
 - **Severity**: low (cleanup only — no behaviour change; these files were unreachable).
 - **Was**: three files with zero importers/references anywhere in the repo: `lib/api/api-client.ts` (265 lines, a generic HTTP client with its own retry ladder — see X-05's note that this was NOT migrated onto the shared `withRetry()` since consolidating unreachable code has no runtime value), `lib/cache/apiCache.ts` (175 lines, an in-memory-only cache superseded by `lib/cache.ts`'s Redis+SWR implementation), and `scripts/verify-routes.js` (77 lines, a hand-maintained `EXPECTED_ROUTES` list reimplementing what `next build` already catches — not referenced from `package.json` scripts or any `.github/workflows/*.yml`).
