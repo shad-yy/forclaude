@@ -28,7 +28,7 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 ### O-06 — Correct scope: TypeScript half already fixed pre-session, ESLint half is unconfigured-from-scratch, not deferred debt
 
 - **Date**: 2026-09-22
-- **Commit**: `097624b` (this doc-only correction rides the same push as the log-hygiene hardening — no code changed).
+- **Commit**: `35dfe39`.
 - **Layer**: L0 build config.
 - **Severity**: medium (a real, previously-mis-scoped gap: `eslint.ignoreDuringBuilds: true` is load-bearing, not optional, and nobody could have safely flipped it based on the old entry's advice).
 - **Was**: `OPEN-WORK.md` O-06 claimed `next.config.mjs` currently sets `typescript.ignoreBuildErrors: true` and told a future reader to "run tsc, decide whether to re-enable." Checked the live file on 2026-09-22: `typescript.ignoreBuildErrors` is `false` and has been since `bcd211e`, a commit that predates this Claude session — the entry was stale about half its own subject. Separately ran `pnpm lint` directly (not just read the config) and found there is no ESLint config anywhere in the repo (`.eslintrc*` / `eslint.config.*` both absent, `eslint` not in `package.json` dependencies) — `next lint` drops into an interactive setup wizard and exits 1 unanswered. The old entry's advice ("decide whether to fix and re-enable") assumed an existing, triage-able violation list; there isn't one, because linting has never run.
