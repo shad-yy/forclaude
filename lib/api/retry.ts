@@ -2,10 +2,8 @@
 // to be hand-rolled separately: `lib/api/the-sports-db.ts::sportsdbFetch`
 // (fixed backoff schedule, HTTP-status aware) and
 // `lib/cache.ts::fetchWithRetry` (exponential backoff over a generic
-// async callback). A third copy in `lib/api/api-client.ts` is dead
-// code (zero importers, X-01) awaiting deletion approval — not
-// migrated here since consolidating unreachable code has no runtime
-// value.
+// async callback). A third copy lived in `lib/api/api-client.ts`,
+// which had zero importers and was deleted (X-01).
 //
 // Design: `fn` returns the result or throws. `shouldRetry` decides
 // whether a given error is worth another attempt — callers encode

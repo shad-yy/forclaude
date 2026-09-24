@@ -58,7 +58,9 @@ export default function NewsClientPage({
 
   const articlesPerPage = 12
 
-  const fetchNews = async (page = 1, query = "", _filterOptions = filters) => {
+  // Page and filters are not sent: the upstream search only takes q +
+  // pageSize, so the filter controls have no effect yet (OPEN-WORK O-19).
+  const fetchNews = async (_page = 1, query = "", _filterOptions = filters) => {
     try {
       setLoading(true)
       setError(null)
@@ -93,12 +95,6 @@ export default function NewsClientPage({
     } finally {
       setLoading(false)
     }
-
-    // `page` is threaded through the caller but the current proxy
-    // returns all deduped results in one payload; pagination is done
-    // client-side against `articles.length`. Reference it so the
-    // unused-parameter lint stays quiet without changing signature.
-    void page
   }
 
   const fetchTrendingKeywords = async () => {
