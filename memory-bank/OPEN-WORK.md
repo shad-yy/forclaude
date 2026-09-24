@@ -6,6 +6,30 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
+## O-23 — URGENT: rotate the RapidAPI key and reset two panel lines (committed to a public repo)
+
+- **Since**: key since at least 2026-07-02 (`309e8bc`); HAR since 2026-09-13 (`1999666`). Found 2026-09-24.
+- **Layer**: L0 secrets.
+- **Owner**: site owner — needs the RapidAPI dashboard, the cms-8k panel and Vercel.
+- **Why it isn't done**: Claude has no access to those dashboards. R-07 removed both from the tree, but git history keeps them and the repo is public (`visibility: public` per the GitHub API), so removal alone protects nothing already copied. History rewriting would not help (forks, caches) and needs a force-push.
+- **What would close it**: (1) regenerate the RapidAPI MMA key (the one starting `e0d3`), put the new one in Vercel as `RAPIDAPI_MMA_KEY`, redeploy; (2) in the cms-8k panel, reset the passwords of (or delete) the two lines created 2026-09-04 and 2026-09-13 that appeared in `cms-8k.com.har`; (3) optionally add both historical fingerprints to `.gitleaksignore` once rotated, so a full-history scan (O-25) passes.
+
+## O-24 — 554 debug log files are tracked despite `.gitignore`
+
+- **Since**: `309e8bc` (2026-07-02); noted 2026-09-24
+- **Layer**: L0 repo hygiene.
+- **Owner**: unassigned
+- **Why it isn't done**: not a security issue — checked 2026-09-24: every TheSportsDB URL in them uses the public test key `123`, no `api_key`/auth headers; the 510 Gitleaks hits are inline JavaScript in saved HTML error pages. `.gitignore` already lists `/logs/`, so they were committed before that rule or force-added. Removing 554 files is the owner's call.
+- **What would close it**: `git rm -r --cached logs` (keeps local copies), commit.
+
+## O-25 — Gitleaks CI only scans each push's new commits
+
+- **Since**: C-04 (2026-09-15); noted 2026-09-24
+- **Layer**: L0 CI.
+- **Owner**: unassigned
+- **Why it isn't done**: this is why the RapidAPI key and the HAR (committed before C-04) were never flagged. A full-history scan would fail today on those two until they are rotated and allowlisted (O-23).
+- **What would close it**: after O-23, add a weekly `schedule:` trigger (or a `gitleaks detect --no-git` step) that scans the whole repo, with the rotated secrets' fingerprints in `.gitleaksignore`.
+
 ## O-21 — Production runs `Version-3` without the work branch's fixes
 
 - **Since**: 2026-09-20 20:25 UTC (found 2026-09-24 via `mcp__Vercel__list_deployments`)
@@ -30,9 +54,9 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: feature work, not a fix. `app/news/NewsClientPage.tsx` shows category / source / sort controls and pagination, but `/api/news/search` only takes `q` + `pageSize`, and the old `newsAPI.searchNews` also used only those two (checked at 8b561b8^). Changing page re-fetches the same payload.
 - **What would close it**: either pass the filters through to NewsData.io (check which params the free plan accepts) or remove the controls so the page does not promise filtering it cannot do.
 
-## O-18 — 91 explicit `any` lines remain in app code
+## O-18 — 90 explicit `any` lines remain in app code
 
-- **Since**: pre-existing (107 on `Version-3` `16b8d6a`); ratchet added 2026-09-24 (R-02)
+- **Since**: pre-existing (107 on `Version-3` `16b8d6a`); ratchet added 2026-09-24 (R-02) at 91, lowered to 90 by R-07
 - **Layer**: L2–L5, mostly `lib/`.
 - **Owner**: unassigned
 - **Why it isn't done**: CLAUDE.md bans `any`, but most of these are in provider parsers where the right type needs the provider's real response shape (the C-03 Zod schemas cover TheSportsDB, NewsData and football-data only). Typing them by guesswork would swap `any` for a false type.

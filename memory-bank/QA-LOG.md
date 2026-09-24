@@ -26,9 +26,37 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 - **2026-09-24 — CLAUDE.md, `.cursorrules`, PATTERNS.md and PROJECT.md named `lib/cache/apiCache.ts` as the cache and said static data caches for 30 days.** That file had no callers and was deleted in X-01/X-02; the live cache is `lib/cache.ts` (`swrGet`), and leagues/teams/players cache for 24 h (`CACHE_TTL`, and `TTL` in `lib/api/the-sports-db.ts`). The same four files still told agents to "return `[]`" on error, contradicting the hybrid rule. All four corrected to match the code. PATTERNS.md also cited "QA-LOG A-13" for the hybrid rule; it is B-01 (`3e4cd85`).
 - **2026-09-24 — "Fixes are live" was never checked against production.** Two work-branch builds were redeployed to production (Vercel `source: redeploy`, 2026-09-17 and 2026-09-19); the next `Version-3` push (2026-09-20) replaced them, and production has run without A-01..A-15, B-01..B-07, C-01..C-05, X-04, X-06, X-09, X-11 since. Found by comparing `mcp__Vercel__list_deployments` (`target: production`) against `git merge-base --is-ancestor`. OPEN-WORK O-21; PROGRESS.md Trouble Registry Bug 9.
 
+- **2026-09-24 — PROGRESS.md Bug 5 ("Hardcoded RapidAPI Key Fallback") claimed a permanent fix that was incomplete.** The same key was still hardcoded in `app/api/test-mma/route.ts` (public, unauthenticated) and `README.env.example`, and it was never rotated. The 2026-09-15 security audit missed it too. Found only because a full working-tree Gitleaks scan was run while checking a CI failure — CI's Gitleaks scans only each push's new commits (O-25). Fixed in R-07; rotation is O-23.
+
 ---
 
 ## Entries
+
+### R-07 — Remove the hardcoded RapidAPI key route and the panel HAR recording
+
+- **Date**: 2026-09-24
+- **Commit**: `9623072`.
+- **Layer**: L0 secrets + L3 route.
+- **Severity**: high (a live provider key and two panel line logins in a public repo; an open route spending the key's quota).
+- **Was**: `app/api/test-mma/route.ts` — public, no auth — called RapidAPI with a hardcoded key and returned the raw upstream body and headers; `README.env.example` held the same value. `cms-8k.com.har` (a browser recording of the panel site) held, in one `api_table.php` response, two panel line records with usernames and 10-character passwords (created 2026-09-04 and 2026-09-13). No cookies or auth headers in it. All pre-existing and present on production `16b8d6a`. Checked with values masked; no secret was printed.
+- **Now**: route and HAR deleted (nothing referenced either); example value blanked; `*.har` in `.gitignore`. Git history still holds both — rotation is OPEN-WORK O-23.
+- **Test**: `tests/no-committed-credentials.test.ts` — no `.har` files; no hardcoded RapidAPI key in source or example env files. Red on all three files first. `tests/no-new-any.test.ts` ceiling 91 → 90.
+- **Skill/agent used**: gitleaks 8.24.3 full working-tree scan, filtered to `git ls-files`; remaining tracked hits are `logs/*` (inline JS, O-24) and the public IndexNow key (O-07).
+- **Run it**: `pnpm vitest --run tests/no-committed-credentials.test.ts`.
+- **Result**: suite 315/315; tsc clean; `next lint` 0 errors.
+
+### R-06 — Allowlist the one verified Gitleaks false positive
+
+- **Date**: 2026-09-24
+- **Commit**: `cb8700b`.
+- **Layer**: L0 CI.
+- **Severity**: low (CI red on a false positive).
+- **Was**: Gitleaks failed on `87f65d0`. That push carried the `Version-3` merge, so the action scanned `16b8d6a^..87f65d0` (77 commits) and reached `tests/pii-redaction.test.ts:14` from A-02 (`8f13feb`), pushed before Gitleaks existed (C-04). The value `HUNTER2ABC123` is a made-up marker the test asserts never reaches logs.
+- **Now**: `.gitleaksignore` lists that one fingerprint (commit:file:rule:line) with its reason; the line carries `// gitleaks:allow`.
+- **Test**: gitleaks 8.24.3 with CI's exact command and range — without the file "leaks found: 1", exit 2 (reproduces CI); with it "no leaks found", exit 0. The next push's range and the whole branch (`16b8d6a^..HEAD`, 79 commits) also scan clean.
+- **Skill/agent used**: CI red → reproduce first, then fix.
+- **Run it**: `gitleaks detect --redact --log-opts="--no-merges --first-parent 16b8d6a^..HEAD"`.
+- **Result**: clean locally; CI result on the push that carries it.
 
 ### R-05 — Apostrophes in page copy no longer fail the build
 

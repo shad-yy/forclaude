@@ -112,6 +112,7 @@ Here is the repository of issues encountered, including root causes and their pe
 *   **Symptoms**: live RapidAPI credentials (`e0d3bf230a...`) were hardcoded in code files as fallback strings, posing a security leak risk.
 *   **Root Cause**: Fallback values were left in code to run the MMA integration locally without configuring environment files.
 *   **Permanent Fix**: Removed hardcoded strings in `lib/api/mma-rapidapi.ts` and `lib/config/env.ts` and defaulted them to `""`, relying entirely on environment variables.
+*   **Recurrence (found 2026-09-24)**: the fix was incomplete. The same key was still hardcoded in `app/api/test-mma/route.ts` (a public, unauthenticated debug route) and in `README.env.example`. Removed in QA-LOG R-07, guarded by `tests/no-committed-credentials.test.ts`. The key was never rotated and the repo is public: **rotate it** (OPEN-WORK O-23). Lesson: after removing a secret, search the whole tree for its value, not only the files you know about.
 
 ### ⚠️ Bug 6: Hardcoded Admin Password Backdoor
 *   **Symptoms**: Next.js admin session routes contained a hardcoded admin password hash and plaintext comment (`Shad_yboyee10`) as a fallback option.
@@ -176,6 +177,8 @@ Ordered by impact. Items 1-2 are defects with security or production-safety cons
     runs `16b8d6a`, which lacks the security fixes on `claude/exciting-planck-6a4nbr`
     (hCaptcha check, test-panel bypass closed, AVIF exploit path closed, PII log
     redaction, and more — QA-LOG A-02 onward). See Trouble Registry Bug 9. OPEN-WORK O-21.
+    **Before or with it: OPEN-WORK O-23** — rotate the RapidAPI key and reset two panel
+    lines that were committed to this public repo.
 
 2.  **Plan the Next.js 14 → 16 upgrade.** `npm audit` reports high-severity advisories in
     `next`, `postcss`, `sharp` and `undici` — SSRF via rewrites, cache poisoning of RSC

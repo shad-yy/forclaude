@@ -89,5 +89,6 @@ scripts/repro-keyless.sh 8f13feb      # a specific commit
 
 Per `documentation-discipline` rule: every secret removed on a specific date, do not reintroduce.
 
-- **RapidAPI MMA hardcoded fallback** — removed from `lib/api/mma-rapidapi.ts` and `lib/config/env.ts` (see `PROGRESS.md` Bug 5). Do not reintroduce a plaintext key as a fallback. `RAPIDAPI_MMA_KEY` now defaults to `""`.
+- **RapidAPI MMA hardcoded fallback** — removed from `lib/api/mma-rapidapi.ts` and `lib/config/env.ts` (see `PROGRESS.md` Bug 5). Do not reintroduce a plaintext key as a fallback. `RAPIDAPI_MMA_KEY` now defaults to `""`. **2026-09-24:** the same key was also found in `app/api/test-mma/route.ts` and `README.env.example` and removed (QA-LOG R-07). It was never rotated — rotate it at RapidAPI and set the new value in Vercel (OPEN-WORK O-23).
+- **`cms-8k.com.har`** — a panel-site browser recording holding two panel line logins; removed 2026-09-24 (QA-LOG R-07). `*.har` is now in `.gitignore`; never commit a network recording.
 - **Admin password backdoor** — removed from `app/api/auth/admin/route.ts` (see `PROGRESS.md` Bug 6). Do not reintroduce a fallback password hash. Route now returns 500 when `ADMIN_PASSWORD_HASH` is unset.
