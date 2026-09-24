@@ -10,7 +10,7 @@ import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const CEILING = 91;
+const CEILING = 90;
 const ROOTS = ["lib", "app", "components"];
 const ANY = /:\s*any\b|\bas any\b|<any>|any\[\]/;
 
