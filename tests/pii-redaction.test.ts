@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createTrialAccount } from "@/lib/panel/cms8k";
 
-const SECRET_PASSWORD = "HUNTER2ABC123";
+const SECRET_PASSWORD = "HUNTER2ABC123"; // gitleaks:allow — made-up marker, not a credential
 const SECRET_SNIPPETS = [SECRET_PASSWORD, "secret@example.com"];
 
 function makePanelResponse(): Response {
