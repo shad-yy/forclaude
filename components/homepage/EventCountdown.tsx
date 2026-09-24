@@ -33,88 +33,68 @@ function pad(n: number): string {
   return String(n).padStart(2, '0')
 }
 
-/** Premier League 2026-27 Matchweek 1 — used as default countdown when live APIs have no near-term event. */
-const PREMIER_LEAGUE_MW1: CountdownEvent[] = [
+/** Curated upcoming high-profile sporting events used as reliable countdown targets. */
+const CURATED_UPCOMING_EVENTS: CountdownEvent[] = [
   {
-    name: 'Arsenal vs Coventry City — PL Matchweek 1',
-    date: new Date('2026-08-21T20:00:00+01:00'),
+    name: 'Formula 1 — Azerbaijan Grand Prix',
+    date: new Date('2026-09-26T12:00:00+01:00'),
+    href: '/watch/formula-1',
+    sport: 'Formula 1',
+    badge: '/leagues/formula-1.png',
+  },
+  {
+    name: 'Chelsea vs Brighton — PL Matchweek 6',
+    date: new Date('2026-09-26T15:00:00+01:00'),
     href: '/watch/premier-league',
     sport: 'Premier League',
     badge: '/leagues/premier-league.png',
   },
   {
-    name: 'Hull City vs Manchester United — PL Matchweek 1',
-    date: new Date('2026-08-22T15:00:00+01:00'),
+    name: 'UFC Fight Night — Rosas Jr. vs Barcelos',
+    date: new Date('2026-09-26T21:00:00+01:00'),
+    href: '/ufc',
+    sport: 'UFC',
+    badge: '/leagues/ufc.png',
+  },
+  {
+    name: 'Tottenham vs Arsenal — PL Matchweek 6',
+    date: new Date('2026-09-27T16:30:00+01:00'),
     href: '/watch/premier-league',
     sport: 'Premier League',
     badge: '/leagues/premier-league.png',
   },
   {
-    name: 'Everton vs Crystal Palace — PL Matchweek 1',
-    date: new Date('2026-08-22T15:00:00+01:00'),
-    href: '/watch/premier-league',
-    sport: 'Premier League',
-    badge: '/leagues/premier-league.png',
+    name: 'UFC 332 — Silva vs Wang',
+    date: new Date('2026-10-03T23:00:00+01:00'),
+    href: '/ufc',
+    sport: 'UFC',
+    badge: '/leagues/ufc.png',
   },
   {
-    name: 'Brentford vs Tottenham Hotspur — PL Matchweek 1',
-    date: new Date('2026-08-22T17:30:00+01:00'),
-    href: '/watch/premier-league',
-    sport: 'Premier League',
-    badge: '/leagues/premier-league.png',
-  },
-  {
-    name: 'Brighton vs Aston Villa — PL Matchweek 1',
-    date: new Date('2026-08-23T14:00:00+01:00'),
-    href: '/watch/premier-league',
-    sport: 'Premier League',
-    badge: '/leagues/premier-league.png',
-  },
-  {
-    name: 'Manchester City vs Bournemouth — PL Matchweek 1',
-    date: new Date('2026-08-23T14:00:00+01:00'),
-    href: '/watch/premier-league',
-    sport: 'Premier League',
-    badge: '/leagues/premier-league.png',
-  },
-  {
-    name: 'Newcastle United vs Liverpool — PL Matchweek 1',
-    date: new Date('2026-08-23T16:30:00+01:00'),
-    href: '/watch/premier-league',
-    sport: 'Premier League',
-    badge: '/leagues/premier-league.png',
-  },
-  {
-    name: 'Fulham vs Chelsea — PL Matchweek 1',
-    date: new Date('2026-08-24T20:00:00+01:00'),
-    href: '/watch/premier-league',
-    sport: 'Premier League',
-    badge: '/leagues/premier-league.png',
+    name: 'Formula 1 — Singapore Grand Prix',
+    date: new Date('2026-10-11T13:00:00+01:00'),
+    href: '/watch/formula-1',
+    sport: 'Formula 1',
+    badge: '/leagues/formula-1.png',
   },
 ]
 
-function nextPremierLeagueMatch(): CountdownEvent | null {
+function getNextCuratedEvent(): CountdownEvent | null {
   const now = Date.now()
-  const upcoming = PREMIER_LEAGUE_MW1.find(e => e.date.getTime() > now)
-  return upcoming ?? null
+  const upcoming = CURATED_UPCOMING_EVENTS.filter(e => e.date.getTime() > now)
+  if (upcoming.length === 0) return null
+  return upcoming.sort((a, b) => a.date.getTime() - b.date.getTime())[0]
 }
-
 
 export function EventCountdown() {
   const [upcomingEvent, setUpcomingEvent] = useState<CountdownEvent | null>(null)
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch upcoming events from our API
+  // Fetch upcoming events from our API or curated schedule
   useEffect(() => {
     const loadEvent = async () => {
-      // Premier League Matchweek 1 takes priority during season opener
-      const plEvent = nextPremierLeagueMatch()
-      if (plEvent) {
-        setUpcomingEvent(plEvent)
-        setLoading(false)
-        return
-      }
+      let liveEvent: CountdownEvent | null = null
 
       try {
         // Try UFC first
@@ -129,26 +109,22 @@ export function EventCountdown() {
             if (e.status?.type?.completed) return false
             if (!e.date) return false
             const d = new Date(e.date)
-            // Only show if within 14 days
-            const daysAway = (d.getTime() - Date.now()) /
-              (1000 * 60 * 60 * 24)
+            const daysAway = (d.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
             return daysAway > 0 && daysAway <= 14
           })
 
           if (upcoming) {
-            setUpcomingEvent({
+            liveEvent = {
               name: upcoming.name || upcoming.shortName || 'UFC Event',
               date: new Date(upcoming.date),
               href: '/ufc',
               sport: 'UFC',
               badge: '/leagues/ufc.png',
-            })
-            setLoading(false)
-            return
+            }
           }
         }
 
-        // Try F1 next
+        // Try F1 next if no UFC or to find sooner event
         const f1Res = await fetch('/api/espn/racing/f1/scoreboard', {
           cache: 'no-store',
         }).catch(() => null)
@@ -160,25 +136,32 @@ export function EventCountdown() {
             if (e.status?.type?.completed) return false
             if (!e.date) return false
             const d = new Date(e.date)
-            const daysAway = (d.getTime() - Date.now()) /
-              (1000 * 60 * 60 * 24)
+            const daysAway = (d.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
             return daysAway > 0 && daysAway <= 14
           })
 
           if (upcoming) {
-            setUpcomingEvent({
+            const candidate = {
               name: upcoming.shortName || upcoming.name || 'F1 Race',
               date: new Date(upcoming.date),
               href: '/watch/formula-1',
               sport: 'F1',
               badge: '/leagues/formula-1.png',
-            })
-            setLoading(false)
-            return
+            }
+            if (!liveEvent || candidate.date.getTime() < liveEvent.date.getTime()) {
+              liveEvent = candidate
+            }
           }
         }
       } catch {
-        // No live API event found
+        // Fallback gracefully to curated events
+      }
+
+      const curated = getNextCuratedEvent()
+      if (liveEvent && curated) {
+        setUpcomingEvent(liveEvent.date.getTime() < curated.date.getTime() ? liveEvent : curated)
+      } else {
+        setUpcomingEvent(liveEvent || curated)
       }
       setLoading(false)
     }
