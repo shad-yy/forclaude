@@ -47,7 +47,7 @@ const DEFAULTS: Required<DedupOptions> = {
  *
  * Never mutates input. Preserves input order (keeps first occurrence).
  */
-export function nuclearDedup<T = any>(articles: T[] | null | undefined, opts: DedupOptions = {}): T[] {
+export function nuclearDedup<T>(articles: T[] | null | undefined, opts: DedupOptions = {}): T[] {
   if (!articles?.length) return []
   const cfg = { ...DEFAULTS, ...opts }
 

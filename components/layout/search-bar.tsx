@@ -19,6 +19,12 @@ interface SearchResult {
   description?: string
 }
 
+// Row shapes returned by app/api/search/{teams,players,leagues,news}/route.ts.
+type TeamHit = { id: string | number; name: string; league?: string | null }
+type PlayerHit = { id: string | number; name: string; position?: string | null; team?: string | null }
+type LeagueHit = { id: string | number; name: string; sport?: string | null; country?: string | null }
+type NewsHit = { title: string; description?: string | null }
+
 export function SearchBar({ className }: { className?: string }) {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
@@ -83,7 +89,7 @@ export function SearchBar({ className }: { className?: string }) {
       if (teamsRes.status === "fulfilled" && teamsRes.value.ok) {
         const teamsJson = await teamsRes.value.json().catch(() => [])
         if (Array.isArray(teamsJson)) {
-          const teamResults = teamsJson.slice(0, 3).filter((t) => t && t.id && t.name).map((team: any) => ({
+          const teamResults = teamsJson.slice(0, 3).filter((t) => t && t.id && t.name).map((team: TeamHit) => ({
             id: `team-${team.id}`,
             title: team.name,
             type: "team" as const,
@@ -100,7 +106,7 @@ export function SearchBar({ className }: { className?: string }) {
           const playerResults = playersJson
             .slice(0, 3)
             .filter((p) => p && p.id && p.name)
-            .map((player: any) => ({
+            .map((player: PlayerHit) => ({
               id: `player-${player.id}`,
               title: player.name,
               type: "player" as const,
@@ -122,8 +128,8 @@ export function SearchBar({ className }: { className?: string }) {
         if (newsArticles.length > 0) {
           const newsSearchResults = newsArticles
             .slice(0, 2)
-            .filter((a: any) => a && a.title)
-            .map((article: any, idx: number) => ({
+            .filter((a: NewsHit | null) => a && a.title)
+            .map((article: NewsHit, idx: number) => ({
               id: `news-${idx}`,
               title: article.title,
               type: "news" as const,
@@ -140,7 +146,7 @@ export function SearchBar({ className }: { className?: string }) {
           const leagueResults = leaguesJson
             .slice(0, 2)
             .filter((l) => l && l.id && l.name)
-            .map((league: any) => ({
+            .map((league: LeagueHit) => ({
               id: `league-${league.id}`,
               title: league.name,
               type: "league" as const,

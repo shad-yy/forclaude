@@ -16,7 +16,7 @@ export async function POST() {
 
   const newToken = await new SignJWT({
     isAdmin: true,
-    loginTime: (auth.payload as any).loginTime ?? Date.now(),
+    loginTime: typeof auth.payload.loginTime === "number" ? auth.payload.loginTime : Date.now(),
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

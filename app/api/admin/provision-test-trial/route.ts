@@ -38,12 +38,12 @@ export async function GET(req: NextRequest) {
       { timestamp: new Date().toISOString(), environment: envCheck, result },
       { status: result.success ? 200 : 500 },
     )
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
       {
         timestamp: new Date().toISOString(),
         environment: envCheck,
-        error: err?.message || 'Unknown error during test',
+        error: err instanceof Error ? err.message : 'Unknown error during test',
       },
       { status: 500 },
     )
