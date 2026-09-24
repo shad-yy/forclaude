@@ -8,15 +8,21 @@ This file maintains the active development context, records completed tasks, and
 
 *   **Product**: Smart Live TV on `smartlivetv.co.uk` — sports streaming guide, live
     scores and news, with an integrated subscription funnel on the same domain.
-*   **Repo**: `shad-yy/forclaude` · branch `Version-3` · in sync with origin at `f67cb49`.
+*   **Repo**: `shad-yy/forclaude`. Production deploys from `Version-3` (live build:
+    `16b8d6a`, deployed 2026-09-20 20:25 UTC). The security and testing work (QA-LOG
+    A-02 onward) lives on `claude/exciting-planck-6a4nbr` and is **not yet merged** into
+    `Version-3` — see §4 item 1.
+*   **Where things are recorded**: per-fix history in `QA-LOG.md`; open items in
+    `OPEN-WORK.md`; env vars in `SETUP-REQUIRED.md`.
 *   **Objective**: keep the site healthy and improve it continuously — acquisition
     surface (scores, fixtures, guides, news) and conversion surface (channels, pricing,
     trial, checkout) both.
 
 ### Current state
 
-Working tree clean and in sync with origin. Build succeeds. The site is deployed on
-Vercel and serving traffic.
+The site is deployed on Vercel and serving traffic; Vercel reported no runtime errors for
+the 7 days to 2026-09-24. On the work branch, a full local `next build` with both build
+gates on passed on 2026-09-22 (QA-LOG O-06).
 
 Both halves are functional end to end: the data pages render live fixtures and standings
 from TheSportsDB, and the funnel routes (`/buy`, `/pricing`, `/free-trial`, `/subscribe`,
@@ -54,7 +60,7 @@ these numbers.
 ### Core API & Cache Implementation
 *   **Safer Rate Limiter**: Configured rate limits at **25 req/min** (buffer under the 30 req/min limit) with a token bucket delay of 2400ms.
 *   **Circuit Breaker**: Added safety mechanism that blocks failing endpoints for 1 minute after 5 consecutive 429 errors.
-*   **Aggressive TTL Caching**: Developed central `apiCache.ts` client caching. Extended static assets (leagues, teams, rosters) cache TTL to **30 days**; dynamic score events use 1-to-5 minute expiration rules.
+*   **Aggressive TTL Caching**: Developed central `apiCache.ts` client caching. Extended static assets (leagues, teams, rosters) cache TTL to **30 days**; dynamic score events use 1-to-5 minute expiration rules. *(Superseded, noted 2026-09-24: `apiCache.ts` had no callers and was deleted in X-01/X-02. The live cache is `lib/cache.ts`, and leagues/teams/players cache for 24 h — see PATTERNS.md.)*
 *   **Pre-Caching & Hydration**: Created `scripts/hydrate-static-data.ts` to pre-load all static indexes on startup.
 *   **Static Page Revalidation**: Integrated Next.js page revalidation limits (24 hours) for `/teams` and `/leagues` to avoid re-fetching on client load.
 
@@ -135,35 +141,62 @@ Here is the repository of issues encountered, including root causes and their pe
     since the fresh cache almost always hits, the stale copy stays empty exactly when it
     is needed. Verified by testing the failure path, not by inspection.
 
+### ⚠️ Bug 8: Making a limiter actually work locked the admin out
+
+*   **Symptoms**: after B-06, `/admin/api-health` returned 429 after one normal visit
+    and a reload.
+*   **Root cause**: the `/api/admin/*` limit of 5 per 15 min had always been wrong for
+    the dashboard (2 calls on open + 1 every 5 min), but it lived in a per-instance
+    `Map`, so in serverless it rarely tripped. Moving it to a shared Redis counter made
+    the wrong number real.
+*   **Permanent fix** (QA-LOG R-01): two buckets — provisioning (creates a real panel
+    trial) keeps 5; read-only admin routes get 60. Test:
+    `tests/admin-api-rate-limit-split.test.ts`.
+*   **Lesson**: when you make a control actually work, re-check its numbers against the
+    real traffic that goes through it.
+
+### ⚠️ Bug 9: Production silently lost 52 commits of fixes
+
+*   **Symptoms**: fixes that had been live in production were gone, with no error.
+*   **Root cause**: builds from the work branch were redeployed to production
+    (Vercel `source: redeploy`, 2026-09-17 and 2026-09-19). `Version-3` is the production branch, so the next push
+    to it (a content update, 2026-09-20) deployed `Version-3` — which never contained
+    those commits — over them.
+*   **Fix**: merge the work branch into `Version-3`, and only ship to production through
+    `Version-3`. Check with `mcp__Vercel__list_deployments` (`target: production`) that
+    the live SHA contains the work: `git merge-base --is-ancestor <commit> <live-sha>`.
+
 ---
 
 ## 4. Next Steps
 
 Ordered by impact. Items 1-2 are defects with security or production-safety consequences.
 
-1.  **Plan the Next.js 14 → 16 upgrade.** `npm audit` reports high-severity advisories in
+1.  **Merge the work branch into `Version-3`** (needs the owner's go-ahead). Production
+    runs `16b8d6a`, which lacks the security fixes on `claude/exciting-planck-6a4nbr`
+    (hCaptcha check, test-panel bypass closed, AVIF exploit path closed, PII log
+    redaction, and more — QA-LOG A-02 onward). See Trouble Registry Bug 9. OPEN-WORK O-21.
+
+2.  **Plan the Next.js 14 → 16 upgrade.** `npm audit` reports high-severity advisories in
     `next`, `postcss`, `sharp` and `undici` — SSRF via rewrites, cache poisoning of RSC
     responses, request smuggling, unauthenticated disclosure of internal Server Function
     endpoints. It is a breaking two-major-version jump and needs its own branch and
     regression pass. Do not bundle it with other work, and do not defer it indefinitely.
 
-2.  **Re-enable type checking in the build.** `next.config.mjs` sets
-    `typescript.ignoreBuildErrors: true` and `eslint.ignoreDuringBuilds: true`, so a type
-    error ships to production silently. Turn type checking back on first — it is cheaper
-    to get green than linting. Until then, run `npx tsc --noEmit` manually before every
-    deploy.
+3.  ~~Re-enable type checking in the build~~ — **done** on the work branch: both
+    `typescript.ignoreBuildErrors` and `eslint.ignoreDuringBuilds` are `false` (QA-LOG
+    O-06). Reaches production with item 1.
 
-3.  **Gate the IndexNow ping.** `npm run build` ends with
-    `node scripts/ping-indexnow.js`, which submits URLs to a real search-engine API on
-    every run — including local builds and CI. Put it behind an env flag set only in the
-    production deploy.
+4.  ~~Gate the IndexNow ping~~ — **already gated**: `scripts/ping-indexnow.js` exits
+    unless `VERCEL_ENV === 'production'` (OPEN-WORK O-07). Local `npm run build`
+    still runs the script, so the CLAUDE.md safe-build command stays the habit.
 
-4.  **Audit the funnel end to end.** Confirm pricing on the marketing pages matches
+5.  **Audit the funnel end to end.** Confirm pricing on the marketing pages matches
     `/pricing` and `/buy`, that `/api/orders` and `/api/subscribe` validate input and
     return 4xx rather than 500 on a malformed body, and that every device guide under
     `/setup/[device]` renders.
 
-5.  **Check seasonal data before each new season.** Hardcoded season strings silently
+6.  **Check seasonal data before each new season.** Hardcoded season strings silently
     freeze standings when a new campaign starts:
     `grep -rn "20[0-9][0-9]-20[0-9][0-9]" --include=*.tsx --include=*.ts app lib`
 

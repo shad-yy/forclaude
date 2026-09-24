@@ -6,6 +6,46 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
+## O-21 — Production runs `Version-3` without the work branch's fixes
+
+- **Since**: 2026-09-20 20:25 UTC (found 2026-09-24 via `mcp__Vercel__list_deployments`)
+- **Layer**: L0 release process.
+- **Owner**: site owner (decision), then Claude (merge + verification).
+- **Why it isn't done**: merging into the production branch is the owner's call. Facts: builds from `claude/exciting-planck-6a4nbr` were deployed to production on 2026-09-17 (`7d553a4`) and 2026-09-19 (`73b364c`). The next push to `Version-3` (`16b8d6a`, content update) deployed over them. `git rev-list --count 73b364c --not 16b8d6a` = 52: production lost A-01..A-15, B-01..B-07, C-01..C-05, X-04, X-06, X-09 and X-11 (hCaptcha verification, test-panel bypass closure, AVIF mitigation, PII log redaction, provision race fix, fault-vs-absence routes). Work since then (X-01/02/05/08/13, O-06 build gates, R-01..R-05) was never in production: at `cc6af34` the branch has 77 commits `Version-3` lacks. Vercel reported no runtime errors in the 7 days to 2026-09-24.
+- **What would close it**: owner approves; merge the branch into `Version-3` (PR, CI green); then confirm with `list_deployments` (`target: production`) that the live SHA contains the branch head (`git merge-base --is-ancestor <head> <live-sha>`). PROGRESS.md Trouble Registry Bug 9.
+
+## O-20 — Six routes still answer an upstream fault with 200 + `[]`
+
+- **Since**: 2026-09-24 (missed by the 2026-09-15 S-03 audit, which listed 12)
+- **Layer**: L3 API routes.
+- **Owner**: unassigned
+- **Why it isn't done**: found during the 2026-09-24 review; each needs the B-04 treatment (resolver throws `UpstreamFaultError`, route returns 503 + `no-store`, red-first test) plus a check that every client caller handles `!res.ok`. Routes: `teams/[id]/players`, `teams/[id]/events`, `leagues/[id]/standings`, `search/teams`, `search/players`, `search/leagues`. The search bar already checks `res.ok` for the three search routes.
+- **What would close it**: migrate one route per commit as in B-04.1–12; update PATTERNS.md §Error Handling to drop the list.
+
+## O-19 — News page filter controls have no effect
+
+- **Since**: at least 8b561b8^ (pre-B-02); confirmed 2026-09-24
+- **Layer**: L1 UI + L3 `/api/news/search`.
+- **Owner**: unassigned
+- **Why it isn't done**: feature work, not a fix. `app/news/NewsClientPage.tsx` shows category / source / sort controls and pagination, but `/api/news/search` only takes `q` + `pageSize`, and the old `newsAPI.searchNews` also used only those two (checked at 8b561b8^). Changing page re-fetches the same payload.
+- **What would close it**: either pass the filters through to NewsData.io (check which params the free plan accepts) or remove the controls so the page does not promise filtering it cannot do.
+
+## O-18 — 91 explicit `any` lines remain in app code
+
+- **Since**: pre-existing (107 on `Version-3` `16b8d6a`); ratchet added 2026-09-24 (R-02)
+- **Layer**: L2–L5, mostly `lib/`.
+- **Owner**: unassigned
+- **Why it isn't done**: CLAUDE.md bans `any`, but most of these are in provider parsers where the right type needs the provider's real response shape (the C-03 Zod schemas cover TheSportsDB, NewsData and football-data only). Typing them by guesswork would swap `any` for a false type.
+- **What would close it**: type them file by file, using the Zod schemas where they exist; lower `CEILING` in `tests/no-new-any.test.ts` each time. Done when the ceiling is 0.
+
+## O-22 — News fallback articles claim to be published "now"
+
+- **Since**: pre-existing; noted 2026-09-24
+- **Layer**: L5 `lib/api/news.ts`.
+- **Owner**: unassigned
+- **Why it isn't done**: low impact; noted during the review, not in its scope. The 4 `FALLBACK_ARTICLES` are the site's own promo pieces (allowed as an owned fallback), but each sets `pubDate: new Date().toISOString()` at module load, so during a NewsData outage they appear as fresh news.
+- **What would close it**: give each a fixed, true `pubDate` (the linked page's real publish date) or omit the date in the UI for owned fallbacks.
+
 ## O-17 — 46 ESLint warnings surfaced by enabling the linter (O-06); none block the build
 
 - **Since**: 2026-09-22 (surfaced by O-06's ESLint setup)

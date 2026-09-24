@@ -23,12 +23,8 @@ Frontend Client Component
 *   **Implementation**: Done inside Next.js API route handlers (`app/api/*/route.ts`) or React Server Components. Client-side fetching must only query our own proxy routes.
 
 ### Centralized TTL Caching System
-*   **Implementation**: `lib/cache/apiCache.ts` provides a centralized memory cache.
-*   **Configuration**:
-    *   **30 Days (Static)**: Leagues, Sports, Countries, Team Info, Player Info, Standings.
-    *   **1 Hour (Scheduled Events)**: Upcoming and past league schedules.
-    *   **5 Minutes (Near Live)**: Live match summaries.
-    *   **1 Minute (Real-time Day)**: Today's live events.
+*   **Implementation**: `lib/cache.ts` — `swrGet`/`swrSet` (in-memory Map + Upstash Redis via `lib/cache/redis.ts`, stale-while-revalidate with a 24 h Redis grace period) and `getCache`/`setCache` (in-memory). The old `lib/cache/apiCache.ts` had no callers and was deleted (X-01/X-02).
+*   **Configuration**: the TTLs live in code, not here — `CACHE_TTL` in `lib/cache.ts` and `TTL` in `lib/api/the-sports-db.ts`. Values on 2026-09-24: leagues, teams, players **24 h**; standings, search, lists **5 min**; events and today's events **30 s**; ESPN **30 min**. (Earlier versions of this file said "30 days static"; that described the dead `apiCache.ts`, not the live cache.)
 
 ---
 
@@ -36,16 +32,16 @@ Frontend Client Component
 
 ### Error Handling & Fault Tolerance
 
-**Hybrid rule adopted 2026-09-15 (see `memory-bank/QA-LOG.md` A-13; skill: `playbook/skills/api-fault-vs-absence.md`).** The older "always return `[]` on error" rule was found to conflict with `api-fault-vs-absence`: it turns a provider outage into an empty-state page, which Google reads as "this entity has nothing" and, for pages that then trip `notFound()`, deindexes the URL for weeks. The hybrid rule replaces it:
+**Hybrid rule adopted 2026-09-15 (commit `3e4cd85`, B-01; skill: `playbook/skills/api-fault-vs-absence.md`).** The older "always return `[]` on error" rule was found to conflict with `api-fault-vs-absence`: it turns a provider outage into an empty-state page, which Google reads as "this entity has nothing" and, for pages that then trip `notFound()`, deindexes the URL for weeks. The hybrid rule replaces it:
 
 *   **New resolvers** (added or migrated after 2026-09-15) rethrow `UpstreamFaultError` (`lib/api/errors.ts`) on 5xx / network / timeout / malformed body. A 429 is a fault too (own class if added later). A 404 from upstream is an *absence*, not a fault — return `null` / `[]` for that one case.
 *   **Callers of new resolvers** turn a fault into an owned/cached fallback or a truthful "we could not check just now" render — **never** into `notFound()` or an empty page. See `playbook/skills/api-fault-vs-absence.md` §Rules.
-*   **The 12 existing routes** listed under S-03 in the plan file (`leagues/route.ts:14-20`, `scores/recent/route.ts:17-23`, etc.) are **grandfathered under this decision date**. They will be migrated one commit per route under Phase B-04 (`api-fault-vs-absence` route migration). Each migration includes a red-first contract test.
+*   **The 12 routes** that returned 200 + `[]` on fault (S-03: `leagues`, `scores/recent`, `scores/today`, etc.) were grandfathered on 2026-09-15 and **all migrated by 2026-09-16** (B-04.1–B-04.12 in QA-LOG), each with a red-first test. They now return 503 + `Cache-Control: no-store` on fault. Verified on production 2026-09-24 that a route's own `Cache-Control` wins over the `/api/(.*)` header in `next.config.mjs`, so a 503 is never CDN-cached.
 *   **New routes have a red-first test that fails if they return `{data:[]}` on fault** — the pattern is illustrated in the S-03 → B-04 migration commits.
 *   **User Feedback**: When services fail or rate limits are reached, display a friendly placeholder: `"Data temporarily unavailable"` rather than raw technical stacks.
 *   **Rate Limiting Guard**: TheSportsDB API calls are strictly paced at a maximum rate of 25 requests per minute using token bucket queues to protect the API key from 429 locks.
 
-**Do NOT** copy the older "`catch { return [] }` in provider clients" pattern into new code. The exemption is per-route and scoped only to those grandfathered under S-03.
+**Do NOT** copy the older "`catch { return [] }` in provider clients" pattern into new code. The S-03 audit missed 6 routes that still answer a fault with 200 + `[]` (found 2026-09-24): `teams/[id]/players`, `teams/[id]/events`, `leagues/[id]/standings`, `search/teams`, `search/players`, `search/leagues`. They are tracked as OPEN-WORK O-20 — do not treat them as a pattern to copy.
 
 ### Type Safety
 *   **TypeScript Standard**: The codebase operates in strict TypeScript mode. Run `npx tsc --noEmit` to verify code correctness before any commit.

@@ -21,9 +21,79 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 - **2026-09-22 — OPEN-WORK.md carried three stale "still open" entries (O-02, O-03, O-04) for a week after their fixes had already landed.** O-02 (CI trigger scope) was closed by A-09 on 2026-09-15; O-03 (PATTERNS.md vs. api-fault-vs-absence) was closed by B-01's hybrid-rule encoding, also 2026-09-15; O-04 (middleware.ts JWT_SECRET throw) was closed by A-08, also 2026-09-15 — and O-04's entry additionally cited the wrong commit ("queued as A-02") for a week. All three read as open, undecided, or "not yet started" long after the work was done. Found while doing a full sweep of `OPEN-WORK.md` on 2026-09-22 rather than trusting each entry's last-written state — exactly the failure mode `documentation-discipline` rule 5 (an item without an updated "Why" is stale) exists to catch. Corrected: all three re-verified against the actual code/tests (`ci.yml`, `PATTERNS.md`, `middleware.ts` + their respective test files) and marked CLOSED with the verification method stated. Going forward: when resuming after a context gap, re-read `OPEN-WORK.md` end-to-end and spot-check a few entries against the live code before adding new ones — don't assume a prior session's snapshot is still accurate.
 
+- **2026-09-24 — A-05 / E-02 was overstated as an "active exploit".** The audit said any client could send `X-Forwarded-For: 0.0.0.0` to switch off the fraud IP checks. On Vercel that is false: Vercel overwrites `X-Forwarded-For` and does not forward client values (Vercel docs, "Request headers", via `mcp__Vercel__search_vercel_documentation`), and `x-real-ip` is the header Vercel's own `ipAddress()` helper reads (`@vercel/functions` 3.9.9, `headers.js` `IP_HEADER_NAME`). A-05 stays as defence-in-depth for local runs and non-Vercel hosts; its severity is low, not high. The `lib/security/client-ip.ts` comment now says so (R-01).
+- **2026-09-24 — The S-03 audit (2026-09-15) listed 12 routes that answer a fault with 200 + `[]`; there were 18.** B-04 fixed the 12. Six more still do it: `teams/[id]/players`, `teams/[id]/events`, `leagues/[id]/standings`, `search/teams`, `search/players`, `search/leagues`. Found by grepping every `catch` block in `app/api` for a non-error return, instead of trusting the original list. Tracked as OPEN-WORK O-20.
+- **2026-09-24 — CLAUDE.md, `.cursorrules`, PATTERNS.md and PROJECT.md named `lib/cache/apiCache.ts` as the cache and said static data caches for 30 days.** That file had no callers and was deleted in X-01/X-02; the live cache is `lib/cache.ts` (`swrGet`), and leagues/teams/players cache for 24 h (`CACHE_TTL`, and `TTL` in `lib/api/the-sports-db.ts`). The same four files still told agents to "return `[]`" on error, contradicting the hybrid rule. All four corrected to match the code. PATTERNS.md also cited "QA-LOG A-13" for the hybrid rule; it is B-01 (`3e4cd85`).
+- **2026-09-24 — "Fixes are live" was never checked against production.** Two work-branch builds were redeployed to production (Vercel `source: redeploy`, 2026-09-17 and 2026-09-19); the next `Version-3` push (2026-09-20) replaced them, and production has run without A-01..A-15, B-01..B-07, C-01..C-05, X-04, X-06, X-09, X-11 since. Found by comparing `mcp__Vercel__list_deployments` (`target: production`) against `git merge-base --is-ancestor`. OPEN-WORK O-21; PROGRESS.md Trouble Registry Bug 9.
+
 ---
 
 ## Entries
+
+### R-05 — Apostrophes in page copy no longer fail the build
+
+- **Date**: 2026-09-24
+- **Commit**: `cc6af34`.
+- **Layer**: L0 build config.
+- **Severity**: medium (release-blocking friction introduced by O-06).
+- **Was**: O-06 made ESLint errors fail `next build`, and the default `react/no-unescaped-entities` config errors on `'` and `"` in JSX text. One apostrophe in new page copy would fail the Vercel build and stop a `Version-3` content push from deploying. React renders both characters as typed.
+- **Now**: `.eslintrc.json` limits the rule's `forbid` list to `>` and `}` (option checked in the installed `eslint-plugin-react` 7.37.5 source). In `.tsx` those two are already a parse error, so the build still fails on them.
+- **Test**: `tests/eslint-entities-rule.test.ts` lints probe snippets with the real config: apostrophe/quotes → 0 errors; stray `}` and `>` → errors. Red: the apostrophe case gave 3 errors before.
+- **Skill/agent used**: review against CLAUDE.md scope (both halves are the product; content pushes must deploy).
+- **Run it**: `pnpm vitest --run tests/eslint-entities-rule.test.ts`.
+- **Result**: full `next lint` 0 errors, 46 warnings (unchanged, O-17). Suite 313/313; tsc clean.
+
+### R-04 — Remove stale comment and `void page` noise
+
+- **Date**: 2026-09-24
+- **Commit**: `5b18213`.
+- **Layer**: L1 UI + L5 helper comments.
+- **Severity**: low (clarity).
+- **Was**: `lib/api/retry.ts` said `api-client.ts` was "awaiting deletion approval" (deleted in X-01). `NewsClientPage.tsx` kept a `void page` line to silence a lint rule this repo does not enable.
+- **Now**: comment states the deletion; `void page` removed; the param is `_page` with a one-line reason. Checked that B-02 did not break the news filters: the pre-B-02 `newsAPI.searchNews` (at `8b561b8^`) also used only `q` and `pageSize`. The filters never worked — OPEN-WORK O-19.
+- **Test**: no behaviour change; full suite + tsc.
+- **Skill/agent used**: simplify pass.
+- **Run it**: `pnpm vitest --run`.
+- **Result**: suite 310/310; tsc clean.
+
+### R-03 — Search bar no longer shows made-up results
+
+- **Date**: 2026-09-24
+- **Commit**: `9655821`.
+- **Layer**: L1 UI.
+- **Severity**: medium (made-up data shown as real; broken links).
+- **Was**: when all four `/api/search/*` calls found nothing, `components/layout/search-bar.tsx` showed a fixed list ("Manchester United", "Cristiano Ronaldo", "Premier League") with slug links. `/leagues/premier-league` rendered "League Not Found" on the production deployment (fetched 2026-09-24 via `mcp__Vercel__web_fetch_vercel_url`); league ids are TheSportsDB numbers such as `4328`. The other two links could not be checked (deployment protection). Pre-existing code. Also a dead fallback: an article without a description showed `...` instead of "Sports news article".
+- **Now**: no match → the existing "No results found for …" state. The if/else collapsed into one path. Description fallback fixed.
+- **Test**: `tests/search-bar-no-fake-results.test.ts` — no result row may carry a quoted `/teams`, `/players` or `/leagues` url (real rows use a template literal with the API id). Red: found the three urls.
+- **Skill/agent used**: `api-fault-vs-absence` (never turn a fault or absence into a false claim).
+- **Run it**: `pnpm vitest --run tests/search-bar-no-fake-results.test.ts`.
+- **Result**: suite 310/310; tsc clean; lint clean on the file.
+
+### R-02 — Remove the explicit `any`s this branch added or moved; add a ratchet
+
+- **Date**: 2026-09-24
+- **Commit**: `930dea8`.
+- **Layer**: L1 UI, L3 routes, L5 helper.
+- **Severity**: low (rule compliance).
+- **Was**: CLAUDE.md bans `any`, yet four files this branch wrote or moved had one: `lib/api/dedup.ts` (`<T = any>`), `auth/admin/extend` (`as any`), `provision-test-trial` (`catch (err: any)`), `search-bar.tsx` (news branch).
+- **Now**: all four typed; search hits typed from the shapes the `/api/search/*` routes return. App code: 107 explicit-any lines on `Version-3` `16b8d6a`, 91 now.
+- **Test**: `tests/no-new-any.test.ts` — ratchet, `CEILING = 91`; proven to fail at 90. First count (87, from a `git grep` pathspec) was wrong: it skipped top-level `lib/*.ts`; the file walk and a corrected `git grep` agree on 91.
+- **Skill/agent used**: review against CLAUDE.md non-negotiables.
+- **Run it**: `pnpm vitest --run tests/no-new-any.test.ts`.
+- **Result**: suite 308/308; tsc clean. Remaining 91 → OPEN-WORK O-18.
+
+### R-01 — Stop admin dashboard lockout; run the login limiter before bcrypt
+
+- **Date**: 2026-09-24
+- **Commit**: `009150b`.
+- **Layer**: L3 middleware + admin auth route.
+- **Severity**: medium (admin locked out of own dashboard; CPU cost on refused logins).
+- **Was**: B-06 moved the `/api/admin/*` limit (5 per 15 min) from a per-instance `Map` to Redis, making it real. `/admin/api-health` makes 2 calls on open + 1 every 5 min, so a visit plus one reload returned 429. Separately, `/api/auth/admin` ran `bcrypt.compare` before the limiter (pre-existing order), so refused attempts still cost a hash.
+- **Now**: two buckets in `middleware.ts` — `admin-provision` (5 per 15 min; the route creates a real panel trial) and `admin-api` (60 per 15 min; each health check costs ~1 TheSportsDB call, well inside 25/min). Login checks the limit first. Both read the IP via `getClientIp`. Checked in passing: `provision-test-trial` is a GET with a side effect, but the `admin-session` cookie is `SameSite=strict` and nothing in the app links to it — left as is.
+- **Test**: `tests/admin-api-rate-limit-split.test.ts` (red: 15 of 20 dashboard calls got 429) and `tests/admin-login-limit-before-bcrypt.test.ts` (red: bcrypt ran 12 times for 12 attempts).
+- **Skill/agent used**: review of B-06 against real admin traffic; PROGRESS.md Trouble Registry Bug 8.
+- **Run it**: `pnpm vitest --run tests/admin-api-rate-limit-split.test.ts tests/admin-login-limit-before-bcrypt.test.ts`.
+- **Result**: suite 307/307; tsc clean; lint clean.
 
 ### O-06 — Configure ESLint from scratch, fix all 38 errors, enable `eslint.ignoreDuringBuilds: false` (verified by a real build)
 

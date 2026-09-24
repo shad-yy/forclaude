@@ -26,8 +26,8 @@ Refer to `memory-bank/PATTERNS.md` for full implementation patterns. Keep these 
 
 *   **API Security & Server-Side Execution**: Never call external APIs (TheSportsDB, NewsData.io, UFC scrapers) directly from frontend React components. All external queries must be wrapped in server-side API proxy routes or React Server Components.
 *   **Unified API Layer**: Do not import low-level client tools directly. Always use the wrapper classes located in `lib/api/unified-sports-api.ts`.
-*   **Fault Tolerance**: API routes and data fetching modules must catch all exceptions and return safe defaults (e.g. empty lists `[]` or cached records) with a console warning. Components must display `"Data temporarily unavailable"` instead of throwing an error or rendering a white screen.
+*   **Fault vs Absence (hybrid rule)**: An upstream outage is a fault, not "no data". New resolvers throw `UpstreamFaultError` (`lib/api/errors.ts`); API routes answer a fault with 503 + `Cache-Control: no-store`, never 200 + `[]`. Only a real "nothing exists" returns empty. Components must display `"Data temporarily unavailable"` instead of throwing or rendering a white screen.
 *   **Paced Rate Limiter**: Maintain the **25 requests/minute** throttle on TheSportsDB client to prevent free-tier API key exhaustion (official v1 key `123`).
-*   **TTL Cache Enforcer**: Every external API fetch must hit the TTL memory cache in `lib/cache/apiCache.ts`. Static data (leagues, teams, players) has a **30-day** cache lifetime.
+*   **TTL Cache Enforcer**: Every external API fetch must go through `lib/cache.ts` (`swrGet`: in-memory + Upstash Redis). Static data (leagues, teams, players) caches for **24 hours**.
 *   **Framer Motion Mount Guard**: To prevent production-only hydration crashes, always wrap Framer Motion animations inside a `mounted` boolean state block so they only initialize on the client side.
 *   **TypeScript Strictness**: Do not use `@ts-ignore` or the `any` type. Ensure all types map to clean interfaces in `lib/types.ts`. All changes must compile successfully via `npx tsc --noEmit`.
