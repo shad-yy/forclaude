@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { SignJWT, jwtVerify } from "jose"
 import { ENV } from "@/lib/config/env"
 import { checkRateLimit } from "@/lib/security/rate-limit"
+import { getClientIp } from "@/lib/security/client-ip"
 import bcrypt from "bcryptjs"
 
 // Admin password hash - securely stored in environment
@@ -26,12 +27,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: "Admin authentication not configured" }, { status: 500 })
     }
 
-    const isValidPassword = await bcrypt.compare(password, ADMIN_PASSWORD_HASH)
-
     // B-06: shared Redis-backed limiter — 10 attempts per 5 min per IP.
     // Retires the per-instance Map that would otherwise silently allow
-    // 10 × <instances> attempts (S-06).
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+    // 10 × <instances> attempts (S-06). Runs before bcrypt so a refused
+    // attempt costs no hash (tests/admin-login-limit-before-bcrypt.test.ts).
+    const ip = getClientIp(request.headers) ?? "unknown"
     const { allowed } = await checkRateLimit({
       key: `admin-login:${ip}`,
       limit: 10,
@@ -40,6 +40,8 @@ export async function POST(request: NextRequest) {
     if (!allowed) {
       return NextResponse.json({ success: false, message: "Too many attempts. Try later." }, { status: 429 })
     }
+
+    const isValidPassword = await bcrypt.compare(password, ADMIN_PASSWORD_HASH)
 
     if (!isValidPassword) {
       await new Promise((resolve) => setTimeout(resolve, 1000))

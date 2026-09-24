@@ -1,15 +1,18 @@
 /**
  * Client IP extraction and loopback-bypass policy.
  *
- * Introduced in A-05 to close the E-02 attack: sending
- * `X-Forwarded-For: 0.0.0.0` caused orders/route.ts to record the
- * client as loopback, and checkIpLimits then treated loopback as
- * "always allowed", disabling IP cooldown and rate-limit entirely.
+ * Introduced in A-05 for the E-02 path: a loopback IP (e.g. from
+ * `X-Forwarded-For: 0.0.0.0`) made checkIpLimits treat the caller as
+ * "always allowed". On Vercel a client cannot reach that path — Vercel
+ * overwrites X-Forwarded-For (vercel.com/docs/headers/request-headers)
+ * — so this is defence-in-depth for local runs and non-Vercel hosts,
+ * not an exploit fix. See QA-LOG standing corrections (2026-09-24).
  *
  * Behaviour:
- * - `getClientIp(headers)` prefers `x-real-ip` (Vercel-set, cannot be
- *   forged by a client), then falls through XFF's leftmost non-loopback
- *   entry. Returns null when nothing usable is present.
+ * - `getClientIp(headers)` prefers `x-real-ip` (the header Vercel's own
+ *   `ipAddress()` helper reads — `@vercel/functions` IP_HEADER_NAME),
+ *   then falls through XFF's leftmost non-loopback entry. Returns null
+ *   when nothing usable is present.
  * - `shouldBypassIpChecks(ip)` only bypasses loopback in non-production.
  *   In production, a loopback IP reaching the fraud gate means header
  *   extraction failed and the caller should be treated as suspicious.

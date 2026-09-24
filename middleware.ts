@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server"
 import { jwtVerify } from "jose"
 import { ENV } from "@/lib/config/env"
 import { checkRateLimit } from "@/lib/security/rate-limit"
+import { getClientIp } from "@/lib/security/client-ip"
 
 export async function middleware(request: NextRequest) {
   // A-08 (T-ENV-20 recurrence): NEVER throw at middleware top-of-function.
@@ -33,13 +34,15 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/api/admin/')) {
     // B-06: shared Redis-backed limiter — retires the per-instance Map
     // that made "5 per 15 min" an illusion in serverless (S-06).
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      || request.headers.get('x-real-ip')?.trim()
-      || '0.0.0.0'
+    // Two buckets: provisioning creates a real panel trial, so it keeps
+    // the strict 5; the read-only dashboards poll, so 5 locked the
+    // admin out after one reload (tests/admin-api-rate-limit-split.test.ts).
+    const ip = getClientIp(request.headers) ?? '0.0.0.0'
+    const provisioning = request.nextUrl.pathname.startsWith('/api/admin/provision-test-trial')
 
     const { allowed } = await checkRateLimit({
-      key: `admin-api:${ip}`,
-      limit: 5,
+      key: `${provisioning ? 'admin-provision' : 'admin-api'}:${ip}`,
+      limit: provisioning ? 5 : 60,
       windowSeconds: 15 * 60,
     })
     if (!allowed) {
