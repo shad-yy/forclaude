@@ -134,7 +134,7 @@ export function SearchBar({ className }: { className?: string }) {
               title: article.title,
               type: "news" as const,
               url: `/news?search=${encodeURIComponent(searchQuery)}`,
-              description: (article.description || "").substring(0, 100) + "..." || "Sports news article",
+              description: article.description ? article.description.substring(0, 100) + "..." : "Sports news article",
             }))
           searchResults.push(...newsSearchResults)
         }
@@ -157,39 +157,11 @@ export function SearchBar({ className }: { className?: string }) {
         }
       }
 
-      if (searchResults.length === 0) {
-        const mockResults: SearchResult[] = [
-          {
-            id: "1",
-            title: "Manchester United",
-            type: "team" as const,
-            url: "/teams/manchester-united",
-            description: "English Premier League team",
-          },
-          {
-            id: "2",
-            title: "Cristiano Ronaldo",
-            type: "player" as const,
-            url: "/players/cristiano-ronaldo",
-            description: "Portuguese forward",
-          },
-          {
-            id: "3",
-            title: "Premier League",
-            type: "league" as const,
-            url: "/leagues/premier-league",
-            description: "English top division",
-          },
-        ].filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase()))
-
-        setResults(mockResults)
-      } else {
-        const sortedResults = searchResults.sort((a, b) => {
-          const typeOrder = { team: 0, player: 1, news: 2, league: 3 }
-          return typeOrder[a.type] - typeOrder[b.type]
-        })
-        setResults(sortedResults.slice(0, 8))
-      }
+      // No match shows the "No results found" empty state — never
+      // placeholder rows (tests/search-bar-no-fake-results.test.ts).
+      const typeOrder = { team: 0, player: 1, news: 2, league: 3 }
+      searchResults.sort((a, b) => typeOrder[a.type] - typeOrder[b.type])
+      setResults(searchResults.slice(0, 8))
     } catch (error) {
       console.error("Search error:", error)
       setResults([])
