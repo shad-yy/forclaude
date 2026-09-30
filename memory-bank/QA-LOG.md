@@ -34,6 +34,94 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### R-15 — 8 more routes answer an outage with 503 (O-26 step C, closes O-20)
+
+- **Date**: 2026-09-30
+- **Commit**: `431dfff`.
+- **Layer**: L3 API routes.
+- **Severity**: medium.
+- **Was**: `teams/[id]/players`, `teams/[id]/events`, `leagues/[id]/standings`, `search/teams|players|leagues` (O-20) and `events/[id]/stats|timeline` (found 2026-09-30, in no earlier list) answered a fault with 200 + `[]` or a bare `[]`.
+- **Now**: 503 + `no-store`, same body as B-04.
+- **Test**: `tests/routes-outage-network.test.ts` — MSW 503 on every TheSportsDB URL, real resolvers and provider in the chain. Red: 8 routes failed; B-04's `players/[id]` already passed through the real chain after R-13/R-14. Now 9/9.
+- **Skill/agent used**: `api-fault-vs-absence`; network-seam testing (lesson from the B-04 correction).
+- **Run it**: `pnpm vitest --run tests/routes-outage-network.test.ts`.
+- **Result**: suite 347/347. Production build under a real outage (sandbox cannot reach TheSportsDB): `/api/players/…`, `/api/teams/…/players`, `/api/search/teams` → 503 with `no-store` (locally `next start` also emits the config's `public, max-age=3600` header; on Vercel only the route's value was seen on 2026-09-24).
+
+### R-14 — Resolvers pass outages on; pages say "temporarily unavailable" (O-26 steps B+D)
+
+- **Date**: 2026-09-30
+- **Commit**: `ac7b255`.
+- **Layer**: L4 resolvers + L1 pages.
+- **Severity**: high (outages were shown as empty data or turned into 404s).
+- **Was**: 16 resolver catches rethrew only `RateLimitError`; `getUpcomingFixtures` turned each league's failure into `[]`. `events/[id]` and `match/[id]` turned a fault into `notFound()`. The events/leagues/players/teams list pages rendered `err.message`. `watch/[slug]` used `Promise.all` with no catch and said "No upcoming fixtures scheduled right now." when the fetch failed. `teams/[id]`/`leagues/[id]` called `notFound()` inside `try`, so a non-existent team showed `Failed to load … try again later`.
+- **Now**: resolvers rethrow `UpstreamFaultError` too; `settleLeagues()` keeps partial results and throws only if every league faulted; `dataErrorMessage()` gives visitors "Data temporarily unavailable. Please try again shortly." (never the raw message); detail pages rethrow faults to the error page; watch pages degrade per section; `notFound()` moved out of `try`. `vitest.config.ts` compiles JSX with the automatic runtime.
+- **Test**: `tests/resolver-outage-fault.test.ts` (red 3/5 → 5/5), `tests/pages-outage-fault.test.ts` (red 5/7 → 7/7; the two "does not exist → 404" cases passed before and after). `teams/[id]`/`leagues/[id]` have no test (loader is an internal component; page files cannot export extra names).
+- **Skill/agent used**: `api-fault-vs-absence`.
+- **Run it**: `pnpm vitest --run tests/resolver-outage-fault.test.ts tests/pages-outage-fault.test.ts`.
+- **Result**: production build passed under a real outage (104 pages). `next start`, TheSportsDB unreachable: `/watch/premier-league` 200 with "temporarily unavailable" ×4 and "No upcoming fixtures…" ×0; `/leagues` shows "Data temporarily unavailable"; `/teams/133604` shows "Failed to load team information"; no page HTML contained "UpstreamFaultError". In Chromium, `/events/123` and `/match/123` show the error page ("Something went wrong!"), not a 404 — HTTP status stays 200 because the page is already streaming.
+
+### R-13 — TheSportsDB outage is a fault, never cached; serve old data (O-26 step A)
+
+- **Date**: 2026-09-30
+- **Commit**: `ae4ddb0`.
+- **Layer**: L5 provider + L6 cache.
+- **Severity**: high.
+- **Was**: `fetchFreshData` returned `[]` on a final 5xx, a network failure or a non-JSON body; `swrGet` cached it for the entry's TTL. Verified on the old code (`ae8f445`, empty cache, 2026-09-30T20:02:42Z): outage → `[]` after 3 attempts; provider back → still `[]` with no new request.
+- **Now**: those cases throw `UpstreamFaultError`; 404, `{key: null}` and an empty 200 body stay absences (the empty-body case is backed by `logs/sportsdb-unexpected-*.log`: 2 empty 200s among 506 recorded responses; the other 504 were HTML with HTTP 429). `swrGet` serves the cached payload on a fault and never caches the fault; `fetchWithRetry` no longer re-retries it; `lookupTeam`'s loop rethrows faults. A JSON body missing the expected key still returns `[]` (not enough evidence to change safely).
+- **Test**: `tests/sportsdb-outage-fault.test.ts` (8 cases). Run against `ae8f445`: 5 failed / 3 passed; now 8/8. First attempt passed 6/8 because `lib/cache.ts` keeps its Map on `globalThis`, which survives `vi.resetModules()` — tests now clear it.
+- **Skill/agent used**: `api-fault-vs-absence`, `stale-while-revalidate-cache`.
+- **Run it**: `pnpm vitest --run tests/sportsdb-outage-fault.test.ts`.
+- **Result**: suite 326/326; tsc clean.
+
+### R-12 — robots.txt check no longer fails on a correct file
+
+- **Date**: 2026-09-30
+- **Commit**: `2f3330c`.
+- **Layer**: L0 e2e test.
+- **Severity**: low (false alarm in the production monitor).
+- **Was**: `e2e/smartlivetv.spec.ts` asserted `not.toContain('Disallow: /')`, which `Disallow: /api/` always matches. The live robots.txt (fetched 2026-09-30) is correct.
+- **Now**: rejects only a bare `Disallow: /` line.
+- **Test**: checked the regex against the live text (not flagged) and a fully blocked file (flagged).
+- **Skill/agent used**: first production-monitor run triage.
+- **Run it**: next monitor run.
+- **Result**: 13 other failing checks untriaged — OPEN-WORK O-29.
+
+### R-11 — Daily Playwright monitor against production (closes O-10)
+
+- **Date**: 2026-09-30
+- **Commit**: `ae8f445`.
+- **Layer**: L0 CI.
+- **Severity**: medium (the 120 production checks had no runner since A-14).
+- **Now**: `.github/workflows/e2e-production-monitor.yml` — daily 05:47 UTC, manual dispatch, and on changes to itself; one tracking issue (label `production-monitor`) for scheduled/manual runs; HTML report artifact. Schedules run only from the default branch (`Version-3`).
+- **Test**: first real run `36769200235` (push trigger, 2026-09-30): 77 passed, 42 failed (14 checks × 3 devices), 1 flaky, 3.5 min.
+- **Skill/agent used**: production-monitor split (A-14).
+- **Run it**: Actions → "Production monitor (Playwright)" → Run workflow.
+- **Result**: workflow mechanics verified; failures tracked as O-29.
+
+### R-10 — Allow 'unsafe-eval' in development only (closes O-28)
+
+- **Date**: 2026-09-30
+- **Commit**: `43417e9`.
+- **Layer**: L0 config (CSP).
+- **Severity**: low (local tooling; production unchanged).
+- **Now**: `next.config.mjs` adds `'unsafe-eval'` to `script-src` only when `NODE_ENV === 'development'`.
+- **Test**: `tests/csp-dev-only-unsafe-eval.test.ts` (production/test/development). Red: development case failed. Chromium against `next dev`: 0 page errors; client components fetched their data.
+- **Skill/agent used**: owner-approved change.
+- **Run it**: `pnpm vitest --run tests/csp-dev-only-unsafe-eval.test.ts`.
+- **Result**: suite 318/318.
+
+### R-09 — Delete dead `components/homepage/events-list.tsx`
+
+- **Date**: 2026-09-30
+- **Commit**: `3764ecd`.
+- **Layer**: L1 UI.
+- **Severity**: low.
+- **Now**: deleted (no references anywhere; `/events` has its own `EventsList`). Owner-approved.
+- **Test**: tsc + suite; lint warnings 44 → 43.
+- **Skill/agent used**: dead-code pass.
+- **Run it**: `npx next lint`.
+- **Result**: three more components with no importers found afterwards — OPEN-WORK O-30.
+
 ### R-08 — Resolve 2 exhaustive-deps warnings without behaviour change
 
 - **Date**: 2026-09-30

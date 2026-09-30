@@ -156,6 +156,13 @@ Here is the repository of issues encountered, including root causes and their pe
 *   **Lesson**: when you make a control actually work, re-check its numbers against the
     real traffic that goes through it.
 
+### ⚠️ Bug 10: Route tests passed while outages still looked like "no data"
+
+*   **Symptoms**: B-04's tests (routes return 503 on fault) passed, yet during a real TheSportsDB outage the routes still answered 200 + empty, and the empty result was cached.
+*   **Root cause**: the tests mocked the resolver to throw; the real resolvers and provider client swallowed the fault and returned `[]`. `swrGet` then cached that `[]`.
+*   **Permanent fix** (R-13–R-15): fault thrown at the provider, never cached, rethrown by resolvers, shown honestly by pages; tests stub only the network (MSW).
+*   **Lessons**: test a fix at the network seam, not by mocking the layer below. `lib/cache.ts` keeps its Map on `globalThis`, so tests must clear it — `vi.resetModules()` does not.
+
 ### ⚠️ Bug 9: Production silently lost 52 commits of fixes
 
 *   **Symptoms**: fixes that had been live in production were gone, with no error.

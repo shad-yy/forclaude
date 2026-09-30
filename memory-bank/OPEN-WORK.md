@@ -6,6 +6,26 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
+## O-29 — 13 production checks fail on the first monitor run (triage needed)
+
+- **Since**: 2026-09-30 (run `36769200235`, push trigger on this branch; report artifact kept 14 days)
+- **Layer**: production content / e2e specs.
+- **Owner**: unassigned — each failure is either a real production problem or an outdated test expectation; which one is not known yet.
+- **Facts**: 120 tests; 77 passed, 42 failed, 1 flaky. The 42 are 14 checks × 3 devices. One (robots.txt) was a test bug, fixed in R-12 — the live file is correct. Still failing, untriaged (line numbers as reported by that run; R-12 added one line above them in `e2e/smartlivetv.spec.ts`):
+  - `e2e/smartlivetv.spec.ts`: unique title and meta description on every page (:109); schema markup present and valid (:173); footer links resolve without 404 (:328); buy form validates required fields (:455); no "James Harper" author anywhere (:751); blog posts render with BlogPostLayout (:836); league badge images have width/height (:864); no console errors on homepage (:941).
+  - `tests/mobile-responsiveness.spec.ts`: leagues / players / teams / events pages overlap the header on mobile (:9, :30, :48, :66); pricing cards slider (:84).
+  - Flaky: H1 exists and is unique on every page (:237, Mobile Chrome).
+- **Why it isn't done**: triage needs the report per failure; some assertions may encode content decisions only the owner can confirm.
+- **What would close it**: for each check, read its failure in the report; fix the site or correct the test (with evidence either way); re-run the monitor until green.
+
+## O-30 — Three more components have no importers
+
+- **Since**: noted 2026-09-30
+- **Layer**: L1 UI (dead code).
+- **Owner**: site owner (deletion approval).
+- **Facts**: `components/homepage/standings-widget.tsx`, `components/homepage/scores-widget.tsx`, `components/leagues/league-modal.tsx` — no file imports them (grep of `app/` and `components/`). The two widgets would show raw error text on a fault if they were ever used.
+- **What would close it**: owner approves deletion (as with R-09), or says where they should be used.
+
 ## O-27 — Production env vars the code reads but Vercel does not set
 
 - **Since**: checked 2026-09-30T19:43:17Z (`mcp__Vercel__filter_project_envs`, names only, values not decrypted; compared with every `process.env.X` in `lib/ app/ components/ middleware.ts instrumentation.ts`)
@@ -21,7 +41,10 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: only the owner can set values; which ones are intentionally unset is the owner's knowledge, not something the code can tell.
 - **What would close it**: owner sets the ones that should be on (at least `HCAPTCHA_SECRET` before or with O-21), or confirms which are intentionally off; then SETUP-REQUIRED.md records the decision.
 
-## O-28 — `next dev` cannot run client JavaScript (CSP has no `'unsafe-eval'`)
+## O-28 — CLOSED 2026-09-30 by R-10 (was: `next dev` cannot run client JavaScript)
+
+**Closed**: `'unsafe-eval'` added to `script-src` only in development; production CSP unchanged (`tests/csp-dev-only-unsafe-eval.test.ts`). Chromium against `next dev`: 0 page errors.
+
 
 - **Since**: `842f490` (2026-09-04, "remove 'unsafe-eval' from script-src"); seen 2026-09-30
 - **Layer**: L0 local tooling (production unaffected).
@@ -30,7 +53,10 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: the fix is a CSP change. Keeping production strict is the point of `842f490`.
 - **What would close it**: add `'unsafe-eval'` to `script-src` only when `NODE_ENV === 'development'` in `next.config.mjs` `headers()`, with a test that the production header still lacks it.
 
-## O-26 — TheSportsDB outages look like "no data" and get cached as empty (decision needed)
+## O-26 — CLOSED 2026-09-30 by R-13, R-14, R-15 (was: TheSportsDB outages look like "no data" and get cached as empty)
+
+**Closed**: owner chose "old data, else honest error". Provider throws `UpstreamFaultError` (R-13), cache serves old data and never stores the fault (R-13), resolvers pass it on (R-14), pages say "temporarily unavailable" / show the error page instead of a 404 (R-14), 8 more routes return 503 (R-15). Verified with network-seam tests and a production build + `next start` while TheSportsDB was unreachable from the sandbox. **Remaining, by design or limitation**: a JSON body missing the endpoint's expected key still returns `[]` (not enough evidence to change safely); streamed pages keep HTTP 200 when they show the error page (Next.js cannot change the status after streaming starts). Original entry below for the record.
+
 
 - **Since**: pre-existing; proven 2026-09-30 by a probe test (kept out of the suite, in the session scratchpad)
 - **Layer**: L5 provider client + L6 cache + L4 resolvers.
@@ -76,7 +102,10 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: merging into the production branch is the owner's call. Facts: builds from `claude/exciting-planck-6a4nbr` were deployed to production on 2026-09-17 (`7d553a4`) and 2026-09-19 (`73b364c`). The next push to `Version-3` (`16b8d6a`, content update) deployed over them. `git rev-list --count 73b364c --not 16b8d6a` = 52: production lost A-01..A-15, B-01..B-07, C-01..C-05, X-04, X-06, X-09 and X-11 (hCaptcha verification, test-panel bypass closure, AVIF mitigation, PII log redaction, provision race fix, fault-vs-absence routes). Work since then (X-01/02/05/08/13, O-06 build gates, R-01..R-05) was never in production: at `cc6af34` the branch has 77 commits `Version-3` lacks. Vercel reported no runtime errors in the 7 days to 2026-09-24.
 - **What would close it**: owner approves; merge the branch into `Version-3` (PR, CI green); then confirm with `list_deployments` (`target: production`) that the live SHA contains the branch head (`git merge-base --is-ancestor <head> <live-sha>`). PROGRESS.md Trouble Registry Bug 9.
 
-## O-20 — Six routes still answer an upstream fault with 200 + `[]`
+## O-20 — CLOSED 2026-09-30 by R-15 (was: six routes still answer an upstream fault with 200 + `[]`)
+
+**Closed**: all six plus `events/[id]/stats` and `events/[id]/timeline` return 503 + `no-store`; `tests/routes-outage-network.test.ts` proves it through the real chain.
+
 
 - **Since**: 2026-09-24 (missed by the 2026-09-15 S-03 audit, which listed 12)
 - **Layer**: L3 API routes.
@@ -109,7 +138,7 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: low impact; noted during the review, not in its scope. The 4 `FALLBACK_ARTICLES` are the site's own promo pieces (allowed as an owned fallback), but each sets `pubDate: new Date().toISOString()` at module load, so during a NewsData outage they appear as fresh news.
 - **What would close it**: give each a fixed, true `pubDate` (the linked page's real publish date) or omit the date in the UI for owned fallbacks.
 
-## O-17 — 44 ESLint warnings remain (was 46; R-08 fixed 2); none block the build
+## O-17 — 43 ESLint warnings remain (was 46; R-08 fixed 2, R-09 deleted a dead file with 1); none block the build
 
 - **Update 2026-09-30 (R-08)**: fixed `app/admin/api-management/page.tsx` and `components/homepage/league-tables.tsx`. Left on purpose: `components/homepage/events-list.tsx` — **no importers anywhere** (dead file; `/events` defines its own `EventsList` at `app/events/page.tsx:33`), deletion is the owner's call; `app/news/NewsClientPage.tsx:117-123` — a mount-only effect that fetches trending keywords **only when** query params exist, while its comment says "Don't fetch on initial load since we have server data"; the intent is unclear (see O-19). `components/analytics/GoogleAnalytics.tsx:13` — the `beforeInteractive` script sets consent to denied before GA loads (GDPR); it is intentional, and GA is not active in production anyway (O-27).
 
@@ -204,7 +233,10 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Why it isn't done**: `PROGRESS.md` §4.1 already flags "Next.js 14 → 16 upgrade" as its own project because it's a breaking two-major-version jump. The fixes landed in the 15.x line — moving to `15.5.24` (a major upgrade from 14, not a patch; `pnpm audit` lists `>=15.5.24` as the patched range for both criticals) plugs them without the full 14→16 migration.
 - **What would close it**: owner approves a 14 → 15 upgrade as its own branch; then (a) `pnpm add next@15.5.24 --save-exact`, (b) run `pnpm tsc --noEmit` and address any type-drift, (c) run `pnpm vitest --run` and address any regressions, (d) test in a preview deploy, (e) merge to `Version-3`. Full 14→16 upgrade stays as its own separate future project.
 
-## O-10 — Playwright e2e suite removed from PR gate; needs a dedicated scheduled workflow
+## O-10 — CLOSED 2026-09-30 by R-11 (was: Playwright e2e suite had no runner)
+
+**Closed**: `.github/workflows/e2e-production-monitor.yml` runs daily once merged to `Version-3`. First run: 77 passed, 42 failed, 1 flaky — see O-29.
+
 
 - **Since**: 2026-09-15 (A-14)
 - **Layer**: L0 (test infra)
