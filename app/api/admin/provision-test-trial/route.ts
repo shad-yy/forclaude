@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth/admin-guard'
 import { createTrialAccount } from '@/lib/panel/cms8k'
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return auth.response
   const adminSub = typeof auth.payload.sub === 'string' ? auth.payload.sub : undefined
 
-  const testName = 'DiagTest' + Math.floor(100 + Math.random() * 900)
+  const testName = 'DiagTest' + randomInt(100, 1000)
   console.log(`[PROVISION-DIAG] admin=${adminSub ?? 'unknown'} running trial creation for ${testName}`)
 
   const envCheck = {

@@ -30,7 +30,10 @@ describe("generateUsername", () => {
     }
   })
 
-  it("does not use Math.random for the suffix", () => {
-    expect(readFileSync("lib/panel/cms8k.ts", "utf8")).not.toMatch(/Math\.random\(/)
+  it("does not use Math.random for the suffix or the admin test name", () => {
+    // The diagnostic route's test name becomes part of the username too.
+    for (const f of ["lib/panel/cms8k.ts", "app/api/admin/provision-test-trial/route.ts"]) {
+      expect(readFileSync(f, "utf8"), f).not.toMatch(/Math\.random\(/)
+    }
   })
 })
