@@ -111,7 +111,8 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         const pages = [
             { path: '/', titleMustContain: 'Smart Live TV' },
             { path: '/pricing', titleMustContain: '£12' },
-            { path: '/buy', titleMustContain: 'Access' },
+            // O-29 (owner decision 2026-09-30): match the live title, which has no "Access".
+            { path: '/buy', titleMustContain: 'Start Watching' },
             { path: '/free-trial', titleMustContain: 'Trial' },
             { path: '/watch/premier-league', titleMustContain: 'Premier League' },
             { path: '/ufc', titleMustContain: 'UFC' },
@@ -183,11 +184,9 @@ test.describe('SEO — Critical Indexing Requirements', () => {
                 expectedTypes: ['Product', 'FAQPage'],
                 mustHaveId: true,
             },
-            {
-                path: '/faq',
-                expectedTypes: ['FAQPage'],
-                mustHaveId: false,
-            },
+            // O-29 (owner decision 2026-09-30): /faq shows the same 8 Q&As
+            // that /pricing marks up. Google: mark up repeated FAQs once per
+            // site; FAQ rich results stopped appearing on 7 May 2026.
             {
                 path: '/setup/firestick',
                 expectedTypes: ['HowTo', 'FAQPage'],

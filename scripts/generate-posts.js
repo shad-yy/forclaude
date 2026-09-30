@@ -37,6 +37,11 @@ function generate() {
     const fileContent = fs.readFileSync(filePath, 'utf-8');
 
     const { data, content } = matter(fileContent);
+    // Never invent a publish date: a missing one used to become the build
+    // date, so every deploy re-dated the post (O-29 follow-up).
+    if (!data.date) {
+      throw new Error(`${file}: frontmatter has no date — add the real publish date`);
+    }
 
     // Convert markdown content to HTML
     const htmlContent = marked.parse(content);
@@ -50,10 +55,11 @@ function generate() {
       title: data.title || '',
       description: data.description || '',
       category: getCategory(data.category),
-      publishedAt: data.date || new Date().toISOString().slice(0, 10),
+      publishedAt: data.date,
       readTime: data.readTime || readTime,
       featured: typeof data.featured === 'boolean' ? data.featured : false,
       metaTitle: data.metaTitle || null,
+      author: data.author || 'Smart Live TV',
       content: htmlContent
     });
   }
@@ -74,6 +80,7 @@ export interface BlogPost {
   featured: boolean
   content: string
   metaTitle?: string
+  author: string
 }
 
 export const BLOG_POSTS: BlogPost[] = ${JSON.stringify(posts, null, 2)};
