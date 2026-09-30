@@ -70,6 +70,23 @@ describe("O-26 step C: outage → 503 + no-store at the network seam", () => {
     })
   }
 
+  // O-29 follow-up: since R-14 the resolvers pass faults on, and these three
+  // catches turned an outage into 500 (standings, fixtures/league) or
+  // 200 + data:null (events/[id]). Found on a local build during the outage.
+  const moreRoutes: Array<[string, string, string, Record<string, string>]> = [
+    ["standings/[leagueId]", "@/app/api/standings/[leagueId]/route", "/api/standings/4328", { leagueId: "4328" }],
+    ["fixtures/league/[leagueId]", "@/app/api/fixtures/league/[leagueId]/route", "/api/fixtures/league/4328", { leagueId: "4328" }],
+    ["events/[id]", "@/app/api/events/[id]/route", "/api/events/2269515", { id: "2269515" }],
+  ]
+  for (const [name, mod, path, params] of moreRoutes) {
+    it(name, async () => {
+      const { GET } = (await import(mod)) as { GET: (r: NextRequest, ctx: { params: Record<string, string> }) => Promise<Response> }
+      const res = await run(GET(req(path), { params }))
+      expect(res.status, `${name} must answer an outage with 503`).toBe(503)
+      expect(res.headers.get("Cache-Control")).toBe("no-store")
+    })
+  }
+
   it("B-04 route players/[id] now really returns 503 through the real chain", async () => {
     const { GET } = (await import("@/app/api/players/[id]/route")) as { GET: Handler }
     const res = await run(GET(req("/api/players/34145937"), { params: { id: "34145937" } }))

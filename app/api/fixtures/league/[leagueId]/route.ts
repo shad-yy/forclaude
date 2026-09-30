@@ -15,7 +15,10 @@ export async function GET(request: Request, { params }: { params: { leagueId: st
             data: upcomingEvents
         })
     } catch (error) {
-        console.error(`[Fixtures API] Error fetching fixtures for league ${params.leagueId}:`, error)
-        return NextResponse.json({ data: [] }, { status: 500 })
+        console.warn("[Fixtures API] fault:", error)
+        return NextResponse.json(
+            { error: "Upstream temporarily unavailable — we could not check just now." },
+            { status: 503, headers: { "Cache-Control": "no-store" } }
+        )
     }
 }
