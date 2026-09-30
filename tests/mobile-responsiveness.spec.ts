@@ -1,13 +1,15 @@
 import { test, expect } from "@playwright/test"
 
-const LOCAL_BASE = "http://localhost:3001"
+// O-29: paths are relative so Playwright's baseURL (PLAYWRIGHT_BASE_URL, else
+// localhost:3000 — playwright.config.ts) decides the target. The old
+// hard-coded localhost:3001 failed every run against the live site.
 
 test.describe("Mobile Layout Responsiveness & Spacing Checks", () => {
   // Use a mobile viewport for all tests in this block
   test.use({ viewport: { width: 390, height: 844 } })
 
   test("Leagues page doesn't overlap header on mobile", async ({ page }) => {
-    await page.goto(`${LOCAL_BASE}/leagues`)
+    await page.goto("/leagues")
     // Wait for the main heading to be visible
     const h1 = page.locator("h1:has-text('Football Leagues')")
     await expect(h1).toBeVisible()
@@ -28,7 +30,7 @@ test.describe("Mobile Layout Responsiveness & Spacing Checks", () => {
   })
 
   test("Players page doesn't overlap header on mobile", async ({ page }) => {
-    await page.goto(`${LOCAL_BASE}/players`)
+    await page.goto("/players")
     const h1 = page.locator("h1:has-text('Football Players')")
     await expect(h1).toBeVisible()
     
@@ -46,7 +48,7 @@ test.describe("Mobile Layout Responsiveness & Spacing Checks", () => {
   })
 
   test("Teams page doesn't overlap header on mobile", async ({ page }) => {
-    await page.goto(`${LOCAL_BASE}/teams`)
+    await page.goto("/teams")
     const h1 = page.locator("h1:has-text('Football Teams')")
     await expect(h1).toBeVisible()
     
@@ -64,7 +66,7 @@ test.describe("Mobile Layout Responsiveness & Spacing Checks", () => {
   })
 
   test("Events page doesn't overlap header on mobile", async ({ page }) => {
-    await page.goto(`${LOCAL_BASE}/events`)
+    await page.goto("/events")
     const h1 = page.locator("h1:has-text('Sports Events')")
     await expect(h1).toBeVisible()
     
@@ -82,7 +84,7 @@ test.describe("Mobile Layout Responsiveness & Spacing Checks", () => {
   })
 
   test("Pricing cards slider is visible and snap-scroll works on mobile", async ({ page }) => {
-    await page.goto(`${LOCAL_BASE}/pricing`)
+    await page.goto("/pricing")
     
     // Look for the mobile-only snap scroll container
     const sliderContainer = page.locator(".hide-scrollbar")

@@ -269,6 +269,8 @@ export function MatchCard() {
                                                             <img
                                                                 src={homeBadge}
                                                                 alt={match.strHomeTeam}
+                                                                width={32}
+                                                                height={32}
                                                                 className="max-h-8 max-w-8 object-contain"
                                                                 loading="lazy"
                                                                 onError={(e) => {
@@ -317,6 +319,8 @@ export function MatchCard() {
                                                             <img
                                                                 src={awayBadge}
                                                                 alt={match.strAwayTeam}
+                                                                width={32}
+                                                                height={32}
                                                                 className="max-h-8 max-w-8 object-contain"
                                                                 loading="lazy"
                                                                 onError={(e) => {
