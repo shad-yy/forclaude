@@ -123,6 +123,9 @@ const nextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
   async headers() {
+    // O-28: `next dev` needs eval for its source maps; production never gets it
+    // (tests/csp-dev-only-unsafe-eval.test.ts).
+    const devEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
     return [
       {
         source: '/(.*)',
@@ -161,7 +164,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://www.thesportsdb.com https://r2.thesportsdb.com https://www.google-analytics.com https://site.api.espn.com; frame-ancestors 'self';"
+            value: `default-src 'self'; script-src 'self' 'unsafe-inline'${devEval} https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://www.thesportsdb.com https://r2.thesportsdb.com https://www.google-analytics.com https://site.api.espn.com; frame-ancestors 'self';`
           },
         ],
       },
