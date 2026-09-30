@@ -64,7 +64,8 @@ export async function requireAdmin(request?: NextRequest): Promise<AdminGuardRes
     // `next/headers` is only usable inside a server-component / route
     // handler request context. Anywhere it would throw, the caller
     // should pass `request` explicitly.
-    token = nextCookies().get(COOKIE_NAME)?.value
+    // Next 15: cookies() is async.
+    token = (await nextCookies()).get(COOKIE_NAME)?.value
   }
 
   if (!token) return { ok: false, response: unauthorized("no-session") }
