@@ -34,6 +34,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### R-16 — Upgrade next 14.2.35 → 15.5.27 (branch `claude/next15-upgrade`)
+
+- **Date**: 2026-09-30
+- **Commit**: `6fae178`.
+- **Layer**: L0 dependency.
+- **Severity**: high (2 critical + 8 high advisories on `next` 14.2.35).
+- **Was**: `next` 14.2.35; every advisory fix only in 15.x (O-11).
+- **Now**: `next` and `eslint-config-next` 15.5.27; React stays 18 (15.5.27 peer range allows it). Required edits: async `cookies()` in `lib/auth/admin-guard.ts`; `<Link>` in `app/info/faq/page.tsx` (new lint error); removed `experimental.instrumentationHook` and `swcMinify`; test accepts Next 15's `notFound()` digest.
+- **Test**: `pnpm audit --prod` 2026-09-30 — `next`: 2 critical / 8 high / 11 moderate / 2 low → 0; all prod deps: critical 2 → 0, high 24 → 16 (undici, nanoid, sharp, postcss, lodash). tsc clean; suite 347/347; lint 0 errors / 43 warnings; production build 104/104; `next start` with TheSportsDB unreachable gives the same results as on 14; Chromium homepage 0 errors.
+- **Skill/agent used**: owner-approved upgrade on its own branch.
+- **Run it**: `pnpm audit --prod`; `node -r ./polyfill-self.cjs node_modules/next/dist/bin/next build`.
+- **Result**: not merged — needs review. Follow-up O-31 (26 files read `params` synchronously; deprecated in 15, removed in 16).
+
 ### R-15 — 8 more routes answer an outage with 503 (O-26 step C, closes O-20)
 
 - **Date**: 2026-09-30

@@ -6,6 +6,15 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
+## O-31 — 26 files read route `params` synchronously (deprecated in Next 15, removed in 16)
+
+- **Since**: noted 2026-09-30 during R-16
+- **Layer**: L1/L3 pages and route handlers.
+- **Owner**: unassigned
+- **Facts**: `grep` of `app/` finds 26 files using `params.x` / `{ params }: { params: { … } }` directly. Next 15 still supports this (production build and `next start` worked), but it is deprecated and Next 16 removes it.
+- **Why it isn't done**: kept out of R-16 so the upgrade stays small and reviewable.
+- **What would close it**: `npx @next/codemod@latest next-async-request-api .` (or by hand), then tsc, suite, build and a runtime check of each dynamic route.
+
 ## O-29 — 13 production checks fail on the first monitor run (triage needed)
 
 - **Since**: 2026-09-30 (run `36769200235`, push trigger on this branch; report artifact kept 14 days)
@@ -213,7 +222,9 @@ Was: `package-lock.json` and `pnpm-lock.yaml` both committed, drifting apart on 
 
 Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/api/search/news`'s response, which is `{status, articles, totalResults}` — an object, not an array. `Array.isArray(...)` was always false; the news branch of the site-wide search rendered nothing. Fixed by reading `newsJson?.articles` explicitly (option (a) from the original entry, chosen because changing the route shape would ripple through other callers). Regression tripwire at `tests/search-bar-news-contract.test.ts` refuses the plain `Array.isArray(newsJson)` shape re-appearing and pins the route's response shape.
 
-## O-11 — `next` 14.2.35 carries 2 critical + 8 high advisories; every fix needs `next` ≥ 15 (a major upgrade)
+## O-11 — `next` 14.2.35 carries 2 critical + 8 high advisories — upgrade done on branch `claude/next15-upgrade` (R-16), awaiting review
+
+**Update 2026-09-30**: upgraded to 15.5.27 on its own branch (`6fae178`); `pnpm audit` shows 0 advisories on `next`. Closes when that branch is merged to `Version-3` and deployed.
 
 **Correction 2026-09-30** (source: `pnpm audit --prod --json`, 2026-09-30T19:26:27Z):
 - The fix is **not a patch bump**: 14.2.35 → 15.5.24 is a major-version upgrade (14 → 15). The line below that calls it a "patch bump" was wrong.
