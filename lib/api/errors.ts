@@ -2,7 +2,7 @@
  * Boundary error classes for provider clients.
  *
  * Introduced in B-01 to encode the hybrid `api-fault-vs-absence` rule
- * (see memory-bank/PATTERNS.md §Error Handling and QA-LOG A-13).
+ * (see memory-bank/PATTERNS.md §Error Handling; commit 3e4cd85, B-01).
  *
  * `UpstreamFaultError` — provider misbehaviour that must not be
  * collapsed into an empty state. Thrown from provider clients on 5xx,

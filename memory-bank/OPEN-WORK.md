@@ -6,6 +6,20 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
+## O-26 — TheSportsDB outages look like "no data" and get cached as empty (decision needed)
+
+- **Since**: pre-existing; proven 2026-09-30 by a probe test (kept out of the suite, in the session scratchpad)
+- **Layer**: L5 provider client + L6 cache + L4 resolvers.
+- **Owner**: site owner (design decision), then Claude.
+- **Facts**:
+  - `lib/api/the-sports-db.ts` `fetchFreshData` (~lines 318–370) returns `[]` on a final 5xx, a network failure (status 0), a non-JSON body or a missing expected key. Only 429 throws (`RateLimitError`).
+  - `unifiedSportsAPI` resolvers (`getTeam`, `getPlayer`, `getPlayers`, `getFixtures`, `getStandings`, `searchTeams`, `searchPlayers`, `searchAll`, `getLeagues`, `getRecentResults`) catch everything and rethrow only `RateLimitError`.
+  - `lib/cache.ts` `swrGet`/`swrSet` store whatever the fetcher returns, including that outage `[]`; `revalidateInBackground` overwrites a good stale entry with it.
+  - Probe (MSW 503 on `lookuptable.php`, 2026-09-30T19:29:49Z): `lookupTable` resolved `[]`; after the stub recovered, the next call still returned 0 rows (served from cache). Cached for the entry's TTL — 300 s for standings, 86,400 s for team/league/player info (`lib/api/the-sports-db.ts:118-126`).
+  - Effect: 13 routes (B-04's `leagues`, `scores/recent`, `leagues/[id]/events`, `teams/[id]`, `players/[id]`, `search`, `events/[id]/lineups` + the six in O-20) produce 503 only on a rate limit. Pages that call `getTeam`/`getPlayer` and then `notFound()` on `null` can turn an outage into a 404. Not re-checked: `scores/today`, `fixtures/today`, `spotlight`, `ufc/events`; `news` serves owned fallback articles by design.
+- **Why it isn't done**: fixing it changes what visitors see site-wide during an outage (stale data, or an error state, instead of empty sections), so the approach is the owner's call.
+- **What would close it**: owner picks an approach; then red-first tests (the probe becomes the first), fix, full suite, preview check.
+
 ## O-23 — URGENT: rotate the RapidAPI key and reset two panel lines (committed to a public repo)
 
 - **Since**: key since at least 2026-07-02 (`309e8bc`); HAR since 2026-09-13 (`1999666`). Found 2026-09-24.
@@ -45,6 +59,7 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Owner**: unassigned
 - **Why it isn't done**: found during the 2026-09-24 review; each needs the B-04 treatment (resolver throws `UpstreamFaultError`, route returns 503 + `no-store`, red-first test) plus a check that every client caller handles `!res.ok`. Routes: `teams/[id]/players`, `teams/[id]/events`, `leagues/[id]/standings`, `search/teams`, `search/players`, `search/leagues`. The search bar already checks `res.ok` for the three search routes.
 - **What would close it**: migrate one route per commit as in B-04.1–12; update PATTERNS.md §Error Handling to drop the list.
+- **Update 2026-09-30 — blocked on O-26**: a route-only change would repeat B-04's gap. All six call resolvers (`getPlayers`, `getFixtures`, `getStandings`, `searchTeams`, `searchPlayers`, `getLeagues`) that return `[]` on any fault except a rate limit, so the route's `catch` would only ever fire on a 429. Needs the O-26 decision first.
 
 ## O-19 — News page filter controls have no effect
 
@@ -81,13 +96,14 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 Was: CI ran tests/typecheck on Node 20 (`.github/workflows/ci.yml`) while the live Vercel project runs Node 24.x in production (confirmed via `mcp__Vercel__get_project`) — a Node-24-only behaviour difference could pass CI and only surface live. Closed by bumping `ci.yml`'s `node-version` from `20` to `24` to match production (the safer default — test what you actually ship). `dependency-audit.yml` and `auto-index.yml` still pin Node 20 but were left alone: neither runs the app's test/typecheck suite (one runs `pnpm audit`, the other pings IndexNow), so they aren't the behaviour-drift risk O-16 was about. Verified via a real CI run on the pushed commit (this session's sandbox runs Node 22, so local verification wasn't authoritative for a Node-version change — the real GitHub Actions run, which provisions the exact declared version, is).
 
-## O-01 — `vitest.config.ts:10` embeds a 512-bit `JWT_SECRET` fallback in a checked-in file
+## O-01 — Check whether the old test `JWT_SECRET` fallback was ever the production value (code half done)
 
 - **Since**: 2026-09-15
 - **Layer**: L0 (tooling / secrets hygiene)
 - **Owner**: unassigned — maintainer decision required
 - **Why it isn't done**: cannot determine from the code alone whether this hex value was ever the production `JWT_SECRET`. If it was, it is leaked in git history and the production secret must be rotated. If it was never production, it is a test-only random value and only needs a comment saying so plus a rotation on the fallback itself.
 - **What would close it**: (a) confirm from Vercel dashboard history whether this value was ever the production `JWT_SECRET`; (b) if yes, rotate `JWT_SECRET` in Vercel and replace the fallback with a comment "test-only, never used in prod"; (c) if no, replace the fallback with an obviously-fake value and add the comment.
+- **Update 2026-09-30**: the code half is done — since A-11 `vitest.config.ts` uses `"test-only-jwt-secret-do-not-use-in-prod"` with a NEVER-commit comment, guarded by `tests/no-credential-shaped-hex-in-repo.test.ts`. Only step (a), and (b) if needed, remain — Vercel dashboard access, owner only.
 
 ## O-02 — CLOSED 2026-09-15 by A-09 (was stale until 2026-09-22)
 
@@ -142,7 +158,13 @@ Was: `package-lock.json` and `pnpm-lock.yaml` both committed, drifting apart on 
 
 Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/api/search/news`'s response, which is `{status, articles, totalResults}` — an object, not an array. `Array.isArray(...)` was always false; the news branch of the site-wide search rendered nothing. Fixed by reading `newsJson?.articles` explicitly (option (a) from the original entry, chosen because changing the route shape would ripple through other callers). Regression tripwire at `tests/search-bar-news-contract.test.ts` refuses the plain `Array.isArray(newsJson)` shape re-appearing and pins the route's response shape.
 
-## O-11 — Two critical Next.js RCEs live on production (< 15.5.24) — one MITIGATED
+## O-11 — `next` 14.2.35 carries 2 critical + 8 high advisories; every fix needs `next` ≥ 15 (a major upgrade)
+
+**Correction 2026-09-30** (source: `pnpm audit --prod --json`, 2026-09-30T19:26:27Z):
+- The fix is **not a patch bump**: 14.2.35 → 15.5.24 is a major-version upgrade (14 → 15). The line below that calls it a "patch bump" was wrong.
+- `next` has 2 critical and 8 high advisories; the patched ranges are all in 15.x (lowest covering all: `>=15.5.24`). Examples: GHSA-p9j2-gv94-2wf4 (SSRF in rewrites, `<15.5.21`), GHSA-m99w-x7hq-7vfj (DoS with Server Actions, `<15.5.21`).
+- The AVIF mitigation (A-15) exists only on the unmerged work branch. Production `16b8d6a` still has `formats: ['image/webp', 'image/avif']` (`next.config.mjs:88`) — see O-21.
+- Whether GHSA-2xp9 (libheif inside `sharp`) reaches a Vercel-hosted site is **unknown**: the advisory text does not say, and Vercel's docs describe `/_next/image` as served by "Vercel's native Image Optimization API" without saying whether it uses `sharp`.
 
 **Update 2026-09-15:** GHSA-2xp9-vwfh-vxw4 (AVIF RCE) attack path closed by A-15 (`next.config.mjs` `images.formats` no longer includes `image/avif`). This is a **mitigation, not a fix** — the underlying `next` version is still vulnerable and would be re-exposed the moment AVIF is reintroduced. Regression tripwire at `tests/next-image-avif-disabled.test.ts`. The other CVE (GHSA-p293-qw3h-jr36, Windows-host RCE) still stands; production is Vercel/Linux so attack surface there is dev machines only. The proper fix (patch bump to `next@15.5.24+`) remains scheduled below.
 
@@ -152,9 +174,9 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Owner**: unassigned — maintainer needs to schedule the Next patch bump
 - **Advisories** (both `next` @ current 14.2.35):
   1. **GHSA-p293-qw3h-jr36** — Unauthenticated Remote Code Execution on windows-hosted servers. `>=13.4.0 <15.5.24`. Production hosted on Vercel (Linux) — attack surface is dev machines only.
-  2. **GHSA-2xp9-vwfh-vxw4** — Unauthenticated Remote Code Execution in Image Optimization API when AVIF files are used. `>=10.0.0 <15.5.24`. This project uses Next Image; AVIF is negotiated by modern browsers. **Live-exploitable on the deployed site.**
-- **Why it isn't done**: `PROGRESS.md` §4.1 already flags "Next.js 14 → 16 upgrade" as its own project because it's a breaking two-major-version jump. But the RCE fixes landed in the 15.x line — a patch bump to `15.5.24` (or `15.5.10+`) plugs both without the full 14→16 migration.
-- **What would close it**: (a) `pnpm add next@15.5.24 --save-exact`, (b) run `pnpm tsc --noEmit` and address any type-drift, (c) run `pnpm vitest --run` and address any regressions, (d) test in a preview deploy, (e) merge to `Version-3`. Full 14→16 upgrade stays as its own separate future project.
+  2. **GHSA-2xp9-vwfh-vxw4** — Unauthenticated Remote Code Execution in Image Optimization API when AVIF files are used. `>=10.0.0 <15.5.24`. This project uses Next Image; AVIF is negotiated by modern browsers. Exploitability on the Vercel-hosted site: **unknown** (see the 2026-09-30 correction above).
+- **Why it isn't done**: `PROGRESS.md` §4.1 already flags "Next.js 14 → 16 upgrade" as its own project because it's a breaking two-major-version jump. The fixes landed in the 15.x line — moving to `15.5.24` (a major upgrade from 14, not a patch; `pnpm audit` lists `>=15.5.24` as the patched range for both criticals) plugs them without the full 14→16 migration.
+- **What would close it**: owner approves a 14 → 15 upgrade as its own branch; then (a) `pnpm add next@15.5.24 --save-exact`, (b) run `pnpm tsc --noEmit` and address any type-drift, (c) run `pnpm vitest --run` and address any regressions, (d) test in a preview deploy, (e) merge to `Version-3`. Full 14→16 upgrade stays as its own separate future project.
 
 ## O-10 — Playwright e2e suite removed from PR gate; needs a dedicated scheduled workflow
 
