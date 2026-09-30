@@ -19,10 +19,11 @@ export async function GET(
       { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/leagues/[id]/standings error:", error)
+    // O-26 step C: an outage is a 503, never 200 + [] (tests/routes-outage-network.test.ts).
+    console.warn("[API] GET /api/leagues/[id]/standings fault:", error)
     return NextResponse.json(
-      { data: [], error: "Data temporarily unavailable" },
-      { status: 200 }
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }
