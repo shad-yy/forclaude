@@ -74,7 +74,7 @@ export function LeagueTables() {
         }
 
         fetchStandings()
-    }, [activeTab.id]) // Re-fetch when tab changes
+    }, [activeTab.id, activeTab.name]) // Re-fetch when tab changes
 
 
     const FormPill = ({ result }: { result: string }) => {
