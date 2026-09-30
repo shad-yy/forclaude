@@ -18,8 +18,9 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         expect(res.status()).toBe(200)
         const body = await res.text()
 
-        // Must allow everything
-        expect(body).not.toContain('Disallow: /')
+        // Must allow everything: no bare "Disallow: /" line. (A substring check
+        // also matched "Disallow: /api/" and failed on a correct file.)
+        expect(body).not.toMatch(/^Disallow:\s*\/\s*$/m)
 
         // Must block only these specific paths
         expect(body).toContain('Disallow: /api/')
