@@ -10,6 +10,7 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PLAYER_POSITIONS } from "@/lib/config"
+import { dataErrorMessage } from "@/lib/api/errors"
 
 const FEATURED_TEAMS = [
   { id: '133604', name: 'Arsenal' },
@@ -64,7 +65,7 @@ async function PlayersList({ searchParams }: { searchParams: PlayersPageProps["s
       )
     }
   } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to load players"
+    error = dataErrorMessage(err, "Failed to load players")
     players = []
   }
 

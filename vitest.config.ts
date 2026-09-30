@@ -26,6 +26,11 @@ export default defineConfig({
       reporter: ["text", "lcov"],
     },
   },
+  // Next.js compiles JSX with the automatic runtime; match it so page
+  // components can be rendered to a React tree in tests (O-26 step D).
+  esbuild: {
+    jsx: "automatic",
+  },
   resolve: {
     alias: {
       "@": new URL("./", import.meta.url).pathname,

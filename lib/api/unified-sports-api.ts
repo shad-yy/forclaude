@@ -1,5 +1,6 @@
 import { theSportsDB, RateLimitError, allSports as getAllSports } from "./the-sports-db"
 import { swrGet } from "@/lib/cache"
+import { isUpstreamFault } from "@/lib/api/errors"
 
 // Safely append /tiny to a TheSportsDB image URL without double-appending
 function safeBadgeUrl(url: string | undefined | null): string | undefined {
@@ -14,6 +15,21 @@ import type {
   SportsDbEvent as SportsDbEventType,
   SportsDbTable as SportsDbTableType,
 } from "../types/sportsdb"
+
+/**
+ * O-26: one league failing should not hide the others, but if every league
+ * failed because the provider is down or throttling, that is a fault — not
+ * "no matches".
+ */
+async function settleLeagues<T>(calls: Promise<T[]>[]): Promise<T[][]> {
+  const results = await Promise.allSettled(calls)
+  const ok = results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []))
+  if (ok.length > 0) return ok
+  for (const r of results) {
+    if (r.status === "rejected" && (isUpstreamFault(r.reason) || r.reason instanceof RateLimitError)) throw r.reason
+  }
+  return ok
+}
 
 // Unified interfaces that match the existing app structure
 export interface UnifiedLeague {
@@ -323,7 +339,7 @@ class UnifiedSportsAPI {
       return sports.map((sport) => sport.strSport).filter((sport): sport is string => !!sport)
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching sports:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -352,18 +368,12 @@ class UnifiedSportsAPI {
         const leagues = await this.getLeagues(undefined, params.sport)
         const popularLeagues = leagues.slice(0, 5) // Limit to top 5 leagues per sport
 
-        const eventsPromises = popularLeagues.map(league =>
-          theSportsDB.eventsNextLeague(league.id).catch(() => [])
-        )
-        const eventsArrays = await Promise.all(eventsPromises)
+        const eventsArrays = await settleLeagues(popularLeagues.map((league) => theSportsDB.eventsNextLeague(league.id)))
         allUpcoming = eventsArrays.flat().slice(0, limit).map((event) => this.transformFixtureSync(event))
       } else {
         // Get upcoming from popular leagues (Premier League, La Liga, Serie A, Bundesliga, Ligue 1)
         const popularLeagueIds = ["4328", "4335", "4332", "4331", "4334"]
-        const eventsPromises = popularLeagueIds.map(id =>
-          theSportsDB.eventsNextLeague(id).catch(() => [])
-        )
-        const eventsArrays = await Promise.all(eventsPromises)
+        const eventsArrays = await settleLeagues(popularLeagueIds.map((id) => theSportsDB.eventsNextLeague(id)))
         allUpcoming = eventsArrays.flat().slice(0, limit).map((event) => this.transformFixtureSync(event))
       }
 
@@ -375,7 +385,7 @@ class UnifiedSportsAPI {
       })
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching upcoming fixtures:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -405,7 +415,7 @@ class UnifiedSportsAPI {
       )
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching leagues:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -434,7 +444,7 @@ class UnifiedSportsAPI {
       return []
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching teams:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -447,7 +457,7 @@ class UnifiedSportsAPI {
       return team ? this.transformTeam(team) : null
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching team:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return null
@@ -464,7 +474,7 @@ class UnifiedSportsAPI {
       return []
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching players:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -477,7 +487,7 @@ class UnifiedSportsAPI {
       return player ? this.transformPlayer(player) : null
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching player:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return null
@@ -541,7 +551,7 @@ class UnifiedSportsAPI {
       return []
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching fixtures:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -562,7 +572,7 @@ class UnifiedSportsAPI {
       return this.transformFixture(event, homeTeam || undefined, awayTeam || undefined)
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching fixture:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return null
@@ -577,7 +587,7 @@ class UnifiedSportsAPI {
       return this.transformStandings(table)
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching standings:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -593,7 +603,7 @@ class UnifiedSportsAPI {
       return teams.slice(0, 20).map((team) => this.transformTeam(team))
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error searching teams:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -606,7 +616,7 @@ class UnifiedSportsAPI {
       return players.slice(0, 20).map((player) => this.transformPlayer(player))
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error searching players:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -632,7 +642,7 @@ class UnifiedSportsAPI {
       }
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error in comprehensive search:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return { teams: [], players: [], events: [] }
@@ -645,7 +655,7 @@ class UnifiedSportsAPI {
       return events.slice(0, 15).map((event) => this.transformFixtureSync(event))
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error searching events:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -698,7 +708,7 @@ class UnifiedSportsAPI {
       return events.map((event) => this.transformFixtureSync(event))
     } catch (error) {
       console.warn("[UnifiedSportsAPI] Error fetching today's fixtures:", error)
-      if (error instanceof RateLimitError) {
+      if (error instanceof RateLimitError || isUpstreamFault(error)) {
         throw error
       }
       return []
@@ -749,7 +759,7 @@ class UnifiedSportsAPI {
             .slice(0, 40)
         } catch (error) {
           console.warn("[UnifiedSportsAPI] Error fetching recent results:", error)
-          if (error instanceof RateLimitError) throw error
+          if (error instanceof RateLimitError || isUpstreamFault(error)) throw error
           return []
         }
       },

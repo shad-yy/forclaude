@@ -37,33 +37,15 @@ export async function generateMetadata({ params }: TeamPageProps): Promise<Metad
 }
 
 async function TeamContent({ teamId }: { teamId: string }) {
-  try {
-    const [team, players, fixtures] = await Promise.all([
+  const load = () =>
+    Promise.all([
       unifiedSportsAPI.getTeam(teamId),
       unifiedSportsAPI.getPlayers(teamId),
       unifiedSportsAPI.getFixtures({ teamId, next: 10 }),
     ])
-
-    if (!team) {
-      notFound()
-    }
-
-    return (
-      <div className="space-y-8">
-        <TeamHeader team={team} additionalInfo={null} />
-
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-1">
-            <TeamInfoCard team={team} additionalInfo={null} />
-          </div>
-
-          <div className="lg:col-span-2 space-y-8">
-            <TeamRoster players={players} />
-            <TeamSchedule fixtures={fixtures} />
-          </div>
-        </div>
-      </div>
-    )
+  let data: Awaited<ReturnType<typeof load>>
+  try {
+    data = await load()
   } catch (error) {
     console.error("Error loading team:", error)
     return (
@@ -72,6 +54,30 @@ async function TeamContent({ teamId }: { teamId: string }) {
       </div>
     )
   }
+
+  const [team, players, fixtures] = data
+
+  // notFound() throws — keep it outside the try so the catch cannot swallow it.
+  if (!team) {
+    notFound()
+  }
+
+  return (
+    <div className="space-y-8">
+      <TeamHeader team={team} additionalInfo={null} />
+
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-1">
+          <TeamInfoCard team={team} additionalInfo={null} />
+        </div>
+
+        <div className="lg:col-span-2 space-y-8">
+          <TeamRoster players={players} />
+          <TeamSchedule fixtures={fixtures} />
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function TeamLoading() {

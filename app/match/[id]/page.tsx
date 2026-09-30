@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { SchemaMarkup } from '@/components/SchemaMarkup'
 import { ENV } from '@/lib/config/env'
 import { theSportsDB } from '@/lib/api/the-sports-db'
+import { isUpstreamFault } from '@/lib/api/errors'
 import { MatchTabs } from '@/components/match/match-tabs'
 
 async function getMatchData(id: string) {
@@ -31,6 +32,8 @@ async function getMatchData(id: string) {
     }
   } catch (err) {
     console.error(`[Match Detail Loader] Error loading match ${id}:`, err)
+    // O-26: an outage is an error page, not a 404 (tests/pages-outage-fault.test.ts).
+    if (isUpstreamFault(err)) throw err
     return null
   }
 }

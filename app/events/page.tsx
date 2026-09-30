@@ -11,6 +11,7 @@ import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MotionWrapper } from "@/components/ui/motion-wrapper"
 import { cn } from "@/lib/utils"
+import { dataErrorMessage } from "@/lib/api/errors"
 
 interface EventsPageProps {
   searchParams: {
@@ -72,7 +73,7 @@ async function EventsList({
         break
     }
   } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to load events"
+    error = dataErrorMessage(err, "Failed to load events")
     fixtures = []
   }
 

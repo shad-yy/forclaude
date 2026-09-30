@@ -36,3 +36,17 @@ export function isUpstreamFault(err: unknown): err is UpstreamFaultError {
   if (err instanceof UpstreamFaultError) return true;
   return typeof err === "object" && err !== null && (err as { name?: string }).name === "UpstreamFaultError";
 }
+
+/**
+ * O-26: what a page shows a visitor when a data load fails. Never the raw
+ * error text (PATTERNS.md: "Data temporarily unavailable", not stacks).
+ * Outages and rate limits get the standard wording; anything else keeps the
+ * caller's own fallback.
+ */
+export function dataErrorMessage(err: unknown, fallback: string): string {
+  const name = typeof err === "object" && err !== null ? (err as { name?: string }).name : undefined;
+  if (isUpstreamFault(err) || name === "RateLimitError") {
+    return "Data temporarily unavailable. Please try again shortly.";
+  }
+  return fallback;
+}

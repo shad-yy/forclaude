@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Trophy, Globe, Users, Calendar, Star, TrendingUp, Zap, ArrowRight, Shield } from "lucide-react"
 import { unifiedSportsAPI, type UnifiedLeague } from "@/lib/api/unified-sports-api"
 import { OptimizedImage } from "@/components/ui/optimized-image"
+import { dataErrorMessage } from "@/lib/api/errors"
 
 export const metadata: Metadata = {
   title: "Football Leagues – Live Standings & Fixtures | Smart Live TV",
@@ -165,7 +166,7 @@ async function LeaguesContent() {
   try {
     leagues = await unifiedSportsAPI.getLeagues()
   } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to load leagues"
+    error = dataErrorMessage(err, "Failed to load leagues")
   }
 
   // Current season — calculated server-side so it's always correct

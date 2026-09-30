@@ -10,6 +10,7 @@ import Link from "next/link"
 import { Suspense } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { POPULAR_LEAGUE_IDS, QUICK_LEAGUE_FILTERS } from "@/lib/config"
+import { dataErrorMessage } from "@/lib/api/errors"
 
 // Optimize for static data - revalidate every 24 hours
 export const revalidate = 86400
@@ -68,7 +69,7 @@ async function TeamsList({ searchParams }: { searchParams: TeamsPageProps["searc
       }
     }
   } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to load teams"
+    error = dataErrorMessage(err, "Failed to load teams")
     teams = []
   }
 
@@ -77,7 +78,7 @@ async function TeamsList({ searchParams }: { searchParams: TeamsPageProps["searc
       {partialFailure && (
         <div className="bg-yellow-900/20 border border-yellow-500/20 text-yellow-400 px-4 py-3 rounded mb-4">
           <p className="text-sm">
-            Some leagues could not be loaded due to rate limits. Showing available teams.
+            Some leagues could not be loaded right now. Showing available teams.
           </p>
         </div>
       )}
