@@ -6,6 +6,30 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
+## O-27 — Production env vars the code reads but Vercel does not set
+
+- **Since**: checked 2026-09-30T19:43:17Z (`mcp__Vercel__filter_project_envs`, names only, values not decrypted; compared with every `process.env.X` in `lib/ app/ components/ middleware.ts instrumentation.ts`)
+- **Layer**: L0 configuration.
+- **Owner**: site owner (Vercel dashboard).
+- **Facts** — read in code, not set in production (17 vars are set):
+  - `HCAPTCHA_SECRET` — **new with this branch (A-04)**. `lib/security/captcha.ts:18-24` returns `{ ok: true }` when it is unset, so merging does not break sign-ups, but the check stays off until it is set.
+  - `ADMIN_PASSWORD_HASH` — `/api/auth/admin` returns 500 "Admin authentication not configured" without it, so the admin pages cannot be used in production today.
+  - `THESPORTSDB_API_KEY` — `ENV.THESPORTSDB_KEY` falls back to the public test key `123` (`lib/config/env.ts`). `lookupTeam` carries a workaround for that key (`lib/api/the-sports-db.ts:571`).
+  - `NEXT_PUBLIC_GA_MEASUREMENT_ID` — `GoogleAnalytics` returns `null`; the live homepage HTML (fetched 2026-09-30) contains no `gtag`, `dataLayer` or consent script.
+  - `RAPIDAPI_MMA_KEY`, `FOOTBALL_DATA_API_KEY` — those clients send an empty key.
+  - Also unset, with code fallbacks: `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_STORE_URL`, `NEXT_PUBLIC_SOCIAL_*` (4), `NEXT_PUBLIC_*_API_BASE_URL` (3).
+- **Why it isn't done**: only the owner can set values; which ones are intentionally unset is the owner's knowledge, not something the code can tell.
+- **What would close it**: owner sets the ones that should be on (at least `HCAPTCHA_SECRET` before or with O-21), or confirms which are intentionally off; then SETUP-REQUIRED.md records the decision.
+
+## O-28 — `next dev` cannot run client JavaScript (CSP has no `'unsafe-eval'`)
+
+- **Since**: `842f490` (2026-09-04, "remove 'unsafe-eval' from script-src"); seen 2026-09-30
+- **Layer**: L0 local tooling (production unaffected).
+- **Owner**: unassigned — needs owner OK because it touches the CSP.
+- **Facts**: loading `/` under `next dev` in Chromium logged `EvalError: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script` and no client component made its requests. The same page under `next build && next start` made its requests with 0 page errors. Dev builds use eval-based source maps; production builds do not.
+- **Why it isn't done**: the fix is a CSP change. Keeping production strict is the point of `842f490`.
+- **What would close it**: add `'unsafe-eval'` to `script-src` only when `NODE_ENV === 'development'` in `next.config.mjs` `headers()`, with a test that the production header still lacks it.
+
 ## O-26 — TheSportsDB outages look like "no data" and get cached as empty (decision needed)
 
 - **Since**: pre-existing; proven 2026-09-30 by a probe test (kept out of the suite, in the session scratchpad)
@@ -85,7 +109,9 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: low impact; noted during the review, not in its scope. The 4 `FALLBACK_ARTICLES` are the site's own promo pieces (allowed as an owned fallback), but each sets `pubDate: new Date().toISOString()` at module load, so during a NewsData outage they appear as fresh news.
 - **What would close it**: give each a fixed, true `pubDate` (the linked page's real publish date) or omit the date in the UI for owned fallbacks.
 
-## O-17 — 46 ESLint warnings surfaced by enabling the linter (O-06); none block the build
+## O-17 — 44 ESLint warnings remain (was 46; R-08 fixed 2); none block the build
+
+- **Update 2026-09-30 (R-08)**: fixed `app/admin/api-management/page.tsx` and `components/homepage/league-tables.tsx`. Left on purpose: `components/homepage/events-list.tsx` — **no importers anywhere** (dead file; `/events` defines its own `EventsList` at `app/events/page.tsx:33`), deletion is the owner's call; `app/news/NewsClientPage.tsx:117-123` — a mount-only effect that fetches trending keywords **only when** query params exist, while its comment says "Don't fetch on initial load since we have server data"; the intent is unclear (see O-19). `components/analytics/GoogleAnalytics.tsx:13` — the `beforeInteractive` script sets consent to denied before GA loads (GDPR); it is intentional, and GA is not active in production anyway (O-27).
 
 - **Since**: 2026-09-22 (surfaced by O-06's ESLint setup)
 - **Layer**: L1 UI (images, hook dependencies).

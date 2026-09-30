@@ -34,6 +34,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### R-08 — Resolve 2 exhaustive-deps warnings without behaviour change
+
+- **Date**: 2026-09-30
+- **Commit**: `fb0e3bb`.
+- **Layer**: L1 UI.
+- **Severity**: low (lint warnings; one latent crash avoided by not applying the naive fix).
+- **Was**: `app/admin/api-management/page.tsx` effect called `testApiConnection` without listing it; the callback was declared below the effect, so the rule's suggested fix (add it to the deps array) would throw a ReferenceError during render. `components/homepage/league-tables.tsx` effect used `activeTab.name` (log line only) without listing it.
+- **Now**: callback moved above the effect and listed (its only dependency, `toast`, is a module-level function at `hooks/use-toast.ts:137`, so identity is stable); `activeTab.name` added (changes together with `activeTab.id`).
+- **Test**: production build + `next start` + Chromium script: homepage load made exactly 1 `/api/standings` request in 8 s; clicking "La Liga" made exactly 1 more (`/api/standings/4335`); 0 page errors. `next dev` could not be used — O-28. Admin page not exercised at runtime (needs a login, and `ADMIN_PASSWORD_HASH` is unset in production — O-27); the change is a declaration move plus a stable dependency.
+- **Skill/agent used**: O-17 per-effect review.
+- **Run it**: `npx next lint` (44 warnings, 0 errors).
+- **Result**: suite 315/315; tsc clean.
+
 ### R-07 — Remove the hardcoded RapidAPI key route and the panel HAR recording
 
 - **Date**: 2026-09-24
