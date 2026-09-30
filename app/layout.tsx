@@ -11,6 +11,7 @@ import { WebVitals } from "@/components/analytics/WebVitals"
 import { CookieBanner } from "@/components/consent/CookieBanner"
 import { WhatsAppFloat } from "@/components/chat/WhatsAppFloat"
 import { LiveEventFloat } from "@/components/ui/LiveEventFloat"
+import { Analytics } from '@vercel/analytics/next'
 
 const inter = Inter({
   subsets: ["latin"],
@@ -187,6 +188,7 @@ export default function RootLayout({
         <CookieBanner />
         <WhatsAppFloat />
         <LiveEventFloat />
+        <Analytics />
       </body>
     </html>
   )
