@@ -8,45 +8,47 @@
 // the same 128-char hex.
 
 import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-const SCAN_ROOTS = ["vitest.config.ts", "tests"];
 const CREDENTIAL_HEX = /\b[0-9a-f]{60,}\b/;
 
-function walkText(root: string): { file: string; content: string }[] {
-  const stat = statSync(root);
-  if (stat.isFile()) return [{ file: root, content: readFileSync(root, "utf8") }];
+// Directory entries carry their own type, so no file is stat-checked and
+// then read (the check-then-use race CodeQL flags as js/file-system-race).
+function walkText(dir: string): { file: string; content: string }[] {
   const out: { file: string; content: string }[] = [];
-  for (const e of readdirSync(root)) {
-    const full = join(root, e);
-    if (statSync(full).isDirectory()) out.push(...walkText(full));
-    else if (/\.(ts|tsx|js|mjs|cjs|json)$/.test(e)) {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, e.name);
+    if (e.isDirectory()) out.push(...walkText(full));
+    else if (/\.(ts|tsx|js|mjs|cjs|json)$/.test(e.name)) {
       out.push({ file: full, content: readFileSync(full, "utf8") });
     }
   }
   return out;
 }
 
+const scanned = () => [
+  { file: "vitest.config.ts", content: readFileSync("vitest.config.ts", "utf8") },
+  ...walkText("tests"),
+];
+
 describe("A-11 no credential-shaped hex strings in tests/ or vitest.config.ts", () => {
   it("scanner finds files (control against vacuous walk)", () => {
-    const files = SCAN_ROOTS.flatMap(r => walkText(r));
+    const files = scanned();
     expect(files.length, "walker found no files — path is wrong").toBeGreaterThan(5);
   });
 
   it("no file carries a 60+ char pure-hex token (looks-like-a-secret)", () => {
     const offenders: string[] = [];
-    for (const root of SCAN_ROOTS) {
-      for (const { file, content } of walkText(root)) {
-        // Strip fenced ```code``` and inline `code` from prose files; but
-        // for .ts we treat everything as executable (a hex literal in a
-        // string is exactly what we're catching).
-        const lines = content.split("\n");
-        lines.forEach((line, i) => {
-          const hit = line.match(CREDENTIAL_HEX);
-          if (hit) offenders.push(`${file}:${i + 1}: ${hit[0].slice(0, 12)}...`);
-        });
-      }
+    for (const { file, content } of scanned()) {
+      // Strip fenced ```code``` and inline `code` from prose files; but
+      // for .ts we treat everything as executable (a hex literal in a
+      // string is exactly what we're catching).
+      const lines = content.split("\n");
+      lines.forEach((line, i) => {
+        const hit = line.match(CREDENTIAL_HEX);
+        if (hit) offenders.push(`${file}:${i + 1}: ${hit[0].slice(0, 12)}...`);
+      });
     }
     expect(
       offenders,
