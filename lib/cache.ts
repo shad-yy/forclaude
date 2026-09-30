@@ -6,6 +6,7 @@
 
 import { Redis } from "@upstash/redis"
 import { withRetry } from "@/lib/api/retry"
+import { isUpstreamFault } from "@/lib/api/errors"
 
 // ─── Named constants ────────────────────────────────────────────────────────
 const RATE_LIMIT_PAUSE_MS = 30_000       // 30 seconds pause after hitting 429
@@ -199,6 +200,11 @@ export async function swrGet<T>(
         return payload.data
       }
     }
+    // O-26: provider outage — old data beats an error, and the fault is never cached.
+    if (isUpstreamFault(err) && payload) {
+      console.warn(`[Cache SWR] Upstream fault on refresh. Serving stale data for ${key}`)
+      return payload.data
+    }
     throw err
   }
 }
@@ -237,7 +243,8 @@ async function fetchWithRetry<T>(fetcher: () => Promise<T>): Promise<T> {
   return withRetry(() => fetcher(), {
     maxRetries: FETCH_RETRY_COUNT,
     backoffMs: (attempt) => FETCH_RETRY_INITIAL_DELAY_MS * 2 ** attempt,
-    shouldRetry: (err) => !isRateLimitError(err),
+    // Provider clients already retried an UpstreamFaultError (lib/api/the-sports-db.ts).
+    shouldRetry: (err) => !isRateLimitError(err) && !isUpstreamFault(err),
     onRetry: (err, _attempt, delayMs) => {
       const message = err instanceof Error ? err.message : String(err)
       console.warn(`[Cache Fetch Queue] Fetch failed. Retrying in ${delayMs}ms... Error:`, message)

@@ -5,6 +5,7 @@
 import { errorLogger } from "@/lib/admin/error-logger"
 import { getCache, setCache, cache, swrGet } from "@/lib/cache"
 import { withRetry, RetryableError } from "@/lib/api/retry"
+import { UpstreamFaultError, isUpstreamFault } from "@/lib/api/errors"
 
 const API_KEY = process.env.THESPORTSDB_API_KEY || "123"
 const typeofWindow = typeof window !== "undefined"
@@ -343,15 +344,23 @@ async function fetchFreshData<T>(
       { endpoint, status: result.status, error: result.error }
     )
     console.warn(`[TheSportsDB] Error ${result.status} for ${endpoint}: ${result.error || 'Unknown error'}`)
-    return []
+    // O-26: a final 5xx, a network failure (status 0) or another non-404 4xx is
+    // a fault, not "no data" — throw so swrGet neither caches it nor hides it.
+    throw new UpstreamFaultError(endpoint, result.status, result.error)
   }
 
   const startTime = Date.now()
   errorLogger.logApiCall(endpoint, result.status || 200, Date.now() - startTime)
 
+  // O-26: a non-empty body that is not JSON (e.g. an HTML error page) is malformed.
+  if (typeof result.body === 'string' && result.body.trim() !== '') {
+    throw new UpstreamFaultError(endpoint, result.status, 'non-JSON body')
+  }
   const json = result.body as TheSportsDBResponse<T>
   if (!json || typeof json !== 'object') {
-    console.warn(`[TheSportsDB] Unexpected response shape for ${endpoint}`)
+    // Empty body / JSON null stays an absence: TheSportsDB has returned 200 with
+    // an empty body for lookuptable.php (logs/sportsdb-unexpected-*.log).
+    console.warn(`[TheSportsDB] Empty response for ${endpoint}`)
     return []
   }
 
@@ -575,7 +584,10 @@ export async function lookupTeam(teamId: string): Promise<SportsDbTeam | null> {
       const teams = await makeRequest<SportsDbTeam>(`search_all_teams.php?l=${encodeURIComponent(league)}`, TTL.list, { expectedKey: 'teams' })
       const found = teams.find(t => t.idTeam === teamId)
       if (found) return found
-    } catch { }
+    } catch (err) {
+      // O-26: if the provider is down or throttling, the fallback below would fail too.
+      if (isUpstreamFault(err) || err instanceof RateLimitError) throw err
+    }
   }
 
   // Fallback to actual lookup
