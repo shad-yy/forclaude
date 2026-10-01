@@ -54,3 +54,12 @@ export function redactObject<T extends Record<string, unknown>>(obj: T): Record<
   }
   return out;
 }
+
+/**
+ * Strip line breaks from a value before it goes into a log line, so a
+ * caller-supplied string (a search term inside a cache key or an
+ * endpoint) cannot forge extra log entries (CodeQL js/log-injection).
+ */
+export function logSafe(value: string): string {
+  return String(value).replace(/\n|\r/g, "");
+}

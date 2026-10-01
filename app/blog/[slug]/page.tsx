@@ -145,7 +145,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       <BlogPostLayout
         title={post.title}
         description={post.description}
-        author="James Harper"
+        author={post.author}
         authorTitle="Sports Streaming Expert"
         date={post.publishedAt}
         lastModified={post.publishedAt}

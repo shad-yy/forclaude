@@ -6,6 +6,7 @@
  * See memory-bank/SETUP-REQUIRED.md for env vars (CMS8K_*).
  */
 
+import { randomInt } from "node:crypto";
 import { summarizeResponse } from "@/lib/log/redact";
 
 export interface LineCredentials {
@@ -122,7 +123,7 @@ async function getSession(): Promise<string | null> {
  */
 export function generateUsername(customerName: string): string {
   const clean = customerName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 5).toLowerCase()
-  const rand = Math.floor(1000 + Math.random() * 9000)
+  const rand = randomInt(1000, 10000)
   return `SLTV_${clean}_${rand}`
 }
 

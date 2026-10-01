@@ -15,25 +15,37 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: kept out of R-16 so the upgrade stays small and reviewable.
 - **What would close it**: `npx @next/codemod@latest next-async-request-api .` (or by hand), then tsc, suite, build and a runtime check of each dynamic route.
 
-## O-29 — 13 production checks fail on the first monitor run (triage needed)
+## O-29 — Production monitor: triage done; live site waits on deploy, one flaky check unexplained
 
-- **Since**: 2026-09-30 (run `36769200235`, push trigger on this branch; report artifact kept 14 days)
+- **Since**: 2026-09-30 (first run `36769200235`)
 - **Layer**: production content / e2e specs.
-- **Owner**: unassigned — each failure is either a real production problem or an outdated test expectation; which one is not known yet.
-- **Facts**: 120 tests; 77 passed, 42 failed, 1 flaky. The 42 are 14 checks × 3 devices. One (robots.txt) was a test bug, fixed in R-12 — the live file is correct. Still failing, untriaged (line numbers as reported by that run; R-12 added one line above them in `e2e/smartlivetv.spec.ts`):
-  - `e2e/smartlivetv.spec.ts`: unique title and meta description on every page (:109); schema markup present and valid (:173); footer links resolve without 404 (:328); buy form validates required fields (:455); no "James Harper" author anywhere (:751); blog posts render with BlogPostLayout (:836); league badge images have width/height (:864); no console errors on homepage (:941).
-  - `tests/mobile-responsiveness.spec.ts`: leagues / players / teams / events pages overlap the header on mobile (:9, :30, :48, :66); pricing cards slider (:84).
-  - Flaky: H1 exists and is unique on every page (:237, Mobile Chrome).
-- **Why it isn't done**: triage needs the report per failure; some assertions may encode content decisions only the owner can confirm.
-- **What would close it**: for each check, read its failure in the report; fix the site or correct the test (with evidence either way); re-run the monitor until green.
+- **Owner**: site owner (merge + deploy); H1 flake: unassigned.
+- **Facts**: run `36769200235` 77 passed / 42 failed / 1 flaky → run `36788028302` 101 / 18 / 1 (both against the live site). Every originally failing check is triaged and handled: robots.txt (R-12), mobile ×5, buy form, image sizes (R-18), byline, dates, hero video, footer link, `/buy` title, `/faq` schema (R-20), `/faq` description and support hours (R-22). The 18 failures left on the live site (footer 404, "James Harper" ×2, 6 unsized badges, coverr console errors, `/faq` description) are all fixed on the work branch.
+- **Still unexplained**: "H1 exists and is unique" fails once per run on a different page and passes on retry — run 1 `/free-trial` (Mobile Chrome), run 2 `/ufc` and run 3 `/watch/champions-league` (both Desktop Chrome). The page sources render an `<h1>`; the cause is not established. The report artifact cannot be downloaded from the sandbox (egress 403); its screenshots are on the run page.
+- **Why it isn't done**: production runs `Version-3` without these fixes (O-21); the H1 flake has no root cause.
+- **What would close it**: merge PR #6 and deploy; one green monitor run on the live site; for H1, read the failure screenshot of the next run that hits it.
 
-## O-30 — Three more components have no importers
+## O-30 — CLOSED 2026-09-30 by R-17 (was: three components have no importers)
 
-- **Since**: noted 2026-09-30
-- **Layer**: L1 UI (dead code).
-- **Owner**: site owner (deletion approval).
-- **Facts**: `components/homepage/standings-widget.tsx`, `components/homepage/scores-widget.tsx`, `components/leagues/league-modal.tsx` — no file imports them (grep of `app/` and `components/`). The two widgets would show raw error text on a fault if they were ever used.
-- **What would close it**: owner approves deletion (as with R-09), or says where they should be used.
+- Deleted in `e0a113e` with owner approval.
+
+## O-32 — 9 medium CodeQL alerts: "network data written to file" in two scripts
+
+- **Since**: 2026-09-30
+- **Layer**: L0 tooling (local scripts, not deployed code).
+- **Owner**: unassigned.
+- **Facts**: `scripts/fetch-sportsdb-data.ts` (4) and `scripts/refresh-sportsdb-ids.ts` (5). Both exist to fetch TheSportsDB data and write it to disk; PR #6 does not change them. They do not fail the `CodeQL` check (only high does).
+- **Why it isn't done**: writing fetched data to disk is the scripts' purpose; a fix would mean validating the payload shape before writing, or dismissing the alerts with a reason (needs repo admin).
+- **What would close it**: validate with the existing Zod schemas (C-03) before writing, or dismiss as "used in tests/tooling".
+
+## O-33 — Blog content the owner should confirm
+
+- **Since**: 2026-09-30
+- **Layer**: L1 content.
+- **Owner**: site owner.
+- **Facts**: (1) `content/blog/is-iptv-legal-uk.mdx:30` quotes "Samuel Vance, Digital Media & Intellectual Property Consultant". One web search (2026-09-30) found no public record of this person; that does not prove the quote is invented. (2) Frontmatter `authorTitle` is unused: the page shows "Sports Streaming Expert" for every post, while 3 posts' frontmatter says "Financial Analyst" (1) or "IPTV Analyst" (2).
+- **Why it isn't done**: both are content decisions.
+- **What would close it**: owner confirms the quote's source (or removes it); owner decides whether the byline title should come from frontmatter.
 
 ## O-27 — Production env vars the code reads but Vercel does not set
 
@@ -103,13 +115,14 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: this is why the RapidAPI key and the HAR (committed before C-04) were never flagged. A full-history scan would fail today on those two until they are rotated and allowlisted (O-23).
 - **What would close it**: after O-23, add a weekly `schedule:` trigger (or a `gitleaks detect --no-git` step) that scans the whole repo, with the rotated secrets' fingerprints in `.gitleaksignore`.
 
-## O-21 — Production runs `Version-3` without the work branch's fixes
+## O-21 — Merged into `Version-3`, but production is not deployed from `Version-3`
 
-- **Since**: 2026-09-20 20:25 UTC (found 2026-09-24 via `mcp__Vercel__list_deployments`)
+- **Since**: 2026-09-20 20:25 UTC (found 2026-09-24); re-checked 2026-10-01 after the merge.
 - **Layer**: L0 release process.
-- **Owner**: site owner (decision), then Claude (merge + verification).
-- **Why it isn't done**: merging into the production branch is the owner's call. Facts: builds from `claude/exciting-planck-6a4nbr` were deployed to production on 2026-09-17 (`7d553a4`) and 2026-09-19 (`73b364c`). The next push to `Version-3` (`16b8d6a`, content update) deployed over them. `git rev-list --count 73b364c --not 16b8d6a` = 52: production lost A-01..A-15, B-01..B-07, C-01..C-05, X-04, X-06, X-09 and X-11 (hCaptcha verification, test-panel bypass closure, AVIF mitigation, PII log redaction, provision race fix, fault-vs-absence routes). Work since then (X-01/02/05/08/13, O-06 build gates, R-01..R-05) was never in production: at `cc6af34` the branch has 77 commits `Version-3` lacks. Vercel reported no runtime errors in the 7 days to 2026-09-24.
-- **What would close it**: owner approves; merge the branch into `Version-3` (PR, CI green); then confirm with `list_deployments` (`target: production`) that the live SHA contains the branch head (`git merge-base --is-ancestor <head> <live-sha>`). PROGRESS.md Trouble Registry Bug 9.
+- **Owner**: site owner (Vercel action).
+- **Facts (2026-10-01, `mcp__Vercel__get_deployment smartlivetv.co.uk`)**: the live deployment is `dpl_DpLEnX1ejMfEBNDRzWCHfCTbQXCp`, `source: redeploy`, created 2026-09-30 02:41 UTC from branch `vercel/install-vercel-web-analytics-vl9i5d`, commit `83d856f` = this work branch at `e652009` (R-07) plus Vercel's "Install Vercel Web Analytics" commit (adds `<Analytics />` to `app/layout.tsx`; not in `Version-3`). PR #6 merged as `0a46169`; its Vercel build `dpl_4eywqY82SrKYEGT3ngmckGaJWZkS` has `target: null` and only the branch alias, i.e. a preview. The 2026-09-20 `Version-3` push (`16b8d6a`) did build with `target: production`, so the production branch setting has changed since then (project `updatedAt` 2026-09-30 10:27 UTC). The earlier history (52 commits lost on 2026-09-20) is PROGRESS.md Bug 9.
+- **Why it isn't done**: promoting a deployment or changing the production branch changes the live site; the owner decides. Promoting a `Version-3` build without the analytics line would switch Vercel Web Analytics off.
+- **What would close it**: bring the `<Analytics />` line into `Version-3`; then promote that `Version-3` build to production and set the production branch back to `Version-3`; confirm with `get_deployment smartlivetv.co.uk` that the live SHA contains `0a46169`.
 
 ## O-20 — CLOSED 2026-09-30 by R-15 (was: six routes still answer an upstream fault with 200 + `[]`)
 

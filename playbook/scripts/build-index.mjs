@@ -55,7 +55,7 @@ const md = [
   "",
   "| Skill | Description |",
   "| :-- | :-- |",
-  ...rows.map(r => `| [\`${r.name}\`](skills/${r.name}.md) | ${r.description.replace(/\|/g, "\\|")} |`),
+  ...rows.map(r => `| [\`${r.name}\`](skills/${r.name}.md) | ${r.description.replace(/\\/g, "\\\\").replace(/\|/g, "\\|")} |`),
   "",
 ].join("\n");
 

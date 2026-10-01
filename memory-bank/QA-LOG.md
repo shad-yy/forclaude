@@ -30,9 +30,85 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 - **2026-09-30 — B-04 ("fault-vs-absence for 12 routes — COMPLETE") overstated what it fixed.** B-04 rewrote each route's `catch` to return 503 + `no-store`, and its tests mocked the resolver to throw. The real resolvers rarely throw: `lib/api/the-sports-db.ts` `fetchFreshData` returns `[]` on 5xx, network failure, non-JSON or wrong shape (only 429 throws), and the `unifiedSportsAPI` resolvers rethrow only `RateLimitError`. So for 7 of the 12 routes (`leagues`, `scores/recent`, `leagues/[id]/events`, `teams/[id]`, `players/[id]`, `search`, `events/[id]/lineups`) a real outage still returns 200 + empty; the 503 fires only on a rate limit. A probe test also showed `swrGet` caching the outage `[]` and serving it after the provider recovered. The R-01..R-07 review on 2026-09-24 did not catch this either (it checked client callers, not what the resolvers return). Lesson: a test that mocks the layer below proves the route's wiring, not the behaviour; add one test at the network seam (MSW) per fix. Tracked as OPEN-WORK O-26 (decision needed); O-20 is blocked on it. The 2026-09-15 plan's claim that the next-14 RCE fix is a "patch bump" was also wrong — 14 → 15 is a major upgrade (O-11 corrected).
 
+- **2026-09-30 — "PR #6 CI, Gitleaks and CodeQL are green at `29f5d3b`" was wrong about CodeQL.** The `Analyze (javascript-typescript)` job passed, but the separate `CodeQL` code-scanning check was red at `29f5d3b` with 18 alerts (5 high). I had read the job, not the check. Found when the check failed again on `2e928f5` and its history was pulled from the GitHub API. Fixed in R-19.
+- **2026-09-30 — "16 images without width/height = 8 fixtures × 2 badges" was an inference, not a fact.** The run log lists the 16: 12 team badges and 4 absolutely positioned background images (hero + spotlight cards). Corrected before any change shipped (R-18).
+- **2026-09-30 — R-14/R-15 missed three routes.** After R-14 made resolvers pass faults on, `/api/standings/[leagueId]` and `/api/fixtures/league/[leagueId]` answered an outage with 500 and `/api/events/[id]` with 200 + `data: null`. Found by watching the browser's 5xx responses on a local production build during the sandbox outage, not by the route survey. Fixed in R-21.
+
 ---
 
 ## Entries
+
+### R-22 — One statement of support hours: 9am–11pm UK, 7 days (O-29)
+
+- **Date**: 2026-10-01
+- **Commit**: `e3c3bb5`.
+- **Layer**: L1 UI (content).
+- **Severity**: medium (a false service claim on the checkout and pricing pages).
+- **Was**: "24/7 support" on `/buy`, `/pricing` and in the `/faq` meta description; "7 days a week, 9am–11pm UK time" in six places; "GMT" on `/contact`. The homepage ContactPoint schema says 09:00–23:00 every day.
+- **Now**: owner decision 2026-10-01 — 9am–11pm UK time, 7 days, everywhere. `/faq` description 168 → 154 chars.
+- **Test**: `tests/support-hours-consistent.test.ts` — 2 of 3 cases red on the previous text.
+- **Run it**: `pnpm vitest --run tests/support-hours-consistent.test.ts`.
+- **Result**: suite 361/361; tsc 0; lint 0 errors / 43 warnings.
+
+### R-21 — Three more routes answer an outage with 503 + no-store
+
+- **Date**: 2026-09-30
+- **Commit**: `eda9d37`.
+- **Layer**: L3 API routes.
+- **Severity**: medium.
+- **Was**: since R-14, `standings/[leagueId]` and `fixtures/league/[leagueId]` returned 500 on an outage (the standings 500 carried the config's `public, max-age=3600`, so a browser could keep the error), and `events/[id]` returned 200 + `data: null`.
+- **Now**: 503 + `no-store`, same body as R-15. The homepage league table already shows "Data temporarily unavailable." on a non-OK answer; the other two routes have no in-site callers.
+- **Test**: `tests/routes-outage-network.test.ts` — 3 new network-seam cases, red before the change; now 12/12.
+- **Run it**: `pnpm vitest --run tests/routes-outage-network.test.ts`.
+- **Result**: suite 358/358.
+
+### R-20 — Owner content decisions for the failing production checks (O-29)
+
+- **Date**: 2026-09-30
+- **Commit**: `d24b711`.
+- **Layer**: L1 UI (content), L0 tooling (post generator).
+- **Severity**: medium.
+- **Was**: every blog post showed the byline "James Harper" (hard-coded) while the Article schema and 30 of 34 posts' frontmatter say "Smart Live TV"; 4 matchweek posts had no frontmatter date, so `scripts/generate-posts.js` stamped the build date and each deploy re-dated them; the hero tried two `cdn.coverr.co` MP4s that the CSP (no `media-src`) blocks, logging console errors on every visit; the footer and sitemap linked `/iptv-vs-netflix` (404); the monitor demanded "Access" in the `/buy` title and FAQPage schema on `/faq`.
+- **Now**: owner decisions 2026-09-30 — byline from frontmatter (default "Smart Live TV"); the 4 posts carry their git first-commit dates (2026-08-22, 08-29, 09-05, 09-20) and the generator refuses a post without a date; hero video code removed (the image carousel visitors already saw stays); footer points at `/blog/iptv-vs-netflix-disney-sky-2026`, dead sitemap entry removed; `/buy` check matches the live title; `/faq` FAQPage requirement dropped (the same 8 Q&As are marked up on `/pricing`; Google asks for one instance and stopped showing FAQ rich results on 7 May 2026).
+- **Test**: `tests/blog-post-dates-and-author.test.ts` — 3 of 4 red on the previous code. Local production build: 4 of the 6 affected monitor checks pass; the other 2 fail only on sandbox-outage noise and the `/faq` description length (R-22).
+- **Run it**: `pnpm vitest --run tests/blog-post-dates-and-author.test.ts`.
+- **Result**: suite 351/351 at this commit.
+
+### R-19 — Clear the high CodeQL alerts on PR #6
+
+- **Date**: 2026-09-30
+- **Commit**: `3ee6570`, `fba9bba`.
+- **Layer**: L0 tests/tooling, L5 provider logging, L3 admin route.
+- **Severity**: high (as rated by CodeQL).
+- **Was**: `CodeQL` check red since `29f5d3b`: 18 alerts, 5 high — file-system race ×2 (`tests/no-credential-shaped-hex-in-repo.test.ts`), incomplete escaping (`playbook/scripts/build-index.mjs`), insecure randomness (panel username suffix, and the admin diagnostic test name that feeds it), tainted format string (`lib/api/the-sports-db.ts`); plus 4 log-injection warnings.
+- **Now**: directory-entry types instead of stat-then-read; backslash escaped before pipe; `crypto.randomInt` in both places (same formats); constant format strings with `logSafe()` (drops CR/LF) in `lib/api/the-sports-db.ts` and `lib/cache.ts`. `CodeQL` check green at `fba9bba`; 9 medium alerts remain in two `scripts/*.ts` files this PR does not change (O-32).
+- **Test**: `tests/codeql-high-alerts.test.ts`; the hex tripwire still catches a planted 64-char token in a nested folder.
+- **Run it**: `pnpm vitest --run tests/codeql-high-alerts.test.ts tests/no-credential-shaped-hex-in-repo.test.ts`.
+- **Result**: suite 358/358 at `fba9bba`; `playbook/INDEX.md` regenerates unchanged.
+
+### R-18 — Repair three broken monitor checks; size homepage badges (O-29)
+
+- **Date**: 2026-09-30
+- **Commit**: `2e928f5`.
+- **Layer**: L0 e2e specs, L1 UI.
+- **Severity**: low.
+- **Was**: `tests/mobile-responsiveness.spec.ts` hard-coded `http://localhost:3001` (15 failures against the live site); the `/buy` validation test mixed CSS and `text=` in one selector (the error check threw; the success check could never fail); the image check flagged 12 team badges and 4 absolutely positioned backgrounds.
+- **Now**: relative paths (Playwright `baseURL`); single-kind locators asserting the form's own message; the image check skips absolute/fixed images as Lighthouse's `unsized-images` audit does; match-card and spotlight badges get width/height equal to their CSS boxes. The monitor also runs when a spec or the Playwright config changes.
+- **Test**: monitor run `36785999122` (live site): all 5 mobile checks and the buy-form check pass on 3 browsers; overall 98 passed / 21 failed / 1 flaky (was 77 / 42 / 1). Badges stay red until deploy.
+- **Run it**: `PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm exec playwright test tests/mobile-responsiveness.spec.ts`.
+- **Result**: run `36788028302` after R-20's spec changes: 101 passed / 18 failed / 1 flaky.
+
+### R-17 — Delete three unreferenced components (closes O-30)
+
+- **Date**: 2026-09-30
+- **Commit**: `e0a113e`.
+- **Layer**: L1 UI (dead code).
+- **Severity**: low.
+- **Was**: `components/homepage/standings-widget.tsx`, `components/homepage/scores-widget.tsx`, `components/leagues/league-modal.tsx` had no importers; the two widgets would have shown raw error text on a fault.
+- **Now**: deleted (owner approval 2026-09-30).
+- **Test**: tsc 0; suite green; grep of `app/` and `components/` finds no reference.
+- **Run it**: `npx tsc --noEmit`.
+- **Result**: suite 347/347 at this commit.
 
 ### R-16 — Upgrade next 14.2.35 → 15.5.27 (branch `claude/next15-upgrade`)
 

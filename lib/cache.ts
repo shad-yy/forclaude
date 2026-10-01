@@ -7,6 +7,7 @@
 import { Redis } from "@upstash/redis"
 import { withRetry } from "@/lib/api/retry"
 import { isUpstreamFault } from "@/lib/api/errors"
+import { logSafe } from "@/lib/log/redact"
 
 // ─── Named constants ────────────────────────────────────────────────────────
 const RATE_LIMIT_PAUSE_MS = 30_000       // 30 seconds pause after hitting 429
@@ -196,13 +197,13 @@ export async function swrGet<T>(
     if (isRateLimit) {
       rateLimitPausedUntil = Date.now() + RATE_LIMIT_PAUSE_MS
       if (payload) {
-        console.warn(`[Cache SWR] Hit rate limit on cache miss. Serving stale fallback for ${key}`)
+        console.warn('[Cache SWR] Hit rate limit on cache miss. Serving stale fallback for %s', logSafe(key))
         return payload.data
       }
     }
     // O-26: provider outage — old data beats an error, and the fault is never cached.
     if (isUpstreamFault(err) && payload) {
-      console.warn(`[Cache SWR] Upstream fault on refresh. Serving stale data for ${key}`)
+      console.warn('[Cache SWR] Upstream fault on refresh. Serving stale data for %s', logSafe(key))
       return payload.data
     }
     throw err

@@ -6,6 +6,7 @@ import { errorLogger } from "@/lib/admin/error-logger"
 import { getCache, setCache, cache, swrGet } from "@/lib/cache"
 import { withRetry, RetryableError } from "@/lib/api/retry"
 import { UpstreamFaultError, isUpstreamFault } from "@/lib/api/errors"
+import { logSafe } from "@/lib/log/redact"
 
 const API_KEY = process.env.THESPORTSDB_API_KEY || "123"
 const typeofWindow = typeof window !== "undefined"
@@ -267,7 +268,7 @@ async function sportsdbFetch(
           if (res.status === 429) {
             recordCircuitBreakerFailure(endpoint)
             requestStats.rateLimited++
-            console.warn(`[TheSportsDB] Rate limit exceeded for ${endpoint}`, { endpoint, status: 429 })
+            console.warn('[TheSportsDB] Rate limit exceeded for %s (429)', logSafe(endpoint))
             return { ok: false, status: 429, url: url.toString(), body: null, error: 'Rate limit exceeded' }
           }
 
@@ -280,7 +281,7 @@ async function sportsdbFetch(
             })
           }
 
-          console.warn(`[TheSportsDB] ${endpoint} HTTP ${res.status}`)
+          console.warn('[TheSportsDB] %s HTTP %d', logSafe(endpoint), res.status)
           return { ok: false, status: res.status, url: url.toString(), body }
         }
 
@@ -360,7 +361,7 @@ async function fetchFreshData<T>(
   if (!json || typeof json !== 'object') {
     // Empty body / JSON null stays an absence: TheSportsDB has returned 200 with
     // an empty body for lookuptable.php (logs/sportsdb-unexpected-*.log).
-    console.warn(`[TheSportsDB] Empty response for ${endpoint}`)
+    console.warn('[TheSportsDB] Empty response for %s', logSafe(endpoint))
     return []
   }
 

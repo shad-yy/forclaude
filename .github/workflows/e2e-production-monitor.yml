@@ -6,7 +6,9 @@ name: Production monitor (Playwright)
 #
 # One tracking issue (label: production-monitor) is opened on the first
 # failing scheduled/manual run, commented on while it keeps failing, and
-# closed when a run passes. Push runs (this file changed) only report.
+# closed when a run passes. Push runs (this file, a spec or the Playwright
+# config changed) only report. They still test the live site, so a site
+# fix shows up only after it is deployed; a spec fix shows up at once.
 #
 # GitHub runs `schedule` triggers only from the default branch
 # (Version-3), so the daily run starts after this file is merged there.
@@ -18,6 +20,9 @@ on:
   push:
     paths:
       - ".github/workflows/e2e-production-monitor.yml"
+      - "e2e/**"
+      - "tests/**/*.spec.ts"
+      - "playwright.config.ts"
 
 concurrency:
   group: production-monitor
