@@ -15,6 +15,15 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: kept out of R-16 so the upgrade stays small and reviewable.
 - **What would close it**: `npx @next/codemod@latest next-async-request-api .` (or by hand), then tsc, suite, build and a runtime check of each dynamic route.
 
+## O-34 — IndexNow rejects the production build's ping (403)
+
+- **Since**: seen 2026-10-01 in the production build log of `dpl_VGMcgFXN6etAPTRi5nGFTdeToAEM`.
+- **Layer**: L0 build / SEO tooling.
+- **Owner**: site owner (IndexNow / Bing Webmaster account).
+- **Facts**: `scripts/ping-indexnow.js` submitted 60 URLs and got `403 {"errorCode":"UserForbiddedToAccessSite","message":"User is unauthorized to access the site. Please verify the site using the key and try again"}`. The key file is served correctly: `https://smartlivetv.co.uk/f63234d7ee824249a5b3260c6d2c49e2.txt` → 200, body = the key (checked 2026-10-01). Cause not established from here.
+- **Why it isn't done**: verification state lives in the IndexNow/Bing account, which this session cannot see.
+- **What would close it**: owner checks the site's verification in Bing Webmaster Tools (or IndexNow) for this key; the next production build log shows a 200/202 from the ping.
+
 ## O-29 — Production monitor: triage done; live site waits on deploy, one flaky check unexplained
 
 - **Since**: 2026-09-30 (first run `36769200235`)
