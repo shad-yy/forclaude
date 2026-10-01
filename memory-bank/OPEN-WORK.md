@@ -6,25 +6,37 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
-## O-29 — 13 production checks fail on the first monitor run (triage needed)
+## O-29 — Production monitor: triage done; live site waits on deploy, one flaky check unexplained
 
-- **Since**: 2026-09-30 (run `36769200235`, push trigger on this branch; report artifact kept 14 days)
+- **Since**: 2026-09-30 (first run `36769200235`)
 - **Layer**: production content / e2e specs.
-- **Owner**: unassigned — each failure is either a real production problem or an outdated test expectation; which one is not known yet.
-- **Facts**: 120 tests; 77 passed, 42 failed, 1 flaky. The 42 are 14 checks × 3 devices. One (robots.txt) was a test bug, fixed in R-12 — the live file is correct. Still failing, untriaged (line numbers as reported by that run; R-12 added one line above them in `e2e/smartlivetv.spec.ts`):
-  - `e2e/smartlivetv.spec.ts`: unique title and meta description on every page (:109); schema markup present and valid (:173); footer links resolve without 404 (:328); buy form validates required fields (:455); no "James Harper" author anywhere (:751); blog posts render with BlogPostLayout (:836); league badge images have width/height (:864); no console errors on homepage (:941).
-  - `tests/mobile-responsiveness.spec.ts`: leagues / players / teams / events pages overlap the header on mobile (:9, :30, :48, :66); pricing cards slider (:84).
-  - Flaky: H1 exists and is unique on every page (:237, Mobile Chrome).
-- **Why it isn't done**: triage needs the report per failure; some assertions may encode content decisions only the owner can confirm.
-- **What would close it**: for each check, read its failure in the report; fix the site or correct the test (with evidence either way); re-run the monitor until green.
+- **Owner**: site owner (merge + deploy); H1 flake: unassigned.
+- **Facts**: run `36769200235` 77 passed / 42 failed / 1 flaky → run `36788028302` 101 / 18 / 1 (both against the live site). Every originally failing check is triaged and handled: robots.txt (R-12), mobile ×5, buy form, image sizes (R-18), byline, dates, hero video, footer link, `/buy` title, `/faq` schema (R-20), `/faq` description and support hours (R-22). The 18 failures left on the live site (footer 404, "James Harper" ×2, 6 unsized badges, coverr console errors, `/faq` description) are all fixed on the work branch.
+- **Still unexplained**: "H1 exists and is unique" fails once per run on a different page and passes on retry — run 1 `/free-trial` (Mobile Chrome), run 2 `/ufc` and run 3 `/watch/champions-league` (both Desktop Chrome). The page sources render an `<h1>`; the cause is not established. The report artifact cannot be downloaded from the sandbox (egress 403); its screenshots are on the run page.
+- **Why it isn't done**: production runs `Version-3` without these fixes (O-21); the H1 flake has no root cause.
+- **What would close it**: merge PR #6 and deploy; one green monitor run on the live site; for H1, read the failure screenshot of the next run that hits it.
 
-## O-30 — Three more components have no importers
+## O-30 — CLOSED 2026-09-30 by R-17 (was: three components have no importers)
 
-- **Since**: noted 2026-09-30
-- **Layer**: L1 UI (dead code).
-- **Owner**: site owner (deletion approval).
-- **Facts**: `components/homepage/standings-widget.tsx`, `components/homepage/scores-widget.tsx`, `components/leagues/league-modal.tsx` — no file imports them (grep of `app/` and `components/`). The two widgets would show raw error text on a fault if they were ever used.
-- **What would close it**: owner approves deletion (as with R-09), or says where they should be used.
+- Deleted in `e0a113e` with owner approval.
+
+## O-32 — 9 medium CodeQL alerts: "network data written to file" in two scripts
+
+- **Since**: 2026-09-30
+- **Layer**: L0 tooling (local scripts, not deployed code).
+- **Owner**: unassigned.
+- **Facts**: `scripts/fetch-sportsdb-data.ts` (4) and `scripts/refresh-sportsdb-ids.ts` (5). Both exist to fetch TheSportsDB data and write it to disk; PR #6 does not change them. They do not fail the `CodeQL` check (only high does).
+- **Why it isn't done**: writing fetched data to disk is the scripts' purpose; a fix would mean validating the payload shape before writing, or dismissing the alerts with a reason (needs repo admin).
+- **What would close it**: validate with the existing Zod schemas (C-03) before writing, or dismiss as "used in tests/tooling".
+
+## O-33 — Blog content the owner should confirm
+
+- **Since**: 2026-09-30
+- **Layer**: L1 content.
+- **Owner**: site owner.
+- **Facts**: (1) `content/blog/is-iptv-legal-uk.mdx:30` quotes "Samuel Vance, Digital Media & Intellectual Property Consultant". One web search (2026-09-30) found no public record of this person; that does not prove the quote is invented. (2) Frontmatter `authorTitle` is unused: the page shows "Sports Streaming Expert" for every post, while 3 posts' frontmatter says "Financial Analyst" (1) or "IPTV Analyst" (2).
+- **Why it isn't done**: both are content decisions.
+- **What would close it**: owner confirms the quote's source (or removes it); owner decides whether the byline title should come from frontmatter.
 
 ## O-27 — Production env vars the code reads but Vercel does not set
 

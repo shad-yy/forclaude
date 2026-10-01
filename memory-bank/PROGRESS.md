@@ -156,6 +156,20 @@ Here is the repository of issues encountered, including root causes and their pe
 *   **Lesson**: when you make a control actually work, re-check its numbers against the
     real traffic that goes through it.
 
+### ⚠️ Bug 12: "CodeQL passed" while the CodeQL check was red
+
+*   **Symptoms**: PR #6 looked green, but its `CodeQL` check had failed for hours with 18 alerts (5 high).
+*   **Root cause**: two different things carry the name. The `Analyze (javascript-typescript)` Actions job only uploads results and passes; the separate `CodeQL` code-scanning check (from GitHub, not the workflow) fails on new high alerts. Only the job was read.
+*   **Permanent fix** (R-19): read the `CodeQL` check run and its annotations (`GET /repos/{owner}/{repo}/check-runs/{id}/annotations`) on every push. An alert can trace to a caller in another file (the last `Math.random` was in the admin route feeding `createTrialAccount`).
+*   **Lesson**: when a check fails, list every check run on the commit by name; a passing job of a similar name proves nothing.
+
+### ⚠️ Bug 11: Blog posts re-dated on every deploy
+
+*   **Symptoms**: 4 matchweek posts showed the date of the last deploy as their publish date.
+*   **Root cause**: `scripts/generate-posts.js` used `data.date || new Date()`; those posts had no frontmatter `date`, and `npm run build` (what Vercel runs) regenerates `lib/blog/posts.ts` each time.
+*   **Permanent fix** (R-20): real dates added (git first-commit dates, owner-approved) and the generator throws on a post without a date. Test: `tests/blog-post-dates-and-author.test.ts`.
+*   **Lesson**: a generator must never fill a missing fact with "now"; fail the build instead.
+
 ### ⚠️ Bug 10: Route tests passed while outages still looked like "no data"
 
 *   **Symptoms**: B-04's tests (routes return 503 on fault) passed, yet during a real TheSportsDB outage the routes still answered 200 + empty, and the empty result was cached.
