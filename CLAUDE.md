@@ -84,8 +84,9 @@ node -r ./polyfill-self.cjs node_modules/next/dist/bin/next build
 
 See `memory-bank/PROGRESS.md` §4 for the current queue. Summary:
 
-*   `next`, `postcss`, `sharp`, `undici` carry high-severity advisories. Resolving them
-    needs a breaking Next.js 14 → 16 upgrade — its own task with its own regression pass.
+*   `next` 14.2.35 advisories are fixed by the 15.5.27 upgrade on branch
+    `claude/next15-upgrade` (QA-LOG R-16), not yet merged. Remaining high advisories
+    (`pnpm audit --prod`, 2026-09-30): `undici`, `nanoid`, `sharp`, `postcss`, `lodash`.
 *   `/api/espn/mma/ufc/scoreboard` returns 503; the UFC widget degrades silently.
 *   `next.config.mjs`'s `typescript.ignoreBuildErrors` and `eslint.ignoreDuringBuilds` are
     both `false` — a real `next build` now fails on any TypeScript or ESLint **error**

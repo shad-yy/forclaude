@@ -110,6 +110,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 - **Run it**: `npx tsc --noEmit`.
 - **Result**: suite 347/347 at this commit.
 
+### R-16 — Upgrade next 14.2.35 → 15.5.27 (branch `claude/next15-upgrade`)
+
+- **Date**: 2026-09-30
+- **Commit**: `6fae178`.
+- **Layer**: L0 dependency.
+- **Severity**: high (2 critical + 8 high advisories on `next` 14.2.35).
+- **Was**: `next` 14.2.35; every advisory fix only in 15.x (O-11).
+- **Now**: `next` and `eslint-config-next` 15.5.27; React stays 18 (15.5.27 peer range allows it). Required edits: async `cookies()` in `lib/auth/admin-guard.ts`; `<Link>` in `app/info/faq/page.tsx` (new lint error); removed `experimental.instrumentationHook` and `swcMinify`; test accepts Next 15's `notFound()` digest.
+- **Test**: `pnpm audit --prod` 2026-09-30 — `next`: 2 critical / 8 high / 11 moderate / 2 low → 0; all prod deps: critical 2 → 0, high 24 → 16 (undici, nanoid, sharp, postcss, lodash). tsc clean; suite 347/347; lint 0 errors / 43 warnings; production build 104/104; `next start` with TheSportsDB unreachable gives the same results as on 14; Chromium homepage 0 errors.
+- **Skill/agent used**: owner-approved upgrade on its own branch.
+- **Run it**: `pnpm audit --prod`; `node -r ./polyfill-self.cjs node_modules/next/dist/bin/next build`.
+- **Result**: re-verified 2026-10-01 after merging `Version-3` (`6e11a76`) into the branch (`26c3a5d`): tsc 0; suite 361/361; lint 0 errors / 43 warnings (`next lint` now prints that it is removed in Next 16); production build 104/104; `next start` smoke: pages 200, outage routes 503. Two differences from 14, neither seen on Vercel: (1) locally, `/watch/[slug]` pages hit Next's 60 s per-page limit once and pass on retry (5–6 per build; 0 on 14) because every TheSportsDB call fails slowly in the sandbox — Vercel's Next 15 preview build `dpl_8tUprs5FUCVnuyPz45AsqDzKutRV` had no retries and spent about 105 s on the data pages against about 125 s for the Next 14 production build; (2) under local `next start`, the `next.config.mjs` `/api/(.*)` `Cache-Control` replaces the route's own header (so outage 503s lose `no-store`), whereas on Vercel the route's value wins on both versions (`/api/leagues` answers `cache-control: public` on the Next 15 preview and on Next 14 production). Follow-up O-31 (26 files read `params` synchronously; deprecated in 15, removed in 16).
+
 ### R-15 — 8 more routes answer an outage with 503 (O-26 step C, closes O-20)
 
 - **Date**: 2026-09-30

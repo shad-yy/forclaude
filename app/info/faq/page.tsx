@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const metadata: Metadata = {
@@ -53,12 +54,12 @@ export default function FAQPage() {
           <div className="mt-8 p-6 bg-gray-900/50 rounded-lg">
             <h3 className="text-lg font-semibold text-white mb-2">Still have questions?</h3>
             <p className="text-gray-400 mb-4">Can&apos;t find what you&apos;re looking for? Our support team is here to help.</p>
-            <a 
+            <Link
               href="/info/contact" 
               className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
             >
               Contact Support
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>
