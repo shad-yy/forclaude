@@ -106,13 +106,14 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: this is why the RapidAPI key and the HAR (committed before C-04) were never flagged. A full-history scan would fail today on those two until they are rotated and allowlisted (O-23).
 - **What would close it**: after O-23, add a weekly `schedule:` trigger (or a `gitleaks detect --no-git` step) that scans the whole repo, with the rotated secrets' fingerprints in `.gitleaksignore`.
 
-## O-21 — Production runs `Version-3` without the work branch's fixes
+## O-21 — Merged into `Version-3`, but production is not deployed from `Version-3`
 
-- **Since**: 2026-09-20 20:25 UTC (found 2026-09-24 via `mcp__Vercel__list_deployments`)
+- **Since**: 2026-09-20 20:25 UTC (found 2026-09-24); re-checked 2026-10-01 after the merge.
 - **Layer**: L0 release process.
-- **Owner**: site owner (decision), then Claude (merge + verification).
-- **Why it isn't done**: merging into the production branch is the owner's call. Facts: builds from `claude/exciting-planck-6a4nbr` were deployed to production on 2026-09-17 (`7d553a4`) and 2026-09-19 (`73b364c`). The next push to `Version-3` (`16b8d6a`, content update) deployed over them. `git rev-list --count 73b364c --not 16b8d6a` = 52: production lost A-01..A-15, B-01..B-07, C-01..C-05, X-04, X-06, X-09 and X-11 (hCaptcha verification, test-panel bypass closure, AVIF mitigation, PII log redaction, provision race fix, fault-vs-absence routes). Work since then (X-01/02/05/08/13, O-06 build gates, R-01..R-05) was never in production: at `cc6af34` the branch has 77 commits `Version-3` lacks. Vercel reported no runtime errors in the 7 days to 2026-09-24.
-- **What would close it**: owner approves; merge the branch into `Version-3` (PR, CI green); then confirm with `list_deployments` (`target: production`) that the live SHA contains the branch head (`git merge-base --is-ancestor <head> <live-sha>`). PROGRESS.md Trouble Registry Bug 9.
+- **Owner**: site owner (Vercel action).
+- **Facts (2026-10-01, `mcp__Vercel__get_deployment smartlivetv.co.uk`)**: the live deployment is `dpl_DpLEnX1ejMfEBNDRzWCHfCTbQXCp`, `source: redeploy`, created 2026-09-30 02:41 UTC from branch `vercel/install-vercel-web-analytics-vl9i5d`, commit `83d856f` = this work branch at `e652009` (R-07) plus Vercel's "Install Vercel Web Analytics" commit (adds `<Analytics />` to `app/layout.tsx`; not in `Version-3`). PR #6 merged as `0a46169`; its Vercel build `dpl_4eywqY82SrKYEGT3ngmckGaJWZkS` has `target: null` and only the branch alias, i.e. a preview. The 2026-09-20 `Version-3` push (`16b8d6a`) did build with `target: production`, so the production branch setting has changed since then (project `updatedAt` 2026-09-30 10:27 UTC). The earlier history (52 commits lost on 2026-09-20) is PROGRESS.md Bug 9.
+- **Why it isn't done**: promoting a deployment or changing the production branch changes the live site; the owner decides. Promoting a `Version-3` build without the analytics line would switch Vercel Web Analytics off.
+- **What would close it**: bring the `<Analytics />` line into `Version-3`; then promote that `Version-3` build to production and set the production branch back to `Version-3`; confirm with `get_deployment smartlivetv.co.uk` that the live SHA contains `0a46169`.
 
 ## O-20 — CLOSED 2026-09-30 by R-15 (was: six routes still answer an upstream fault with 200 + `[]`)
 
