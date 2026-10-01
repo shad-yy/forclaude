@@ -6,15 +6,15 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
-## O-29 — Production monitor: triage done; live site waits on deploy, one flaky check unexplained
+## O-29 — Production monitor green on the live site; one flaky check unexplained
 
 - **Since**: 2026-09-30 (first run `36769200235`)
 - **Layer**: production content / e2e specs.
-- **Owner**: site owner (merge + deploy); H1 flake: unassigned.
-- **Facts**: run `36769200235` 77 passed / 42 failed / 1 flaky → run `36788028302` 101 / 18 / 1 (both against the live site). Every originally failing check is triaged and handled: robots.txt (R-12), mobile ×5, buy form, image sizes (R-18), byline, dates, hero video, footer link, `/buy` title, `/faq` schema (R-20), `/faq` description and support hours (R-22). The 18 failures left on the live site (footer 404, "James Harper" ×2, 6 unsized badges, coverr console errors, `/faq` description) are all fixed on the work branch.
-- **Still unexplained**: "H1 exists and is unique" fails once per run on a different page and passes on retry — run 1 `/free-trial` (Mobile Chrome), run 2 `/ufc` and run 3 `/watch/champions-league` (both Desktop Chrome). The page sources render an `<h1>`; the cause is not established. The report artifact cannot be downloaded from the sandbox (egress 403); its screenshots are on the run page.
-- **Why it isn't done**: production runs `Version-3` without these fixes (O-21); the H1 flake has no root cause.
-- **What would close it**: merge PR #6 and deploy; one green monitor run on the live site; for H1, read the failure screenshot of the next run that hits it.
+- **Owner**: H1 flake: unassigned.
+- **Facts**: run `36769200235` 77 passed / 42 failed / 1 flaky → `36788028302` 101 / 18 / 1 (both before the fixes were live) → `36902488798` (2026-10-01 17:51 UTC, live site on `6e11a76` since 01:28 UTC) **119 passed / 0 failed / 1 flaky**. Every originally failing check is fixed: robots.txt (R-12), mobile ×5, buy form, image sizes (R-18), byline, dates, hero video, footer link, `/buy` title, `/faq` schema (R-20), `/faq` description and support hours (R-22).
+- **Still unexplained**: "H1 exists and is unique" fails once per run and passes on retry — `/free-trial` (Mobile Chrome, run 1), `/ufc` (run 2), `/watch/champions-league` (run 3), `/free-trial` (Desktop Chrome, run 4). The page sources render an `<h1>`; the cause is not established. The report artifact cannot be downloaded from the sandbox (egress 403); its screenshots are on the run page.
+- **Why it isn't done**: the H1 flake has no root cause.
+- **What would close it**: read the failure screenshot of a run that hits it (the daily schedule runs from `Version-3` at 05:47 UTC), then fix the page or the check.
 
 ## O-30 — CLOSED 2026-09-30 by R-17 (was: three components have no importers)
 
