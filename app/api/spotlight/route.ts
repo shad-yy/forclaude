@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server"
+import { ENV } from "@/lib/config/env"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+// B-03: read TheSportsDB key through ENV (centralised fallback + warning
+// in lib/config/env.ts), no longer hardcode `/json/123/` — see A-15's
+// sibling in QA-LOG.md and playbook/skills/ci-runs-without-secrets.md.
+const SPORTSDB_BASE = () => `https://www.thesportsdb.com/api/v1/json/${ENV.THESPORTSDB_KEY}`
 
 // League tier weighting for importance scoring
 const TIER_1_LEAGUES = ['4328', '4480', '4481'] // PL, UCL, World Cup
@@ -115,18 +121,29 @@ export async function GET() {
     // Fetch today and tomorrow's events across all sports
     const [todaySoccerRes, tomorrowSoccerRes, todayAllRes] = await Promise.allSettled([
       fetch(
-        `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${todayUTC}&s=Soccer`,
+        `${SPORTSDB_BASE()}/eventsday.php?d=${todayUTC}&s=Soccer`,
         { cache: 'no-store' }
       ),
       fetch(
-        `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${tomorrowUTC}&s=Soccer`,
+        `${SPORTSDB_BASE()}/eventsday.php?d=${tomorrowUTC}&s=Soccer`,
         { cache: 'no-store' }
       ),
       fetch(
-        `https://www.thesportsdb.com/api/v1/json/123/eventsday.php?d=${todayUTC}`,
+        `${SPORTSDB_BASE()}/eventsday.php?d=${todayUTC}`,
         { cache: 'no-store' }
       ),
     ])
+
+    // B-04.10: distinguish total outage from partial degradation. If NONE
+    // of the three upstream fetches produced a usable response, treat as
+    // a fault (throw → caught below → 503). Previously `Promise.allSettled`
+    // silently masked total outage into empty results (the skill's exact
+    // anti-pattern: allSettled(...).map(r => fulfilled ? value : [])).
+    const anySuccess = [todaySoccerRes, tomorrowSoccerRes, todayAllRes]
+      .some(r => r.status === 'fulfilled' && r.value.ok)
+    if (!anySuccess) {
+      throw new Error('Spotlight upstream: all three requests failed or non-2xx')
+    }
 
     const extractEvents = async (res: PromiseSettledResult<Response>) => {
       if (res.status === 'fulfilled' && res.value.ok) {
@@ -207,12 +224,12 @@ export async function GET() {
       }
     })
   } catch (error) {
-    console.error('[Spotlight API] Error:', error)
-    return NextResponse.json({
-      spotlight: [],
-      heroImages: [],
-      count: 0,
-      generated: new Date().toISOString(),
-    })
+    // B-04.10: fault → 503+no-store per hybrid rule. Previously returned
+    // an empty spotlight with status 200 — invisible degradation.
+    console.error('[Spotlight API] fault:', error)
+    return NextResponse.json(
+      { error: "Spotlight temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
+    )
   }
 }

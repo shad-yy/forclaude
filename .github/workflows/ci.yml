@@ -1,10 +1,13 @@
 name: CI
 
+# A-09: trigger scope extended to cover the branches this project actually
+# uses. Previously only `main`, so pushes to Version-3 (production) and to
+# claude/** short-lived dev branches got zero CI signal.
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "Version-3", "claude/**"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "Version-3"]
 
 jobs:
   test:
@@ -21,7 +24,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # O-16: was 20 — the live Vercel project (confirmed via
+          # mcp__Vercel__get_project) runs nodeVersion "24.x" for
+          # production. Testing on a different major than what ships
+          # means a Node-24-only behaviour change could pass CI and
+          # only surface in production. Aligned to match.
+          node-version: 24
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -33,16 +41,11 @@ jobs:
       - name: Run unit tests
         run: pnpm vitest --run
 
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
-
-      - name: Start app
-        run: pnpm dev &
-
-      - name: Wait for app
-        run: npx wait-on http://localhost:3000
-
-      - name: Run e2e tests
-        run: pnpm playwright test
-
-
+      # A-14: Playwright e2e removed from the PR gate. The current suite is
+      # a production-monitor (asserts real robots.txt content, `.co.uk`
+      # canonicals, "no James Harper" author, real blog posts, real schema
+      # markup). Running it against a fresh `pnpm dev` produces 40+
+      # failures for reasons unrelated to any given PR. A separate
+      # scheduled workflow that targets the live site (or a preview
+      # deploy) is tracked as OPEN-WORK O-10.
+      # Vitest + tsc remain the blocking gate on every push and PR.

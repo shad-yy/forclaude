@@ -1,0 +1,97 @@
+name: Production monitor (Playwright)
+
+# O-10 / A-14: the Playwright specs assert live production content
+# (robots.txt, canonicals, schema markup, footer links), so they run
+# against the live site on a schedule instead of gating pull requests.
+#
+# One tracking issue (label: production-monitor) is opened on the first
+# failing scheduled/manual run, commented on while it keeps failing, and
+# closed when a run passes. Push runs (this file, a spec or the Playwright
+# config changed) only report. They still test the live site, so a site
+# fix shows up only after it is deployed; a spec fix shows up at once.
+#
+# GitHub runs `schedule` triggers only from the default branch
+# (Version-3), so the daily run starts after this file is merged there.
+
+on:
+  schedule:
+    - cron: "47 5 * * *"
+  workflow_dispatch: {}
+  push:
+    paths:
+      - ".github/workflows/e2e-production-monitor.yml"
+      - "e2e/**"
+      - "tests/**/*.spec.ts"
+      - "playwright.config.ts"
+
+concurrency:
+  group: production-monitor
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PLAYWRIGHT_BASE_URL: https://smartlivetv.co.uk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # The monitor never builds the app, so no install scripts are needed.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      # Projects in playwright.config.ts: Desktop Chrome, Mobile Safari (webkit), Mobile Chrome.
+      - run: pnpm exec playwright install --with-deps chromium webkit
+
+      - id: e2e
+        run: pnpm exec playwright test
+        continue-on-error: true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 14
+
+      - name: Open, update or close the tracking issue
+        if: github.event_name != 'push'
+        uses: actions/github-script@v7
+        env:
+          E2E_OUTCOME: ${{ steps.e2e.outcome }}
+        with:
+          script: |
+            const label = 'production-monitor';
+            const { owner, repo } = context.repo;
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const failed = process.env.E2E_OUTCOME === 'failure';
+            const { data: open } = await github.rest.issues.listForRepo({ owner, repo, state: 'open', labels: label, per_page: 1 });
+            if (failed && open.length) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: open[0].number, body: `Still failing: ${runUrl}` });
+            } else if (failed) {
+              await github.rest.issues.create({
+                owner, repo, labels: [label],
+                title: 'Production monitor: Playwright checks failing',
+                body: `The scheduled Playwright run against production failed.\n\nRun and report artifact: ${runUrl}`,
+              });
+            } else if (open.length) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: open[0].number, body: `Passing again: ${runUrl}` });
+              await github.rest.issues.update({ owner, repo, issue_number: open[0].number, state: 'closed', state_reason: 'completed' });
+            }
+
+      - name: Fail the job when checks failed
+        if: steps.e2e.outcome == 'failure'
+        run: exit 1

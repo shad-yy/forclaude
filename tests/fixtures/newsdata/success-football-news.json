@@ -1,0 +1,43 @@
+{
+  "status": "success",
+  "totalResults": 2,
+  "results": [
+    {
+      "article_id": "a1b2c3d4e5f6",
+      "title": "Arsenal Close Gap at Top of Premier League with Derby Win",
+      "link": "https://www.skysports.com/football/news/arsenal-derby-win",
+      "keywords": ["Football", "Arsenal", "Premier League"],
+      "creator": ["Sky Sports Staff"],
+      "description": "Arsenal moved within two points of the league leaders after a hard-fought derby victory.",
+      "content": null,
+      "pubDate": "2026-09-20 15:32:00",
+      "image_url": "https://e0.365dm.com/26/09/1600x900/arsenal-derby.jpg",
+      "source_id": "skysports",
+      "source_name": "Sky Sports",
+      "source_url": "https://www.skysports.com",
+      "source_icon": "https://n.bytvi.com/skysports.png",
+      "language": "english",
+      "country": ["united kingdom"],
+      "category": ["sports"]
+    },
+    {
+      "article_id": "f6e5d4c3b2a1",
+      "title": "Champions League Draw: Group Stage Fixtures Confirmed",
+      "link": "https://www.bbc.com/sport/football/champions-league-draw",
+      "keywords": null,
+      "creator": null,
+      "description": null,
+      "content": null,
+      "pubDate": "2026-09-19 09:00:00",
+      "image_url": null,
+      "source_id": "bbc",
+      "source_name": "BBC Sport",
+      "source_url": "https://www.bbc.com",
+      "source_icon": null,
+      "language": "english",
+      "country": ["united kingdom"],
+      "category": ["sports"]
+    }
+  ],
+  "nextPage": "1234567890"
+}

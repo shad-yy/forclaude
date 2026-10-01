@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
 
+// B-04 (route 1/12): migrated off the grandfathered S-03 "return [] on
+// fault" shape. Distinguishes fault (thrown → 503, Cache-Control: no-store)
+// from absence (resolver returned [] legitimately → 200 with empty data).
+// See memory-bank/PATTERNS.md hybrid rule + playbook/skills/api-fault-vs-absence.md.
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -12,10 +16,10 @@ export async function GET(request: NextRequest) {
       { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/leagues error:", error)
+    console.warn("[API] GET /api/leagues fault:", error)
     return NextResponse.json(
-      { data: [], error: "Data temporarily unavailable" },
-      { status: 200 }
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }

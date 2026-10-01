@@ -1,0 +1,52 @@
+import { randomInt } from 'node:crypto'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/auth/admin-guard'
+import { createTrialAccount } from '@/lib/panel/cms8k'
+
+export const dynamic = 'force-dynamic'
+
+/**
+ * Admin ops endpoint: runs a live trial-line provision on the panel and
+ * reports the current panel env config. Was previously reachable via
+ * `?secret=` or `Authorization: Bearer` matching JWT_SECRET or
+ * CRON_SECRET; both bypasses were closed in A-03 because JWT_SECRET is a
+ * signing secret, not an auth-by-value credential, and CRON_SECRET was
+ * never intended to authorise a real cms-8k provision.
+ *
+ * Auth: admin-session cookie only.
+ */
+export async function GET(req: NextRequest) {
+  const auth = await requireAdmin(req)
+  if (!auth.ok) return auth.response
+  const adminSub = typeof auth.payload.sub === 'string' ? auth.payload.sub : undefined
+
+  const testName = 'DiagTest' + randomInt(100, 1000)
+  console.log(`[PROVISION-DIAG] admin=${adminSub ?? 'unknown'} running trial creation for ${testName}`)
+
+  const envCheck = {
+    CMS8K_API_KEY: process.env.CMS8K_API_KEY ? `present (len ${process.env.CMS8K_API_KEY.length})` : 'MISSING',
+    CMS8K_USERNAME: process.env.CMS8K_USERNAME ? `present (${process.env.CMS8K_USERNAME})` : 'MISSING',
+    CMS8K_PASSWORD: process.env.CMS8K_PASSWORD ? 'present' : 'MISSING',
+    CMS8K_SERVER_URL: process.env.CMS8K_SERVER_URL || 'MISSING',
+    CMS8K_URL: process.env.CMS8K_URL || 'https://cms-8k.com (default)',
+    RESEND_API_KEY: process.env.RESEND_API_KEY ? 'present' : 'MISSING',
+    UPSTASH_CONFIGURED: !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
+  }
+
+  try {
+    const result = await createTrialAccount(testName, `Diagnostic panel test (admin=${adminSub ?? 'unknown'})`)
+    return NextResponse.json(
+      { timestamp: new Date().toISOString(), environment: envCheck, result },
+      { status: result.success ? 200 : 500 },
+    )
+  } catch (err) {
+    return NextResponse.json(
+      {
+        timestamp: new Date().toISOString(),
+        environment: envCheck,
+        error: err instanceof Error ? err.message : 'Unknown error during test',
+      },
+      { status: 500 },
+    )
+  }
+}

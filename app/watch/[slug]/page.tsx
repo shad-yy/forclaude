@@ -105,10 +105,18 @@ export default async function WatchLeaguePage({ params }: Props) {
 
     if (!theme) return notFound()
 
-    const [allFixtures, fullStandings] = await Promise.all([
+    // O-26: one section failing must not take down the whole landing page, and
+    // a failed load must not claim "no fixtures" (tests/pages-outage-fault.test.ts).
+    const [fixturesResult, standingsResult] = await Promise.allSettled([
         unifiedSportsAPI.getFixtures({ leagueId: theme.id, next: 15 }),
         unifiedSportsAPI.getStandings(theme.id)
     ])
+    if (fixturesResult.status === "rejected") console.error(`[watch/${slug}] fixtures unavailable:`, fixturesResult.reason)
+    if (standingsResult.status === "rejected") console.error(`[watch/${slug}] standings unavailable:`, standingsResult.reason)
+    const fixturesUnavailable = fixturesResult.status === "rejected"
+    const standingsUnavailable = standingsResult.status === "rejected"
+    const allFixtures = fixturesResult.status === "fulfilled" ? fixturesResult.value : []
+    const fullStandings = standingsResult.status === "fulfilled" ? standingsResult.value : []
 
     const fixtures = allFixtures.filter(e => e.status !== "Match Finished").slice(0, 5)
     const standings = fullStandings || []
@@ -346,7 +354,7 @@ export default async function WatchLeaguePage({ params }: Props) {
                                 ))}
                             </StaggerIn>
                         ) : (
-                            <p className="text-gray-500 p-6 bg-gray-900 rounded-xl border border-gray-800 text-center">No upcoming fixtures scheduled right now.</p>
+                            <p className="text-gray-500 p-6 bg-gray-900 rounded-xl border border-gray-800 text-center">{fixturesUnavailable ? "Fixtures are temporarily unavailable. Please check back shortly." : "No upcoming fixtures scheduled right now."}</p>
                         )}
                     </section>
 
@@ -381,6 +389,9 @@ export default async function WatchLeaguePage({ params }: Props) {
                         <div className="p-4 border-b bg-gray-800/50" style={{ borderColor: theme.secondary }}>
                             <h3 className="text-lg font-bold text-white">Live {theme.name} Table</h3>
                         </div>
+                        {standingsUnavailable && (
+                            <p className="p-4 text-xs text-gray-400">The table is temporarily unavailable. Please check back shortly.</p>
+                        )}
 
                         <div className="overflow-x-auto">
                             <table className="w-full text-xs">

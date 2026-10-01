@@ -1,0 +1,57 @@
+name: Dependency audit
+
+# C-01 / playbook/skills/daily-dependency-audit.md.
+# Runs on its own schedule (23 06 UTC daily — off-hour + off-minute)
+# because advisories arrive on the provider's schedule, not the
+# project's. A push-triggered check can sit blind for weeks on a
+# repository nobody touched.
+#
+# Fails ONLY on critical prod-tree advisories. High/moderate/low are
+# printed to the run summary for context — never gate on them or the
+# job gets disabled and takes the credibility of every other check
+# with it.
+#
+# `--ignore-scripts` on install because the audit job never runs
+# dependency code; a postinstall script is precisely the thing an
+# audit exists to warn about.
+
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: dependency-audit
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies (no scripts)
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Audit production dependencies
+        run: |
+          set +e
+          pnpm audit --prod --json > audit.json
+          set -e
+          node scripts/audit-gate.mjs
+
+      - name: Full-tree audit for context (never fails)
+        if: always()
+        run: pnpm audit || true

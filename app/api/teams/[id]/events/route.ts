@@ -21,10 +21,11 @@ export async function GET(
       { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/teams/[id]/events error:", error)
+    // O-26 step C: an outage is a 503, never 200 + [] (tests/routes-outage-network.test.ts).
+    console.warn("[API] GET /api/teams/[id]/events fault:", error)
     return NextResponse.json(
-      { data: [], error: "Data temporarily unavailable" },
-      { status: 200 }
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }

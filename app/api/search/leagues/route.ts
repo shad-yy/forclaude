@@ -14,8 +14,12 @@ export async function GET(request: NextRequest) {
       filtered.map((l) => ({ id: l.id, name: l.name, sport: l.sport, country: l.country || null }))
     )
   } catch (e) {
-    console.warn("[API] GET /api/search/leagues failed:", e)
-    return NextResponse.json([])
+    // O-26 step C: an outage is a 503, never [] (tests/routes-outage-network.test.ts).
+    console.warn("[API] GET /api/search/leagues fault:", e)
+    return NextResponse.json(
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
+    )
   }
 }
 

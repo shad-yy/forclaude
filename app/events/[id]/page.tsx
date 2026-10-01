@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { OptimizedImage } from "@/components/ui/optimized-image"
 import { EventDetailsTabs } from "@/components/events/event-details-tabs"
 import { unifiedSportsAPI } from "@/lib/api/unified-sports-api"
+import { isUpstreamFault } from "@/lib/api/errors"
 import type { SportsDbEvent } from "@/lib/types"
 import { Calendar, Clock, MapPin, Trophy, ArrowLeft, Zap } from "lucide-react"
 import Link from "next/link"
@@ -21,6 +22,8 @@ async function getEventData(id: string) {
     return { unifiedEvent, sportsDbEvent: null as SportsDbEvent | null }
   } catch (error) {
     console.error("Error fetching event data:", error)
+    // O-26: an outage is an error page, not a 404 (tests/pages-outage-fault.test.ts).
+    if (isUpstreamFault(error)) throw error
     return null
   }
 }

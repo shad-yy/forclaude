@@ -60,14 +60,14 @@ When changing one, check the effect on the other.
 
 ### TheSportsDB (v1)
 *   Leagues, teams, rosters, standings, fixtures, events.
-*   Via `lib/api/the-sports-db.ts`, key `123`.
+*   Via `lib/api/the-sports-db.ts`. Key from `THESPORTSDB_API_KEY` through `ENV.THESPORTSDB_KEY` (`lib/config/env.ts`); falls back to the public test key `123` with a warning.
 *   Free tier is 30 req/min; **throttled to 25** with a 2400 ms token-bucket delay.
 *   Circuit breaker blocks a failing endpoint for 1 minute after 5 consecutive 429s.
-*   Cache: 30 days static, 1 hour scheduled events, 5 min near-live, 1 min today's events.
+*   Cache: TTLs in `lib/api/the-sports-db.ts` (`TTL`) and `lib/cache.ts` (`CACHE_TTL`) — 24 h leagues/teams/players, 5 min standings/search/lists, 30 s events.
 
 ### NewsData.io
 *   Sports news articles. 200 requests/day.
-*   Strict fallback to mock data on failure or quota exhaustion.
+*   On failure or quota exhaustion, `lib/api/news.ts` returns 4 of the site's own promo articles (`FALLBACK_ARTICLES`, owned content linking to its own pages).
 
 ### UFC.com (scraper)
 *   Events, fighter stats, fight cards. Server-side HTML parsing, 5-minute cache.
@@ -107,7 +107,7 @@ smart-live-tv/
 ├── data/                     # Static JSON caches
 ├── lib/
 │   ├── api/                  # unified-sports-api.ts + low-level clients
-│   ├── cache/apiCache.ts     # Central TTL cache
+│   ├── cache.ts              # swrGet cache (memory + Upstash via cache/redis.ts)
 │   ├── blog/posts.ts         # ⚠️ GENERATED — never edit directly
 │   └── types.ts              # UnifiedFixture, UnifiedTeam, UnifiedPlayer …
 ├── scripts/                  # generate-posts.js, ping-indexnow.js, hydration

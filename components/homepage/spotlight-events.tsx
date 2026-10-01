@@ -210,6 +210,8 @@ function SpotlightCard({
               <img
                 src={leagueBadge}
                 alt={event.strLeague}
+                width={20}
+                height={20}
                 className="w-5 h-5 object-contain"
                 loading="lazy"
               />
@@ -244,6 +246,8 @@ function SpotlightCard({
                   <img
                     src={homeBadge}
                     alt={event.strHomeTeam || ""}
+                    width={featured ? 64 : 40}
+                    height={featured ? 64 : 40}
                     className="w-full h-full object-contain p-1"
                     loading="lazy"
                     onError={(e) => {
@@ -288,6 +292,8 @@ function SpotlightCard({
                   <img
                     src={awayBadge}
                     alt={event.strAwayTeam || ""}
+                    width={featured ? 64 : 40}
+                    height={featured ? 64 : 40}
                     className="w-full h-full object-contain p-1"
                     loading="lazy"
                     onError={(e) => {

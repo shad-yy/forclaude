@@ -4,6 +4,9 @@
 
 import { errorLogger } from "@/lib/admin/error-logger"
 import { getCache, setCache, cache, swrGet } from "@/lib/cache"
+import { withRetry, RetryableError } from "@/lib/api/retry"
+import { UpstreamFaultError, isUpstreamFault } from "@/lib/api/errors"
+import { logSafe } from "@/lib/log/redact"
 
 const API_KEY = process.env.THESPORTSDB_API_KEY || "123"
 const typeofWindow = typeof window !== "undefined"
@@ -14,12 +17,36 @@ const BASE_URL = typeofWindow ? "/api/thesportsdb/" : `https://www.thesportsdb.c
 const RATE_LIMIT_MS = 2400
 let lastRequestTime = 0
 let rateLimitQueue: Promise<void> = Promise.resolve()
-let queueLock = false
 
-// Circuit breaker: track consecutive 429s
+// Circuit breaker: track consecutive 429s.
+//
+// B-05: key on the OPERATION (the .php file), not the specific
+// parameters. Previously a raw endpoint like `lookupleague.php?id=4328`
+// was the map key, so 4328/4335/4344 each counted separately and the
+// 5-failure threshold was never reached in practice — the breaker
+// never tripped. Now normalized via normalizeEndpointKey below.
 const circuitBreaker = new Map<string, { failures: number; lastFailure: number }>()
 const CIRCUIT_BREAKER_THRESHOLD = 5
 const CIRCUIT_BREAKER_RESET_MS = 60000 // 1 minute
+
+/**
+ * Reduce an endpoint (relative path with query params, or a full URL) to
+ * a stable circuit-breaker key. Strips the query string; returns the URL
+ * pathname for a full URL; empty input returns empty string.
+ *
+ * Exported so `tests/circuit-breaker-key.test.ts` (B-05) can lock the
+ * behaviour.
+ */
+export function normalizeEndpointKey(endpoint: string): string {
+  try {
+    if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
+      return new URL(endpoint).pathname
+    }
+  } catch {
+    // fall through to the split-on-? fallback
+  }
+  return endpoint.split("?")[0]
+}
 
 // Track request statistics
 let requestStats = {
@@ -46,38 +73,39 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// X-08: previously combined a `queueLock` spin-wait
+// (`while (queueLock) await sleep(10)`) with this same promise chain.
+// The lock was redundant: JS guarantees synchronous execution
+// between `await` points, and there is no `await` between reading
+// `rateLimitQueue` and reassigning it below — so two calls that fire
+// "concurrently" (e.g. via `Promise.all([enqueueRateLimit(), ...])`)
+// can never race on that read-then-write; the second call's
+// assignment always sees the first call's already-updated value.
+// The chain alone serializes correctly. Pinned by
+// tests/sportsdb-rate-limiter.test.ts before this simplification and
+// unchanged after (same test, same assertions, same result).
 async function enqueueRateLimit() {
-  // Wait for lock to be released
-  while (queueLock) {
-    await sleep(10)
-  }
-
-  queueLock = true
-
-  try {
-    const run = async () => {
-      const now = Date.now()
-      const elapsed = now - lastRequestTime
-      if (elapsed < RATE_LIMIT_MS) {
-        await sleep(RATE_LIMIT_MS - elapsed)
-      }
-      lastRequestTime = Date.now()
+  const run = async () => {
+    const now = Date.now()
+    const elapsed = now - lastRequestTime
+    if (elapsed < RATE_LIMIT_MS) {
+      await sleep(RATE_LIMIT_MS - elapsed)
     }
-
-    rateLimitQueue = rateLimitQueue.then(run, run)
-    await rateLimitQueue
-  } finally {
-    queueLock = false
+    lastRequestTime = Date.now()
   }
+
+  rateLimitQueue = rateLimitQueue.then(run, run)
+  await rateLimitQueue
 }
 
 function checkCircuitBreaker(endpoint: string): boolean {
-  const breaker = circuitBreaker.get(endpoint)
+  const key = normalizeEndpointKey(endpoint)
+  const breaker = circuitBreaker.get(key)
   if (!breaker) return true
 
   // Reset if enough time has passed
   if (Date.now() - breaker.lastFailure > CIRCUIT_BREAKER_RESET_MS) {
-    circuitBreaker.delete(endpoint)
+    circuitBreaker.delete(key)
     return true
   }
 
@@ -86,14 +114,15 @@ function checkCircuitBreaker(endpoint: string): boolean {
 }
 
 function recordCircuitBreakerFailure(endpoint: string) {
-  const breaker = circuitBreaker.get(endpoint) || { failures: 0, lastFailure: 0 }
+  const key = normalizeEndpointKey(endpoint)
+  const breaker = circuitBreaker.get(key) || { failures: 0, lastFailure: 0 }
   breaker.failures++
   breaker.lastFailure = Date.now()
-  circuitBreaker.set(endpoint, breaker)
+  circuitBreaker.set(key, breaker)
 }
 
 function resetCircuitBreaker(endpoint: string) {
-  circuitBreaker.delete(endpoint)
+  circuitBreaker.delete(normalizeEndpointKey(endpoint))
 }
 
 // Log API key status on module load
@@ -160,12 +189,21 @@ function deduplicateRequest<T>(
   return promise
 }
 
-// Unified fetch wrapper with retries and exponential backoff
-// Enhanced to handle full endpoint paths or relative paths
+// X-05: retry/backoff mechanics (attempt counting, sleeping between
+// tries) delegate to the shared lib/api/retry.ts::withRetry helper.
+// Retry POLICY is unchanged: 5xx and network errors retry up to 2
+// times on a [200, 600, 1800]ms schedule; 429 and other 4xx never
+// retry. A thrown RetryableError signals "try again"; every other
+// return path (success, 429, other 4xx, circuit-breaker-open) is a
+// definitive result returned without throwing, so withRetry does not
+// retry it.
+const SPORTSDB_RETRY_BACKOFF_MS = [200, 600, 1800]
+
+// Unified fetch wrapper with retries and exponential backoff.
+// Enhanced to handle full endpoint paths or relative paths.
 async function sportsdbFetch(
   endpoint: string,
   params: Record<string, string | number> = {},
-  retryCount = 0,
 ): Promise<SportsDBFetchResult> {
   // If endpoint already includes full URL, use it; otherwise construct from BASE_URL
   let url: URL
@@ -177,81 +215,90 @@ async function sportsdbFetch(
   }
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v))
 
-  // Check circuit breaker
-  if (!checkCircuitBreaker(endpoint)) {
-    return {
-      ok: false,
-      status: 429,
-      url: url.toString(),
-      body: null,
-      error: 'Circuit breaker open - too many rate limit errors',
-    }
-  }
-
-  // Mask API key in logs — full redaction, do not leak any key characters
-  const masked = url.toString().replace(/(json\/).+?(\/)/, '$1***REDACTED***$2')
-  if (retryCount === 0) {
-    console.log('[TheSportsDB] REQUEST', masked)
-  } else {
-    console.log(`[TheSportsDB] RETRY ${retryCount + 1}/2`, masked)
-  }
-
   try {
-    await enqueueRateLimit()
-    const res = await fetch(url.toString(), {
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:120.0)',
+    return await withRetry<SportsDBFetchResult>(
+      async (attempt) => {
+        // Re-checked every attempt (matches the previous recursive
+        // implementation, which re-ran this check on each retry too)
+        // — a breaker that opens mid-retry-sequence still short-circuits
+        // the next attempt.
+        if (!checkCircuitBreaker(endpoint)) {
+          return {
+            ok: false,
+            status: 429,
+            url: url.toString(),
+            body: null,
+            error: 'Circuit breaker open - too many rate limit errors',
+          }
+        }
+
+        // Mask API key in logs — full redaction, do not leak any key characters
+        const masked = url.toString().replace(/(json\/).+?(\/)/, '$1***REDACTED***$2')
+        if (attempt === 0) {
+          console.log('[TheSportsDB] REQUEST', masked)
+        } else {
+          console.log(`[TheSportsDB] RETRY ${attempt + 1}/2`, masked)
+        }
+
+        await enqueueRateLimit()
+        const res = await fetch(url.toString(), {
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:120.0)',
+          },
+          cache: 'no-store',
+        })
+
+        const text = await res.text()
+        let body: unknown
+        try {
+          body = JSON.parse(text)
+        } catch {
+          // Not JSON — log via errorLogger (async, non-blocking)
+          errorLogger.logWarning(
+            `Non-JSON response from ${url.toString()}: ${text.substring(0, 200)}`,
+            'TheSportsDB',
+            { endpoint, status: res.status },
+          )
+          body = text.substring(0, 2000)
+        }
+
+        if (!res.ok) {
+          // Don't retry 429 (rate limit) - fail immediately
+          if (res.status === 429) {
+            recordCircuitBreakerFailure(endpoint)
+            requestStats.rateLimited++
+            console.warn('[TheSportsDB] Rate limit exceeded for %s (429)', logSafe(endpoint))
+            return { ok: false, status: 429, url: url.toString(), body: null, error: 'Rate limit exceeded' }
+          }
+
+          // Retry only server errors (5xx) — throw to trigger withRetry.
+          if (res.status >= 500) {
+            throw new RetryableError(`HTTP ${res.status} from ${endpoint}`, {
+              status: res.status,
+              url: url.toString(),
+              body,
+            })
+          }
+
+          console.warn('[TheSportsDB] %s HTTP %d', logSafe(endpoint), res.status)
+          return { ok: false, status: res.status, url: url.toString(), body }
+        }
+
+        // Success - reset circuit breaker
+        resetCircuitBreaker(endpoint)
+        return { ok: true, status: res.status, url: url.toString(), body }
       },
-      cache: 'no-store',
-    })
-
-    const text = await res.text()
-    let body: unknown
-    try {
-      body = JSON.parse(text)
-    } catch {
-      // Not JSON — log via errorLogger (async, non-blocking)
-      errorLogger.logWarning(
-        `Non-JSON response from ${url.toString()}: ${text.substring(0, 200)}`,
-        'TheSportsDB',
-        { endpoint, status: res.status },
-      )
-      body = text.substring(0, 2000)
-    }
-
-    if (!res.ok) {
-      // Don't retry 429 (rate limit) - fail immediately
-      if (res.status === 429) {
-        recordCircuitBreakerFailure(endpoint)
-        requestStats.rateLimited++
-        console.warn(`[TheSportsDB] Rate limit exceeded for ${endpoint}`, { endpoint, status: 429 })
-        // Don't retry - return immediately
-        return { ok: false, status: 429, url: url.toString(), body: null, error: 'Rate limit exceeded' }
-      }
-
-      // Retry only server errors (5xx)
-      if (res.status >= 500 && retryCount < 2) {
-        const backoffMs = [200, 600, 1800][retryCount]
-        await sleep(backoffMs)
-        return sportsdbFetch(endpoint, params, retryCount + 1)
-      }
-
-      console.warn(`[TheSportsDB] ${endpoint} HTTP ${res.status}`)
-    } else {
-      // Success - reset circuit breaker
-      resetCircuitBreaker(endpoint)
-    }
-
-    return { ok: res.ok, status: res.status, url: url.toString(), body }
+      { maxRetries: 2, backoffMs: SPORTSDB_RETRY_BACKOFF_MS },
+    )
   } catch (err) {
-    // Retry on network errors
-    if (retryCount < 2) {
-      const backoffMs = [200, 600, 1800][retryCount]
-      await sleep(backoffMs)
-      return sportsdbFetch(endpoint, params, retryCount + 1)
+    // Retries exhausted. Distinguish a final 5xx (RetryableError,
+    // carries the last response) from a network-level failure
+    // (fetch/text/json threw directly).
+    if (err instanceof RetryableError && err.cause && typeof err.cause === 'object') {
+      const cause = err.cause as { status: number; url: string; body: unknown }
+      return { ok: false, status: cause.status, url: cause.url, body: cause.body }
     }
-
     const errorMsg = err instanceof Error ? err.message : String(err)
     return { ok: false, status: 0, url: url.toString(), body: null, error: errorMsg }
   }
@@ -298,15 +345,23 @@ async function fetchFreshData<T>(
       { endpoint, status: result.status, error: result.error }
     )
     console.warn(`[TheSportsDB] Error ${result.status} for ${endpoint}: ${result.error || 'Unknown error'}`)
-    return []
+    // O-26: a final 5xx, a network failure (status 0) or another non-404 4xx is
+    // a fault, not "no data" — throw so swrGet neither caches it nor hides it.
+    throw new UpstreamFaultError(endpoint, result.status, result.error)
   }
 
   const startTime = Date.now()
   errorLogger.logApiCall(endpoint, result.status || 200, Date.now() - startTime)
 
+  // O-26: a non-empty body that is not JSON (e.g. an HTML error page) is malformed.
+  if (typeof result.body === 'string' && result.body.trim() !== '') {
+    throw new UpstreamFaultError(endpoint, result.status, 'non-JSON body')
+  }
   const json = result.body as TheSportsDBResponse<T>
   if (!json || typeof json !== 'object') {
-    console.warn(`[TheSportsDB] Unexpected response shape for ${endpoint}`)
+    // Empty body / JSON null stays an absence: TheSportsDB has returned 200 with
+    // an empty body for lookuptable.php (logs/sportsdb-unexpected-*.log).
+    console.warn('[TheSportsDB] Empty response for %s', logSafe(endpoint))
     return []
   }
 
@@ -530,7 +585,10 @@ export async function lookupTeam(teamId: string): Promise<SportsDbTeam | null> {
       const teams = await makeRequest<SportsDbTeam>(`search_all_teams.php?l=${encodeURIComponent(league)}`, TTL.list, { expectedKey: 'teams' })
       const found = teams.find(t => t.idTeam === teamId)
       if (found) return found
-    } catch { }
+    } catch (err) {
+      // O-26: if the provider is down or throttling, the fallback below would fail too.
+      if (isUpstreamFault(err) || err instanceof RateLimitError) throw err
+    }
   }
 
   // Fallback to actual lookup

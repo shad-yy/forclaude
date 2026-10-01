@@ -111,12 +111,12 @@ export function TrialForm() {
           Trial Request Received!
         </h2>
         <p className="text-gray-400 mb-6 max-w-md mx-auto">
-          We'll send your trial credentials to your WhatsApp number 
+          We&apos;ll send your trial credentials to your WhatsApp number 
           within 5 minutes. Keep an eye on your messages.
         </p>
         <p className="text-sm text-gray-500">
           Device detected: <span className="text-white">{form.device}</span>
-          {" — "}we'll include a setup guide for your specific device.
+          {" — "}we&apos;ll include a setup guide for your specific device.
         </p>
       </div>
     )
@@ -219,7 +219,7 @@ export function TrialForm() {
           ))}
         </select>
         <p className="text-xs text-gray-600 mt-1.5">
-          We'll send a setup guide tailored to your device.
+          We&apos;ll send a setup guide tailored to your device.
         </p>
       </div>
 

@@ -100,7 +100,7 @@ export function EventDetailsTabs({ event, additionalInfo }: EventDetailsTabsProp
                       {timeline.slice(0, 5).map((item) => (
                         <div key={item.idTimeline} className="flex items-center gap-4 p-3 bg-muted/30 rounded-md">
                           <div className="w-12 text-center font-mono text-sm font-bold bg-primary text-primary-foreground rounded px-2 py-1">
-                            {item.strTime}'
+                            {item.strTime}&apos;
                           </div>
                           <div className="flex-1">
                             <p className="font-medium text-sm">{item.strEvent}</p>
@@ -300,7 +300,7 @@ export function EventDetailsTabs({ event, additionalInfo }: EventDetailsTabsProp
                   {timeline.map((item, index) => (
                     <div key={item.idTimeline} className="relative flex items-start gap-6">
                       <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                        {item.strTime}'
+                        {item.strTime}&apos;
                       </div>
                       <div className="flex-1 min-w-0 pb-6">
                         <div className="bg-muted/50 rounded-lg p-4">

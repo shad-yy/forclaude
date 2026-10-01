@@ -40,57 +40,16 @@ export async function generateMetadata({ params }: LeaguePageProps): Promise<Met
 }
 
 async function LeagueContent({ leagueId }: { leagueId: string }) {
-  try {
-    const [leagues, teams, standings, fixtures] = await Promise.all([
+  const load = () =>
+    Promise.all([
       unifiedSportsAPI.getLeagues(),
       unifiedSportsAPI.getTeams(leagueId),
       unifiedSportsAPI.getStandings(leagueId),
       unifiedSportsAPI.getFixtures({ leagueId, next: 10 }),
     ])
-
-    const league = leagues.find((l) => l.id === leagueId)
-    if (!league) notFound()
-
-    return (
-      <LeagueDetailView
-        league={league}
-        teams={teams.map((t) => ({
-          id: t.id,
-          name: t.name,
-          country: t.country,
-          logo: t.logo ?? null,
-          founded: t.founded != null ? String(t.founded) : null,
-        }))}
-        standings={standings.map((s) => ({
-          teamId: s.teamId,
-          team: s.team,
-          teamLogo: s.teamLogo ?? null,
-          position: String(s.position),
-          played: String(s.played),
-          won: String(s.won),
-          drawn: String(s.drawn),
-          lost: String(s.lost),
-          goalsFor: String(s.goalsFor),
-          goalsAgainst: String(s.goalsAgainst),
-          goalDifference: String(s.goalDifference),
-          points: String(s.points),
-          form: s.form,
-          description: s.description,
-        }))}
-        fixtures={fixtures.map((f) => ({
-          id: f.id,
-          homeTeam: f.homeTeam,
-          awayTeam: f.awayTeam,
-          homeLogo: f.homeLogo ?? null,
-          awayLogo: f.awayLogo ?? null,
-          date: f.date,
-          time: f.time,
-          status: f.status,
-          isLive: f.isLive,
-          venue: f.venue ?? null,
-        }))}
-      />
-    )
+  let data: Awaited<ReturnType<typeof load>>
+  try {
+    data = await load()
   } catch (error) {
     console.error("Error loading league:", error)
     return (
@@ -102,6 +61,53 @@ async function LeagueContent({ leagueId }: { leagueId: string }) {
       </div>
     )
   }
+
+  const [leagues, teams, standings, fixtures] = data
+
+  const league = leagues.find((l) => l.id === leagueId)
+  // notFound() throws — keep it outside the try so the catch cannot swallow it.
+  if (!league) notFound()
+
+  return (
+    <LeagueDetailView
+      league={league}
+      teams={teams.map((t) => ({
+        id: t.id,
+        name: t.name,
+        country: t.country,
+        logo: t.logo ?? null,
+        founded: t.founded != null ? String(t.founded) : null,
+      }))}
+      standings={standings.map((s) => ({
+        teamId: s.teamId,
+        team: s.team,
+        teamLogo: s.teamLogo ?? null,
+        position: String(s.position),
+        played: String(s.played),
+        won: String(s.won),
+        drawn: String(s.drawn),
+        lost: String(s.lost),
+        goalsFor: String(s.goalsFor),
+        goalsAgainst: String(s.goalsAgainst),
+        goalDifference: String(s.goalDifference),
+        points: String(s.points),
+        form: s.form,
+        description: s.description,
+      }))}
+      fixtures={fixtures.map((f) => ({
+        id: f.id,
+        homeTeam: f.homeTeam,
+        awayTeam: f.awayTeam,
+        homeLogo: f.homeLogo ?? null,
+        awayLogo: f.awayLogo ?? null,
+        date: f.date,
+        time: f.time,
+        status: f.status,
+        isLive: f.isLive,
+        venue: f.venue ?? null,
+      }))}
+    />
+  )
 }
 
 function LeagueLoading() {

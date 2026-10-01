@@ -6,15 +6,49 @@
  *   - Plan name acceptance & rejection
  *   - Fraud gating on POST /api/orders (honeypot, speed, disposable)
  *   - Non-trial orders bypassing trial fraud checks
- *   - Security on /api/admin/test-panel (401 gate & secret auth)
+ *   - Security on /api/admin/provision-test-trial (401 gate; secret bypass closed in A-03)
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
+
+// A-06: We stub Upstash env below so /api/orders' isFraudInfraReady()
+// preflight returns true and control reaches the fraud gate under test.
+// We ALSO mock @upstash/redis so no real network call happens for
+// stubbed test URLs — otherwise createCustomer / logBlockedRequest
+// would attempt a real DNS lookup and hang.
+vi.mock('@upstash/redis', () => {
+  class FakeRedis {
+    async get() { return null }
+    async set() { return 'OK' }
+    async del() { return 1 }
+    async incr() { return 1 }
+    async expire() { return 1 }
+    async lpush() { return 1 }
+    async ltrim() { return 'OK' }
+    pipeline() {
+      return { set: () => this, exec: async () => [] }
+    }
+  }
+  return { Redis: FakeRedis }
+})
 
 describe('Orders API & Security Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // A-06: /api/orders now preflights on isFraudInfraReady() and returns 503
+    // if UPSTASH_REDIS_REST_URL/TOKEN are unset. These tests target the
+    // fraud check itself (honeypot, speed, disposable), which sits AFTER
+    // that preflight, so we need Upstash env stubbed to non-empty. The
+    // real Redis client fails on operations but the fraud check hits its
+    // pre-Redis gates (honeypot/speed/disposable) first and returns 429
+    // before any Redis call — which is exactly what these tests assert.
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://test.upstash.example')
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'test-token')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   // ── 1. Plan Name & Schema Validation ─────────────────────────────────────────
@@ -152,10 +186,10 @@ describe('Orders API & Security Integration', () => {
 
   // ── 3. Security on Admin Diagnostic Endpoint ─────────────────────────────────
 
-  describe('Security on /api/admin/test-panel', () => {
+  describe('Security on /api/admin/provision-test-trial', () => {
     it('blocks public unauthenticated access with 401 Unauthorized', async () => {
-      const { GET } = await import('@/app/api/admin/test-panel/route')
-      const req = new NextRequest('http://localhost:3000/api/admin/test-panel', {
+      const { GET } = await import('@/app/api/admin/provision-test-trial/route')
+      const req = new NextRequest('http://localhost:3000/api/admin/provision-test-trial', {
         method: 'GET',
       })
 
@@ -165,9 +199,9 @@ describe('Orders API & Security Integration', () => {
       expect(json.error).toContain('Unauthorized')
     })
 
-    it('rejects invalid secret parameter with 401', async () => {
-      const { GET } = await import('@/app/api/admin/test-panel/route')
-      const req = new NextRequest('http://localhost:3000/api/admin/test-panel?secret=wrongsecret', {
+    it('rejects invalid secret parameter with 401 (bypass closed in A-03)', async () => {
+      const { GET } = await import('@/app/api/admin/provision-test-trial/route')
+      const req = new NextRequest('http://localhost:3000/api/admin/provision-test-trial?secret=wrongsecret', {
         method: 'GET',
       })
 

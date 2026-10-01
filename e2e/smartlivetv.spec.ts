@@ -1,8 +1,11 @@
-// tests/smartlivetv.spec.ts
+// e2e/smartlivetv.spec.ts
 import { test, expect, Page } from '@playwright/test'
 
-const BASE = 'https://smartlivetv.co.uk'
-// For local: const BASE = 'http://localhost:3000'
+// A-10: baseURL driven by env, not hardcoded to production. Set
+// PLAYWRIGHT_BASE_URL=https://smartlivetv.co.uk for the production-hit
+// suite; leave it unset for local (defaults to http://localhost:3000
+// via playwright.config.ts).
+const BASE = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // SUITE 1 — SEO CRITICAL (these failures = Google won't index you)
@@ -15,8 +18,9 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         expect(res.status()).toBe(200)
         const body = await res.text()
 
-        // Must allow everything
-        expect(body).not.toContain('Disallow: /')
+        // Must allow everything: no bare "Disallow: /" line. (A substring check
+        // also matched "Disallow: /api/" and failed on a correct file.)
+        expect(body).not.toMatch(/^Disallow:\s*\/\s*$/m)
 
         // Must block only these specific paths
         expect(body).toContain('Disallow: /api/')
@@ -107,7 +111,8 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         const pages = [
             { path: '/', titleMustContain: 'Smart Live TV' },
             { path: '/pricing', titleMustContain: '£12' },
-            { path: '/buy', titleMustContain: 'Access' },
+            // O-29 (owner decision 2026-09-30): match the live title, which has no "Access".
+            { path: '/buy', titleMustContain: 'Start Watching' },
             { path: '/free-trial', titleMustContain: 'Trial' },
             { path: '/watch/premier-league', titleMustContain: 'Premier League' },
             { path: '/ufc', titleMustContain: 'UFC' },
@@ -179,11 +184,9 @@ test.describe('SEO — Critical Indexing Requirements', () => {
                 expectedTypes: ['Product', 'FAQPage'],
                 mustHaveId: true,
             },
-            {
-                path: '/faq',
-                expectedTypes: ['FAQPage'],
-                mustHaveId: false,
-            },
+            // O-29 (owner decision 2026-09-30): /faq shows the same 8 Q&As
+            // that /pricing marks up. Google: mark up repeated FAQs once per
+            // site; FAQ rich results stopped appearing on 7 May 2026.
             {
                 path: '/setup/firestick',
                 expectedTypes: ['HowTo', 'FAQPage'],
@@ -452,22 +455,24 @@ test.describe('Conversion Funnel — Forms and CTAs', () => {
     test('buy form validates required fields before submitting', async ({ page }) => {
         await page.goto(`${BASE}/buy`)
 
-        // Click submit without filling anything
-        const submitBtn = await page.$('button:has-text("Access"), button:has-text("Get"), button[type="submit"]')
-        if (submitBtn) {
-            await submitBtn.click()
+        // O-29: the old selectors mixed CSS with `text=` in one string. The
+        // error check threw ("Unexpected token '='"), and the success check
+        // was read as a single text query that could never match, so it
+        // could never fail. Locators below are one kind each.
+        const submitBtn = page.getByRole('button', { name: /Get Access Now/ })
+        await submitBtn.click()
 
-            // Should show validation error, not submit
-            await page.waitForTimeout(500)
+        // Should show the form's own validation message (components/buy/BuyForm.tsx)
+        await expect(
+            page.getByText('Please fill in all required fields.'),
+            'No validation error shown for empty form'
+        ).toBeVisible()
 
-            // Should not show success state
-            const successState = await page.$('text=Order Received, text=credentials, text=WhatsApp within')
-            expect(successState, 'Form submitted without required fields').toBeNull()
-
-            // Should show error message
-            const errorMsg = await page.$('[class*="red"], [class*="error"], text=required, text=Please fill')
-            expect(errorMsg, 'No validation error shown for empty form').not.toBeNull()
-        }
+        // Should not show the success state
+        await expect(
+            page.getByText(/Order Received/),
+            'Form submitted without required fields'
+        ).toHaveCount(0)
     })
 
     test('/free-trial page has form with correct fields', async ({ page }) => {
@@ -862,9 +867,15 @@ test.describe('Performance — Core Web Vitals Protection', () => {
         await page.goto(BASE)
         await page.waitForTimeout(2000)
 
+        // O-29: skip absolute/fixed images, as Lighthouse's unsized-images
+        // audit does (core/audits/unsized-images.js, `isFixedImage`): their
+        // box comes from CSS, so loading them cannot shift layout. The hero
+        // and spotlight backgrounds are `absolute inset-0` and were 4 of the
+        // 16 flagged in run 36769200235.
         const imagesWithoutDimensions = await page.$$eval(
             'img[src*="thesportsdb"], img[src*="/leagues/"]',
             (imgs: any[]) => imgs
+                .filter((img: HTMLImageElement) => !['absolute', 'fixed'].includes(getComputedStyle(img).position))
                 .filter((img: any) => !img.width || !img.height ||
                     (!img.getAttribute('width') && !img.getAttribute('height')))
                 .map((img: any) => ({

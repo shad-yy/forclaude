@@ -4,7 +4,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button"
 import Link from "next/link"
 import { Check } from "lucide-react"
 import { LiveStats } from "@/components/homepage/LiveStats"
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect } from "react"
 import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 // Curated high-quality sports imagery from TheSportsDB league fanart
@@ -17,68 +17,11 @@ const FALLBACK_HERO_IMAGES = [
   "https://r2.thesportsdb.com/images/media/league/fanart/yvsuqp1421853038.jpg",   // Champions League
 ]
 
-// Video sources — multiple fallbacks for reliability
-// Using royalty-free sports/stadium atmosphere videos
-const HERO_VIDEO_SOURCES = [
-  "https://cdn.coverr.co/videos/coverr-football-players-on-the-field/1080p.mp4",
-  "https://cdn.coverr.co/videos/coverr-crowd-at-a-soccer-match-7710/1080p.mp4",
-]
-
-/**
- * Checks if the user's connection supports video playback.
- * Falls back to image carousel on slow connections or when data saver is on.
- */
-function useCanPlayVideo() {
-  const [canPlay, setCanPlay] = useState(false)
-
-  useEffect(() => {
-    // Server-side: default to false
-    if (typeof window === 'undefined') return
-
-    const nav = navigator as any
-    const connection = nav.connection || nav.mozConnection || nav.webkitConnection
-
-    if (connection) {
-      // Skip video on slow connections or data saver
-      if (connection.saveData) {
-        setCanPlay(false)
-        return
-      }
-      const effectiveType = connection.effectiveType
-      if (effectiveType === 'slow-2g' || effectiveType === '2g') {
-        setCanPlay(false)
-        return
-      }
-    }
-
-    // Check for reduced motion preference
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      setCanPlay(false)
-      return
-    }
-
-    // On mobile, skip video by default for performance
-    const isMobile = window.innerWidth < 768
-    if (isMobile && connection?.effectiveType === '3g') {
-      setCanPlay(false)
-      return
-    }
-
-    setCanPlay(true)
-  }, [])
-
-  return canPlay
-}
-
 export function HeroSection() {
   const [mounted, setMounted] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [heroImages, setHeroImages] = useState<string[]>(FALLBACK_HERO_IMAGES)
   const [imagesLoaded, setImagesLoaded] = useState(false)
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoError, setVideoError] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canPlayVideo = useCanPlayVideo()
 
   // Mount guard — prevents SSR/client DOM mismatch for dynamic backgrounds
   useEffect(() => {
@@ -104,84 +47,44 @@ export function HeroSection() {
     loadDynamicImages()
   }, [])
 
-  // Rotate images every 6 seconds (only when video isn't playing)
+  // Rotate images every 6 seconds
   useEffect(() => {
-    if (videoLoaded && !videoError) return // Video is playing, skip carousel
     if (heroImages.length <= 1) return
     const interval = setInterval(() => {
       setCurrentImageIndex(prev => (prev + 1) % heroImages.length)
     }, 6000)
     return () => clearInterval(interval)
-  }, [heroImages.length, videoLoaded, videoError])
-
-  // Handle video events
-  const handleVideoCanPlay = useCallback(() => {
-    setVideoLoaded(true)
-  }, [])
-
-  const handleVideoError = useCallback(() => {
-    setVideoError(true)
-    setVideoLoaded(false)
-  }, [])
-
-  const showVideo = canPlayVideo && !videoError
+  }, [heroImages.length])
 
   return (
     <section className="relative w-full min-h-[600px] md:min-h-[700px] overflow-hidden bg-[#0a0a0f] flex flex-col items-center justify-center">
       {/* ─── Dynamic backgrounds — only render after client hydration to prevent SSR mismatch ─── */}
       {mounted && (
         <>
-          {/* Video Background (when supported) */}
-          {showVideo && (
-            <div className="absolute inset-0 z-0">
-              <video
-                ref={videoRef}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-                poster={heroImages[0]}
-                onCanPlay={handleVideoCanPlay}
-                onError={handleVideoError}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms] ${
-                  videoLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                style={{ willChange: 'opacity' }}
+          {/* Image carousel background */}
+          <div className="absolute inset-0 z-0">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentImageIndex}
+                className="absolute inset-0"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
               >
-                {HERO_VIDEO_SOURCES.map((src, i) => (
-                  <source key={i} src={src} type="video/mp4" />
-                ))}
-              </video>
-            </div>
-          )}
-
-          {/* Fallback Image Carousel (when video isn't playing) */}
-          {(!showVideo || !videoLoaded) && (
-            <div className="absolute inset-0 z-0">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentImageIndex}
-                  className="absolute inset-0"
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                >
-                  <img
-                    src={heroImages[currentImageIndex]}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover"
-                    onLoad={() => setImagesLoaded(true)}
-                    onError={(e) => {
-                      const img = e.target as HTMLImageElement
-                      img.style.display = 'none'
-                    }}
-                  />
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          )}
+                <img
+                  src={heroImages[currentImageIndex]}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onLoad={() => setImagesLoaded(true)}
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement
+                    img.style.display = 'none'
+                  }}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </>
       )}
 
@@ -360,8 +263,8 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Image rotation indicators — only shown after hydration when using image fallback */}
-      {mounted && (!showVideo || !videoLoaded) && heroImages.length > 1 && (
+      {/* Image rotation indicators — only shown after hydration */}
+      {mounted && heroImages.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
           {heroImages.slice(0, 5).map((_, i) => (
             <button

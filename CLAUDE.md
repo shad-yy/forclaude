@@ -51,10 +51,13 @@ fixes a non-obvious bug.
     `ufcScraper`) into React components. Go through `lib/api/unified-sports-api.ts`.
 *   **Server-side only** for anything holding credentials or needing rate limiting.
 *   **25 req/min** ceiling on TheSportsDB (free tier is 30). `RATE_LIMIT_MS = 2400`.
-*   **Every external fetch hits the TTL cache** in `lib/cache/apiCache.ts`.
-    Static data (leagues, teams, players) caches for 30 days.
-*   **Fault tolerance.** API errors must never blank a component. Catch, return `[]` or a
-    cached fallback, and show "Data temporarily unavailable".
+*   **Every external fetch goes through the cache** in `lib/cache.ts` (`swrGet`:
+    in-memory + Upstash Redis, stale-while-revalidate). Leagues, teams and players
+    cache for 24 hours (`CACHE_TTL` in `lib/cache.ts`, `TTL` in `lib/api/the-sports-db.ts`).
+*   **Fault vs absence** (hybrid rule, `PATTERNS.md`). An upstream outage is a fault: API
+    routes return 503 with `Cache-Control: no-store`, never 200 with `[]`. Only a real
+    "nothing exists" returns empty. Components must never go blank — show
+    "Data temporarily unavailable".
 *   **Framer Motion needs a mount guard** — wrap animations in a `mounted` state or they
     cause production-only hydration crashes. See Trouble Registry.
 *   **No `@ts-ignore`, no `any`.** `npx tsc --noEmit` must pass with 0 errors.
@@ -84,5 +87,10 @@ See `memory-bank/PROGRESS.md` §4 for the current queue. Summary:
 *   `next`, `postcss`, `sharp`, `undici` carry high-severity advisories. Resolving them
     needs a breaking Next.js 14 → 16 upgrade — its own task with its own regression pass.
 *   `/api/espn/mma/ufc/scoreboard` returns 503; the UFC widget degrades silently.
-*   `next.config.mjs` sets `typescript.ignoreBuildErrors` and `eslint.ignoreDuringBuilds`,
-    so failures reach production silently. Run `tsc` yourself before deploying.
+*   `next.config.mjs`'s `typescript.ignoreBuildErrors` and `eslint.ignoreDuringBuilds` are
+    both `false` — a real `next build` now fails on any TypeScript or ESLint **error**
+    (not a warning). Verified 2026-09-22 with a full local build (`Linting and checking
+    validity of types` step ran, printed the 46 remaining ESLint warnings, and proceeded
+    to static generation; exit 0). See `memory-bank/QA-LOG.md` O-06 for the 46 remaining
+    warnings (41 `@next/next/no-img-element`, 4 `react-hooks/exhaustive-deps`, 1
+    `@next/next/no-before-interactive-script-outside-document`) — none block the build.

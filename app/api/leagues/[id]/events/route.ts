@@ -16,10 +16,11 @@ export async function GET(
       { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/leagues/[id]/events error:", error)
+    // B-04.4: fault → 503+no-store per api-fault-vs-absence hybrid rule.
+    console.warn("[API] GET /api/leagues/[id]/events fault:", error)
     return NextResponse.json(
-      { data: [], error: "Data temporarily unavailable" },
-      { status: 200 }
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }

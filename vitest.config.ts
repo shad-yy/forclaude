@@ -4,14 +4,32 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    // A-13: vitest owns *.test.ts, playwright owns *.spec.ts. The old
+    // mobile-responsiveness .test.ts was actually a playwright spec —
+    // renamed to .spec.ts and dropped from vitest excludes.
     include: ["tests/**/*.test.ts"],
-    exclude: ["tests/mobile-responsiveness.test.ts", "node_modules/**"],
+    exclude: ["node_modules/**"],
+    // C-02: MSW server lifecycle (start / reset-handlers / close).
+    // The setup file is not itself a test — it just installs
+    // beforeAll/afterEach/afterAll hooks for every suite that runs.
+    setupFiles: ["tests/msw/setup.ts"],
     env: {
-      JWT_SECRET: process.env.JWT_SECRET || "9fa911726c474edb555a0b5877e510082cca38d47ddd8f19870e130a7700ddddc87586565b2c89c00dffcc231af234fbc6b352f7bcbc30f67b693f9102859a5f",
+      // A-11 (2026-09-15): NEVER commit a real JWT_SECRET value here. The
+      // previous 128-char hex fallback (see standing correction O-01 in
+      // QA-LOG.md) is treated as potentially leaked and should be rotated
+      // in production Vercel env. The literal below is deliberately
+      // obviously-fake for tests; enforce via
+      // tests/no-credential-shaped-hex-in-repo.test.ts.
+      JWT_SECRET: process.env.JWT_SECRET || "test-only-jwt-secret-do-not-use-in-prod",
     },
     coverage: {
       reporter: ["text", "lcov"],
     },
+  },
+  // Next.js compiles JSX with the automatic runtime; match it so page
+  // components can be rendered to a React tree in tests (O-26 step D).
+  esbuild: {
+    jsx: "automatic",
   },
   resolve: {
     alias: {

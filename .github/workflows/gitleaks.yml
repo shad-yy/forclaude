@@ -1,0 +1,32 @@
+name: Gitleaks
+
+# C-04 / I-05: secret-scanning tripwire. Runs on push/PR and once a
+# week. Complements the in-repo hex enforcer at
+# tests/no-credential-shaped-hex-in-repo.test.ts (A-11), which is
+# scoped narrowly to vitest.config.ts + tests/. Gitleaks scans the
+# whole repo + git history for anything key-shaped.
+
+on:
+  push:
+    branches: ["main", "Version-3", "claude/**"]
+  pull_request:
+    branches: ["main", "Version-3"]
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for scan)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -5,6 +5,9 @@
  */
 
 import { Redis } from "@upstash/redis"
+import { withRetry } from "@/lib/api/retry"
+import { isUpstreamFault } from "@/lib/api/errors"
+import { logSafe } from "@/lib/log/redact"
 
 // ─── Named constants ────────────────────────────────────────────────────────
 const RATE_LIMIT_PAUSE_MS = 30_000       // 30 seconds pause after hitting 429
@@ -194,9 +197,14 @@ export async function swrGet<T>(
     if (isRateLimit) {
       rateLimitPausedUntil = Date.now() + RATE_LIMIT_PAUSE_MS
       if (payload) {
-        console.warn(`[Cache SWR] Hit rate limit on cache miss. Serving stale fallback for ${key}`)
+        console.warn('[Cache SWR] Hit rate limit on cache miss. Serving stale fallback for %s', logSafe(key))
         return payload.data
       }
+    }
+    // O-26: provider outage — old data beats an error, and the fault is never cached.
+    if (isUpstreamFault(err) && payload) {
+      console.warn('[Cache SWR] Upstream fault on refresh. Serving stale data for %s', logSafe(key))
+      return payload.data
     }
     throw err
   }
@@ -220,28 +228,29 @@ export async function swrSet<T>(key: string, data: T, ttlSeconds: number): Promi
 
 // ─── Fetch with exponential backoff retry ─────────────────────────────────────
 
-async function fetchWithRetry<T>(
-  fetcher: () => Promise<T>,
-  retries = FETCH_RETRY_COUNT,
-  delay = FETCH_RETRY_INITIAL_DELAY_MS,
-): Promise<T> {
-  try {
-    return await fetcher()
-  } catch (err: unknown) {
-    const isRateLimit =
-      err instanceof Error &&
-      (err.name === "RateLimitError" || err.message.includes("Rate limit") || err.message.includes("429"))
+// X-05: delegates attempt-counting + backoff sleep to the shared
+// lib/api/retry.ts::withRetry helper. Semantics preserved exactly:
+// exponential backoff starting at FETCH_RETRY_INITIAL_DELAY_MS
+// (doubling each retry), FETCH_RETRY_COUNT retries, rate-limit
+// errors never retried.
+function isRateLimitError(err: unknown): boolean {
+  return (
+    err instanceof Error &&
+    (err.name === "RateLimitError" || err.message.includes("Rate limit") || err.message.includes("429"))
+  )
+}
 
-    // Never retry rate limit errors
-    if (isRateLimit) throw err
-
-    if (retries <= 0) throw err
-
-    const message = err instanceof Error ? err.message : String(err)
-    console.warn(`[Cache Fetch Queue] Fetch failed. Retrying in ${delay}ms... Error:`, message)
-    await new Promise((resolve) => setTimeout(resolve, delay))
-    return fetchWithRetry(fetcher, retries - 1, delay * 2)
-  }
+async function fetchWithRetry<T>(fetcher: () => Promise<T>): Promise<T> {
+  return withRetry(() => fetcher(), {
+    maxRetries: FETCH_RETRY_COUNT,
+    backoffMs: (attempt) => FETCH_RETRY_INITIAL_DELAY_MS * 2 ** attempt,
+    // Provider clients already retried an UpstreamFaultError (lib/api/the-sports-db.ts).
+    shouldRetry: (err) => !isRateLimitError(err) && !isUpstreamFault(err),
+    onRetry: (err, _attempt, delayMs) => {
+      const message = err instanceof Error ? err.message : String(err)
+      console.warn(`[Cache Fetch Queue] Fetch failed. Retrying in ${delayMs}ms... Error:`, message)
+    },
+  })
 }
 
 // ─── TTL constants ─────────────────────────────────────────────────────────────

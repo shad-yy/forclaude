@@ -1,7 +1,10 @@
 import { describe, it, expect, vi } from "vitest"
 import { SignJWT } from "jose"
 
-const JWT_SECRET = process.env.JWT_SECRET || "9fa911726c474edb555a0b5877e510082cca38d47ddd8f19870e130a7700ddddc87586565b2c89c00dffcc231af234fbc6b352f7bcbc30f67b693f9102859a5f"
+// A-11: NEVER commit a real JWT_SECRET value. Falls through to vitest.config.ts's
+// env stub for local runs. See standing correction O-01 in memory-bank/QA-LOG.md
+// and the enforcer at tests/no-credential-shaped-hex-in-repo.test.ts.
+const JWT_SECRET = process.env.JWT_SECRET || "test-only-jwt-secret-do-not-use-in-prod"
 
 async function createAdminToken() {
   return await new SignJWT({ isAdmin: true, loginTime: Date.now() })

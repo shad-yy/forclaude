@@ -5,7 +5,7 @@ if (typeof self === 'undefined') {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
     ignoreBuildErrors: false,
@@ -85,7 +85,12 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    formats: ['image/webp', 'image/avif'],
+    // A-15 (2026-09-15): AVIF removed to mitigate GHSA-2xp9-vwfh-vxw4
+    // (Next.js Image Optimizer AVIF RCE, fixed only in next@15.5.24+).
+    // The site runs next@14.2.35; the full 14→15 upgrade is O-11.
+    // Reintroduce 'image/avif' after that upgrade lands. Enforcer at
+    // tests/next-image-avif-disabled.test.ts refuses regression.
+    formats: ['image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
@@ -118,6 +123,9 @@ const nextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
   async headers() {
+    // O-28: `next dev` needs eval for its source maps; production never gets it
+    // (tests/csp-dev-only-unsafe-eval.test.ts).
+    const devEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
     return [
       {
         source: '/(.*)',
@@ -156,7 +164,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://www.thesportsdb.com https://r2.thesportsdb.com https://www.google-analytics.com https://site.api.espn.com; frame-ancestors 'self';"
+            value: `default-src 'self'; script-src 'self' 'unsafe-inline'${devEval} https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://www.thesportsdb.com https://r2.thesportsdb.com https://www.google-analytics.com https://site.api.espn.com; frame-ancestors 'self';`
           },
         ],
       },

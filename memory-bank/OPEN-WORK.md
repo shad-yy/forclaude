@@ -1,0 +1,257 @@
+# OPEN-WORK — Smart Live TV
+
+Live items with an explicit "why it isn't done yet". Not a to-do list — a claim about the state of the world. Per `documentation-discipline` rule: an item without an updated "Why" is stale.
+
+Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done** · **What would close it**.
+
+---
+
+## O-29 — Production monitor: triage done; live site waits on deploy, one flaky check unexplained
+
+- **Since**: 2026-09-30 (first run `36769200235`)
+- **Layer**: production content / e2e specs.
+- **Owner**: site owner (merge + deploy); H1 flake: unassigned.
+- **Facts**: run `36769200235` 77 passed / 42 failed / 1 flaky → run `36788028302` 101 / 18 / 1 (both against the live site). Every originally failing check is triaged and handled: robots.txt (R-12), mobile ×5, buy form, image sizes (R-18), byline, dates, hero video, footer link, `/buy` title, `/faq` schema (R-20), `/faq` description and support hours (R-22). The 18 failures left on the live site (footer 404, "James Harper" ×2, 6 unsized badges, coverr console errors, `/faq` description) are all fixed on the work branch.
+- **Still unexplained**: "H1 exists and is unique" fails once per run on a different page and passes on retry — run 1 `/free-trial` (Mobile Chrome), run 2 `/ufc` and run 3 `/watch/champions-league` (both Desktop Chrome). The page sources render an `<h1>`; the cause is not established. The report artifact cannot be downloaded from the sandbox (egress 403); its screenshots are on the run page.
+- **Why it isn't done**: production runs `Version-3` without these fixes (O-21); the H1 flake has no root cause.
+- **What would close it**: merge PR #6 and deploy; one green monitor run on the live site; for H1, read the failure screenshot of the next run that hits it.
+
+## O-30 — CLOSED 2026-09-30 by R-17 (was: three components have no importers)
+
+- Deleted in `e0a113e` with owner approval.
+
+## O-32 — 9 medium CodeQL alerts: "network data written to file" in two scripts
+
+- **Since**: 2026-09-30
+- **Layer**: L0 tooling (local scripts, not deployed code).
+- **Owner**: unassigned.
+- **Facts**: `scripts/fetch-sportsdb-data.ts` (4) and `scripts/refresh-sportsdb-ids.ts` (5). Both exist to fetch TheSportsDB data and write it to disk; PR #6 does not change them. They do not fail the `CodeQL` check (only high does).
+- **Why it isn't done**: writing fetched data to disk is the scripts' purpose; a fix would mean validating the payload shape before writing, or dismissing the alerts with a reason (needs repo admin).
+- **What would close it**: validate with the existing Zod schemas (C-03) before writing, or dismiss as "used in tests/tooling".
+
+## O-33 — Blog content the owner should confirm
+
+- **Since**: 2026-09-30
+- **Layer**: L1 content.
+- **Owner**: site owner.
+- **Facts**: (1) `content/blog/is-iptv-legal-uk.mdx:30` quotes "Samuel Vance, Digital Media & Intellectual Property Consultant". One web search (2026-09-30) found no public record of this person; that does not prove the quote is invented. (2) Frontmatter `authorTitle` is unused: the page shows "Sports Streaming Expert" for every post, while 3 posts' frontmatter says "Financial Analyst" (1) or "IPTV Analyst" (2).
+- **Why it isn't done**: both are content decisions.
+- **What would close it**: owner confirms the quote's source (or removes it); owner decides whether the byline title should come from frontmatter.
+
+## O-27 — Production env vars the code reads but Vercel does not set
+
+- **Since**: checked 2026-09-30T19:43:17Z (`mcp__Vercel__filter_project_envs`, names only, values not decrypted; compared with every `process.env.X` in `lib/ app/ components/ middleware.ts instrumentation.ts`)
+- **Layer**: L0 configuration.
+- **Owner**: site owner (Vercel dashboard).
+- **Facts** — read in code, not set in production (17 vars are set):
+  - `HCAPTCHA_SECRET` — **new with this branch (A-04)**. `lib/security/captcha.ts:18-24` returns `{ ok: true }` when it is unset, so merging does not break sign-ups, but the check stays off until it is set.
+  - `ADMIN_PASSWORD_HASH` — `/api/auth/admin` returns 500 "Admin authentication not configured" without it, so the admin pages cannot be used in production today.
+  - `THESPORTSDB_API_KEY` — `ENV.THESPORTSDB_KEY` falls back to the public test key `123` (`lib/config/env.ts`). `lookupTeam` carries a workaround for that key (`lib/api/the-sports-db.ts:571`).
+  - `NEXT_PUBLIC_GA_MEASUREMENT_ID` — `GoogleAnalytics` returns `null`; the live homepage HTML (fetched 2026-09-30) contains no `gtag`, `dataLayer` or consent script.
+  - `RAPIDAPI_MMA_KEY`, `FOOTBALL_DATA_API_KEY` — those clients send an empty key.
+  - Also unset, with code fallbacks: `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_STORE_URL`, `NEXT_PUBLIC_SOCIAL_*` (4), `NEXT_PUBLIC_*_API_BASE_URL` (3).
+- **Why it isn't done**: only the owner can set values; which ones are intentionally unset is the owner's knowledge, not something the code can tell.
+- **What would close it**: owner sets the ones that should be on (at least `HCAPTCHA_SECRET` before or with O-21), or confirms which are intentionally off; then SETUP-REQUIRED.md records the decision.
+
+## O-28 — CLOSED 2026-09-30 by R-10 (was: `next dev` cannot run client JavaScript)
+
+**Closed**: `'unsafe-eval'` added to `script-src` only in development; production CSP unchanged (`tests/csp-dev-only-unsafe-eval.test.ts`). Chromium against `next dev`: 0 page errors.
+
+
+- **Since**: `842f490` (2026-09-04, "remove 'unsafe-eval' from script-src"); seen 2026-09-30
+- **Layer**: L0 local tooling (production unaffected).
+- **Owner**: unassigned — needs owner OK because it touches the CSP.
+- **Facts**: loading `/` under `next dev` in Chromium logged `EvalError: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script` and no client component made its requests. The same page under `next build && next start` made its requests with 0 page errors. Dev builds use eval-based source maps; production builds do not.
+- **Why it isn't done**: the fix is a CSP change. Keeping production strict is the point of `842f490`.
+- **What would close it**: add `'unsafe-eval'` to `script-src` only when `NODE_ENV === 'development'` in `next.config.mjs` `headers()`, with a test that the production header still lacks it.
+
+## O-26 — CLOSED 2026-09-30 by R-13, R-14, R-15 (was: TheSportsDB outages look like "no data" and get cached as empty)
+
+**Closed**: owner chose "old data, else honest error". Provider throws `UpstreamFaultError` (R-13), cache serves old data and never stores the fault (R-13), resolvers pass it on (R-14), pages say "temporarily unavailable" / show the error page instead of a 404 (R-14), 8 more routes return 503 (R-15). Verified with network-seam tests and a production build + `next start` while TheSportsDB was unreachable from the sandbox. **Remaining, by design or limitation**: a JSON body missing the endpoint's expected key still returns `[]` (not enough evidence to change safely); streamed pages keep HTTP 200 when they show the error page (Next.js cannot change the status after streaming starts). Original entry below for the record.
+
+
+- **Since**: pre-existing; proven 2026-09-30 by a probe test (kept out of the suite, in the session scratchpad)
+- **Layer**: L5 provider client + L6 cache + L4 resolvers.
+- **Owner**: site owner (design decision), then Claude.
+- **Facts**:
+  - `lib/api/the-sports-db.ts` `fetchFreshData` (~lines 318–370) returns `[]` on a final 5xx, a network failure (status 0), a non-JSON body or a missing expected key. Only 429 throws (`RateLimitError`).
+  - `unifiedSportsAPI` resolvers (`getTeam`, `getPlayer`, `getPlayers`, `getFixtures`, `getStandings`, `searchTeams`, `searchPlayers`, `searchAll`, `getLeagues`, `getRecentResults`) catch everything and rethrow only `RateLimitError`.
+  - `lib/cache.ts` `swrGet`/`swrSet` store whatever the fetcher returns, including that outage `[]`; `revalidateInBackground` overwrites a good stale entry with it.
+  - Probe (MSW 503 on `lookuptable.php`, 2026-09-30T19:29:49Z): `lookupTable` resolved `[]`; after the stub recovered, the next call still returned 0 rows (served from cache). Cached for the entry's TTL — 300 s for standings, 86,400 s for team/league/player info (`lib/api/the-sports-db.ts:118-126`).
+  - Effect: 13 routes (B-04's `leagues`, `scores/recent`, `leagues/[id]/events`, `teams/[id]`, `players/[id]`, `search`, `events/[id]/lineups` + the six in O-20) produce 503 only on a rate limit. Pages that call `getTeam`/`getPlayer` and then `notFound()` on `null` can turn an outage into a 404. Not re-checked: `scores/today`, `fixtures/today`, `spotlight`, `ufc/events`; `news` serves owned fallback articles by design.
+- **Why it isn't done**: fixing it changes what visitors see site-wide during an outage (stale data, or an error state, instead of empty sections), so the approach is the owner's call.
+- **What would close it**: owner picks an approach; then red-first tests (the probe becomes the first), fix, full suite, preview check.
+
+## O-23 — URGENT: rotate the RapidAPI key and reset two panel lines (committed to a public repo)
+
+- **Since**: key since at least 2026-07-02 (`309e8bc`); HAR since 2026-09-13 (`1999666`). Found 2026-09-24.
+- **Layer**: L0 secrets.
+- **Owner**: site owner — needs the RapidAPI dashboard, the cms-8k panel and Vercel.
+- **Why it isn't done**: Claude has no access to those dashboards. R-07 removed both from the tree, but git history keeps them and the repo is public (`visibility: public` per the GitHub API), so removal alone protects nothing already copied. History rewriting would not help (forks, caches) and needs a force-push.
+- **What would close it**: (1) regenerate the RapidAPI MMA key (the one starting `e0d3`), put the new one in Vercel as `RAPIDAPI_MMA_KEY`, redeploy; (2) in the cms-8k panel, reset the passwords of (or delete) the two lines created 2026-09-04 and 2026-09-13 that appeared in `cms-8k.com.har`; (3) optionally add both historical fingerprints to `.gitleaksignore` once rotated, so a full-history scan (O-25) passes.
+
+## O-24 — 554 debug log files are tracked despite `.gitignore`
+
+- **Since**: `309e8bc` (2026-07-02); noted 2026-09-24
+- **Layer**: L0 repo hygiene.
+- **Owner**: unassigned
+- **Why it isn't done**: not a security issue — checked 2026-09-24: every TheSportsDB URL in them uses the public test key `123`, no `api_key`/auth headers; the 510 Gitleaks hits are inline JavaScript in saved HTML error pages. `.gitignore` already lists `/logs/`, so they were committed before that rule or force-added. Removing 554 files is the owner's call.
+- **What would close it**: `git rm -r --cached logs` (keeps local copies), commit.
+
+## O-25 — Gitleaks CI only scans each push's new commits
+
+- **Since**: C-04 (2026-09-15); noted 2026-09-24
+- **Layer**: L0 CI.
+- **Owner**: unassigned
+- **Why it isn't done**: this is why the RapidAPI key and the HAR (committed before C-04) were never flagged. A full-history scan would fail today on those two until they are rotated and allowlisted (O-23).
+- **What would close it**: after O-23, add a weekly `schedule:` trigger (or a `gitleaks detect --no-git` step) that scans the whole repo, with the rotated secrets' fingerprints in `.gitleaksignore`.
+
+## O-21 — Production runs `Version-3` without the work branch's fixes
+
+- **Since**: 2026-09-20 20:25 UTC (found 2026-09-24 via `mcp__Vercel__list_deployments`)
+- **Layer**: L0 release process.
+- **Owner**: site owner (decision), then Claude (merge + verification).
+- **Why it isn't done**: merging into the production branch is the owner's call. Facts: builds from `claude/exciting-planck-6a4nbr` were deployed to production on 2026-09-17 (`7d553a4`) and 2026-09-19 (`73b364c`). The next push to `Version-3` (`16b8d6a`, content update) deployed over them. `git rev-list --count 73b364c --not 16b8d6a` = 52: production lost A-01..A-15, B-01..B-07, C-01..C-05, X-04, X-06, X-09 and X-11 (hCaptcha verification, test-panel bypass closure, AVIF mitigation, PII log redaction, provision race fix, fault-vs-absence routes). Work since then (X-01/02/05/08/13, O-06 build gates, R-01..R-05) was never in production: at `cc6af34` the branch has 77 commits `Version-3` lacks. Vercel reported no runtime errors in the 7 days to 2026-09-24.
+- **What would close it**: owner approves; merge the branch into `Version-3` (PR, CI green); then confirm with `list_deployments` (`target: production`) that the live SHA contains the branch head (`git merge-base --is-ancestor <head> <live-sha>`). PROGRESS.md Trouble Registry Bug 9.
+
+## O-20 — CLOSED 2026-09-30 by R-15 (was: six routes still answer an upstream fault with 200 + `[]`)
+
+**Closed**: all six plus `events/[id]/stats` and `events/[id]/timeline` return 503 + `no-store`; `tests/routes-outage-network.test.ts` proves it through the real chain.
+
+
+- **Since**: 2026-09-24 (missed by the 2026-09-15 S-03 audit, which listed 12)
+- **Layer**: L3 API routes.
+- **Owner**: unassigned
+- **Why it isn't done**: found during the 2026-09-24 review; each needs the B-04 treatment (resolver throws `UpstreamFaultError`, route returns 503 + `no-store`, red-first test) plus a check that every client caller handles `!res.ok`. Routes: `teams/[id]/players`, `teams/[id]/events`, `leagues/[id]/standings`, `search/teams`, `search/players`, `search/leagues`. The search bar already checks `res.ok` for the three search routes.
+- **What would close it**: migrate one route per commit as in B-04.1–12; update PATTERNS.md §Error Handling to drop the list.
+- **Update 2026-09-30 — blocked on O-26**: a route-only change would repeat B-04's gap. All six call resolvers (`getPlayers`, `getFixtures`, `getStandings`, `searchTeams`, `searchPlayers`, `getLeagues`) that return `[]` on any fault except a rate limit, so the route's `catch` would only ever fire on a 429. Needs the O-26 decision first.
+
+## O-19 — News page filter controls have no effect
+
+- **Since**: at least 8b561b8^ (pre-B-02); confirmed 2026-09-24
+- **Layer**: L1 UI + L3 `/api/news/search`.
+- **Owner**: unassigned
+- **Why it isn't done**: feature work, not a fix. `app/news/NewsClientPage.tsx` shows category / source / sort controls and pagination, but `/api/news/search` only takes `q` + `pageSize`, and the old `newsAPI.searchNews` also used only those two (checked at 8b561b8^). Changing page re-fetches the same payload.
+- **What would close it**: either pass the filters through to NewsData.io (check which params the free plan accepts) or remove the controls so the page does not promise filtering it cannot do.
+
+## O-18 — 90 explicit `any` lines remain in app code
+
+- **Since**: pre-existing (107 on `Version-3` `16b8d6a`); ratchet added 2026-09-24 (R-02) at 91, lowered to 90 by R-07
+- **Layer**: L2–L5, mostly `lib/`.
+- **Owner**: unassigned
+- **Why it isn't done**: CLAUDE.md bans `any`, but most of these are in provider parsers where the right type needs the provider's real response shape (the C-03 Zod schemas cover TheSportsDB, NewsData and football-data only). Typing them by guesswork would swap `any` for a false type.
+- **What would close it**: type them file by file, using the Zod schemas where they exist; lower `CEILING` in `tests/no-new-any.test.ts` each time. Done when the ceiling is 0.
+
+## O-22 — News fallback articles claim to be published "now"
+
+- **Since**: pre-existing; noted 2026-09-24
+- **Layer**: L5 `lib/api/news.ts`.
+- **Owner**: unassigned
+- **Why it isn't done**: low impact; noted during the review, not in its scope. The 4 `FALLBACK_ARTICLES` are the site's own promo pieces (allowed as an owned fallback), but each sets `pubDate: new Date().toISOString()` at module load, so during a NewsData outage they appear as fresh news.
+- **What would close it**: give each a fixed, true `pubDate` (the linked page's real publish date) or omit the date in the UI for owned fallbacks.
+
+## O-17 — 43 ESLint warnings remain (was 46; R-08 fixed 2, R-09 deleted a dead file with 1); none block the build
+
+- **Update 2026-09-30 (R-08)**: fixed `app/admin/api-management/page.tsx` and `components/homepage/league-tables.tsx`. Left on purpose: `components/homepage/events-list.tsx` — **no importers anywhere** (dead file; `/events` defines its own `EventsList` at `app/events/page.tsx:33`), deletion is the owner's call; `app/news/NewsClientPage.tsx:117-123` — a mount-only effect that fetches trending keywords **only when** query params exist, while its comment says "Don't fetch on initial load since we have server data"; the intent is unclear (see O-19). `components/analytics/GoogleAnalytics.tsx:13` — the `beforeInteractive` script sets consent to denied before GA loads (GDPR); it is intentional, and GA is not active in production anyway (O-27).
+
+- **Since**: 2026-09-22 (surfaced by O-06's ESLint setup)
+- **Layer**: L1 UI (images, hook dependencies).
+- **Owner**: unassigned
+- **Why it isn't done**: each needs per-call-site judgment, unlike O-06's 38 errors which were either mechanical or a single isolated bug. 41 `@next/next/no-img-element` findings (raw `<img>` instead of `next/image`) each need a decision on `width`/`height` vs `fill`, and a check that the image's host is already in `next.config.mjs`'s `images.remotePatterns` allowlist (an unlisted host would break at runtime under `next/image`, not just warn). 4 `react-hooks/exhaustive-deps` findings each need the effect's actual intended behaviour understood before deciding whether to add the "missing" dependency (the rule's own auto-fix suggestion can introduce infinite-refetch loops if applied blindly) or intentionally suppress with a comment explaining why. 1 `@next/next/no-before-interactive-script-outside-document` needs the specific script's placement checked against Next's `<Script>` component rules.
+- **What would close it**: run `pnpm lint`, work through the 46 findings file by file — for `no-img-element`, migrate to `next/image` where the host is already allowlisted (or add the host + migrate where it's a legitimate new source); for `exhaustive-deps`, read each effect and either fix the dependency array correctly or add a one-line comment explaining an intentional omission; for the script-ordering one, move it into `next/script`'s `strategy` API. Re-run `pnpm lint` after each batch to confirm the count is dropping, not just moving.
+## O-16 — CLOSED 2026-09-22 by aligning ci.yml to Node 24
+
+Was: CI ran tests/typecheck on Node 20 (`.github/workflows/ci.yml`) while the live Vercel project runs Node 24.x in production (confirmed via `mcp__Vercel__get_project`) — a Node-24-only behaviour difference could pass CI and only surface live. Closed by bumping `ci.yml`'s `node-version` from `20` to `24` to match production (the safer default — test what you actually ship). `dependency-audit.yml` and `auto-index.yml` still pin Node 20 but were left alone: neither runs the app's test/typecheck suite (one runs `pnpm audit`, the other pings IndexNow), so they aren't the behaviour-drift risk O-16 was about. Verified via a real CI run on the pushed commit (this session's sandbox runs Node 22, so local verification wasn't authoritative for a Node-version change — the real GitHub Actions run, which provisions the exact declared version, is).
+
+## O-01 — Check whether the old test `JWT_SECRET` fallback was ever the production value (code half done)
+
+- **Since**: 2026-09-15
+- **Layer**: L0 (tooling / secrets hygiene)
+- **Owner**: unassigned — maintainer decision required
+- **Why it isn't done**: cannot determine from the code alone whether this hex value was ever the production `JWT_SECRET`. If it was, it is leaked in git history and the production secret must be rotated. If it was never production, it is a test-only random value and only needs a comment saying so plus a rotation on the fallback itself.
+- **What would close it**: (a) confirm from Vercel dashboard history whether this value was ever the production `JWT_SECRET`; (b) if yes, rotate `JWT_SECRET` in Vercel and replace the fallback with a comment "test-only, never used in prod"; (c) if no, replace the fallback with an obviously-fake value and add the comment.
+- **Update 2026-09-30**: the code half is done — since A-11 `vitest.config.ts` uses `"test-only-jwt-secret-do-not-use-in-prod"` with a NEVER-commit comment, guarded by `tests/no-credential-shaped-hex-in-repo.test.ts`. Only step (a), and (b) if needed, remain — Vercel dashboard access, owner only.
+
+## O-02 — CLOSED 2026-09-15 by A-09 (was stale until 2026-09-22)
+
+Was: CI trigger scoped to `main` only, missing production branch `Version-3` and dev branches `claude/**`. Closed same-session by A-09: `.github/workflows/ci.yml` `on.push.branches` now reads `["main", "Version-3", "claude/**"]`. **Found stale on 2026-09-22**: this entry still read "not touched in this session" and "queued" language for over a week after the actual fix landed — a `documentation-discipline` violation (an item whose "Why" was never updated after the work closed it). Verified 2026-09-22 by reading `ci.yml` directly and `tests/ci-trigger-covers-active-branches.test.ts` (4/4 passing).
+
+## O-03 — CLOSED 2026-09-15 by B-01 (was stale until 2026-09-22)
+
+Was: `memory-bank/PATTERNS.md`'s older "always return `[]` on fault" rule conflicted with `api-fault-vs-absence`. Resolved same-session as a hybrid: new resolvers rethrow `UpstreamFaultError`; the 12 pre-existing S-03 routes were grandfathered and migrated individually under B-04 (all 12 done — see B-04 in QA-LOG). PATTERNS.md's "Hybrid rule adopted 2026-09-15" section documents this in full, citing `lib/api/errors.ts::UpstreamFaultError`. **Found stale on 2026-09-22**: this entry still framed the hybrid as an undecided architectural choice ("pick a direction... each has a different cost") a week after the decision was made and executed. Verified 2026-09-22 by reading `PATTERNS.md` directly and `tests/upstream-fault-error.test.ts` (4/4 passing).
+
+## O-04 — CLOSED 2026-09-15 by A-08 (was stale until 2026-09-22)
+
+Was: `middleware.ts` threw at top-of-function when `JWT_SECRET` was unset in production — a T-ENV-20 recurrence per `runtime-env-and-middleware-safety`, with no per-route fallback (every matched route would 500). Closed same-session by A-08: the throw was removed; each request now checks `if (!ENV.JWT_SECRET)` and redirects safely instead. **Found stale on 2026-09-22**: this entry still said "queued as A-02... being fixed red-first in the next turn" a week after A-08 (not A-02) actually shipped the fix — a wrong commit reference left uncorrected. Verified 2026-09-22 by reading `middleware.ts` directly and `tests/middleware-never-throws.test.ts` (3/3 passing).
+
+## O-05 — CLOSED 2026-09-16 by B-06
+
+Was: three per-file `new Map<string, …>` limiters — `middleware.ts:6`, `app/api/auth/admin/route.ts:7`, `app/api/subscribe/route.ts:14` — each per-serverless-instance so their declared ceilings scaled with `<number of lambdas>` (S-06). B-06 consolidated all three onto `lib/security/rate-limit.ts::checkRateLimit()`, a shared Redis-backed fixed-window limiter using `@upstash/redis` (fetch-based; safe in edge middleware). Falls back to a per-process Map with a one-shot warning when `UPSTASH_REDIS_REST_URL/TOKEN` are unset — matches previous behaviour for dev/keyless CI, but production must set both. Enforcement: `tests/rate-limit-helper.test.ts` refuses any `new Map<string,` in the three touched files (structural regression tripwire).
+
+## O-06 — CLOSED 2026-09-22, both flags now `false` and verified by a real build
+
+**TypeScript half**: already resolved before this session (flipped `false` in `bcd211e`, predates this Claude session). Confirmed by dozens of clean `tsc --noEmit` runs this session.
+
+**ESLint half**: closed same-session. There was genuinely no ESLint config anywhere in the repo (`next lint` dropped into an interactive setup wizard) — not deferred debt, `ignoreDuringBuilds: true` was load-bearing. Closed by: (a) `pnpm add -D eslint@^8 eslint-config-next@14.2.35` (pinned to match the installed `next@14.2.35`); (b) `.eslintrc.json` with `"extends": "next/core-web-vitals"` — the canonical default `create-next-app` itself generates, not a personal ruleset choice, so no maintainer sign-off was needed on which config; (c) ran it — 84 findings across 44 files (38 errors, 46 warnings); (d) fixed all 38 errors: 37 were mechanical `react/no-unescaped-entities` (raw `'`/`"` in JSX text → `&apos;`/`&quot;`, verified character-for-character against ESLint's reported column before substitution, zero drift), and 1 was a genuine bug — `components/setup/RecommendedApps.tsx:224` called `useState` AFTER a conditional early return, violating React's Rules of Hooks (could desync hook order if `device` ever changes between a valid/invalid key without a remount); moved the hook above the early return; (e) flipped `eslint.ignoreDuringBuilds` to `false`; (f) verified with a REAL production build (`next build`, not just `next lint`) — "Linting and checking validity of types" ran, printed the 46 remaining warnings, and the build proceeded through full static generation (103 routes) to exit 0. `CLAUDE.md`'s "Known open issues" section, which cited both flags as still-`true`, corrected in the same pass.
+
+**46 warnings remain, tracked as their own item, not blocking**: 41 `@next/next/no-img-element` (raw `<img>` instead of `next/image` — each needs per-call-site judgment on `width`/`height`/`fill` and whether the image's host is in `next.config.mjs`'s `remotePatterns` allowlist, so not mechanical), 4 `react-hooks/exhaustive-deps` (blindly adding the "missing" dependency risks introducing infinite-fetch loops — the rule's own suggestion isn't always correct, needs per-effect judgment), 1 `@next/next/no-before-interactive-script-outside-document`. None of these fail a build (`next build`'s ESLint gate only blocks on errors); they're a legitimate follow-up, not a false blocker.
+
+## O-07 — CLOSED 2026-09-15 (was: IndexNow ping every build)
+
+**Closed as invalid.** My original recording was wrong on both counts: (a) `scripts/ping-indexnow.js:2-5` already gates on `VERCEL_ENV === 'production'`, so local and CI builds skip it; (b) the constant `f63234d7ee824249a5b3260c6d2c49e2` at line 12 is the **public IndexNow ownership key** — its whole purpose is to be published at `/<key>.txt` on the site's own domain, and knowing it grants nothing. Both the testing-infra audit agent and the security-surface audit agent independently confirmed. Standing correction recorded at top of `QA-LOG.md`.
+
+## O-09 — CLOSED 2026-09-22, audit complete: no leak found
+
+Was: A-02 fixed the three raw-response leaks in `lib/panel/cms8k.ts` (lines ~240, ~271, ~310) but left two `console.error` calls open as unaudited — `[CMS8K SESSION] Error creating line via session:` (~320) and `[CMS8K] Get credentials error:` (~417) — on the theory that a thrown fetch error's message might embed the request URL, and the URL might carry the panel session cookie as a query param. **Audited and closed 2026-09-22**: neither call site ever puts the cookie in the URL — both requests carry it exclusively via the `Cookie` HTTP header — and empirically, a real network-level fetch failure (reproduced with `HttpResponse.error()`, which triggers `@mswjs/interceptors`' actual `TypeError: Failed to fetch` — the same class of error native `fetch`/undici throws on a real DNS/connection failure) never embeds the request URL, headers, or query string in its `message`/`stack`/`cause`. Verified directly with a standalone probe script (`node`, MSW, `fetch()` with a `Cookie` header, catch and print the resulting error) before writing the test, so the claim is observed, not assumed. **Bonus finding while auditing**: `createTrialAccount`'s Strategy-A catch (`[CMS8K API] Error during API key trial creation:`, ~line 264) DOES have a genuine secret in its URL (`api_key` as a query param) — checked with the same technique and also found to not leak, for the same reason (fetch failures don't embed URLs).
+Test: `tests/cms8k-error-log-redaction.test.ts` — 4 assertions: session-cookie leak check on the line-creation failure path, on the credential-lookup failure path (both `api_table.php` and `get_line_info` sub-strategies), a scanner control proving the cookie really was sent on the request whose failure is then inspected (so the other assertions aren't vacuously passing), and the bonus api_key check.
+
+## O-12 — CLOSED 2026-09-16 by B-02
+
+Was: `app/news/NewsClientPage.tsx:12` (a `"use client"` file) directly imported `@/lib/api/news`, so the news scraper module and its transitive deps shipped into the browser bundle — the last real S-01 violation. B-02 added two server-side proxy routes (`app/api/news/search`, `app/api/news/trending`), rewrote the two `newsAPI.*` call sites to `fetch()` those endpoints, and dropped the `newsAPI` import; the file still keeps its type-only imports (erased at build time). Enforcement: `tests/no-lowlevel-api-in-client-components.test.ts` refuses any future `"use client"` file that imports `@/lib/api/{news|the-sports-db|mma-rapidapi|ufc-scraper|espn|football-data}` — type-only imports (`import type …`) are exempted since they contribute nothing to the bundle.
+
+## O-08 — CLOSED 2026-09-15 by A-10 + A-13
+
+Playwright `testDir` was in fact orphaning `e2e/*.spec.ts` (confirmed by CI + `pnpm exec playwright test --list`). Closed by A-10 (config rewrite) + A-13 (`.test.ts` → `.spec.ts` rename + convention settle). The 3 spec files (`e2e/smartlivetv.spec.ts`, `e2e/smoke.spec.ts`, `tests/mobile-responsiveness.spec.ts`) now list as 120 tests across 3 device projects. Whether they PASS is a separate concern (see O-10).
+
+## O-13 — CLOSED 2026-09-22 by X-01/X-02 deletion
+
+Was: `lib/api/api-client.ts` (265 lines) and `lib/cache/apiCache.ts` (175 lines) had zero importers, confirmed twice — once on 2026-09-16 (grep at that date), re-verified 2026-09-22 before deleting. The 2026-09-16 attempt to `git rm` was blocked by the auto-mode classifier as an "irreversible local destruction"; on 2026-09-22 the same command was permitted (the file-count/size at issue was the same). Deleted along with the also-dead `scripts/verify-routes.js` (X-13, zero references in `package.json` or `.github/`). Full suite 275/275, tsc clean after removal — nothing referenced any of the three files.
+
+## O-15 — CLOSED 2026-09-22 by pnpm-only enforcement
+
+Was: `package-lock.json` and `pnpm-lock.yaml` both committed, drifting apart on every `pnpm add`/`pnpm remove`. Before deleting anything, verified with the Vercel MCP tools (`get_project` on `prj_6l3Vinw91zW08AIkwqhRV5vMeI8h`) that the live project has no `installCommand` override — Vercel auto-detects pnpm from `pnpm-lock.yaml`, so it never used `package-lock.json` for the actual production build. `.github/workflows/ci.yml` and `dependency-audit.yml` both hard-code `pnpm install --frozen-lockfile`. Closed by: deleting `package-lock.json`; adding `scripts/ensure-pnpm.js` as a `preinstall` guard (reads `npm_config_user_agent`, aborts with a clear message under `npm`/`yarn`) so the drift cannot silently recur locally; documenting the policy in `SETUP-REQUIRED.md`. Verified live with a real `pnpm install --frozen-lockfile` (guard passed, 2.3s). No `packageManager` field was added — CI pins pnpm major version 9 (`pnpm/action-setup@v4` with `version: 9`) while this session's pnpm is 10.33.0; pinning an exact patch I hadn't verified existed would have been a guess, so left unset rather than fabricate a value.
+
+## O-14 — CLOSED 2026-09-17 by search-bar caller fix
+
+Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/api/search/news`'s response, which is `{status, articles, totalResults}` — an object, not an array. `Array.isArray(...)` was always false; the news branch of the site-wide search rendered nothing. Fixed by reading `newsJson?.articles` explicitly (option (a) from the original entry, chosen because changing the route shape would ripple through other callers). Regression tripwire at `tests/search-bar-news-contract.test.ts` refuses the plain `Array.isArray(newsJson)` shape re-appearing and pins the route's response shape.
+
+## O-11 — `next` 14.2.35 carries 2 critical + 8 high advisories; every fix needs `next` ≥ 15 (a major upgrade)
+
+**Correction 2026-09-30** (source: `pnpm audit --prod --json`, 2026-09-30T19:26:27Z):
+- The fix is **not a patch bump**: 14.2.35 → 15.5.24 is a major-version upgrade (14 → 15). The line below that calls it a "patch bump" was wrong.
+- `next` has 2 critical and 8 high advisories; the patched ranges are all in 15.x (lowest covering all: `>=15.5.24`). Examples: GHSA-p9j2-gv94-2wf4 (SSRF in rewrites, `<15.5.21`), GHSA-m99w-x7hq-7vfj (DoS with Server Actions, `<15.5.21`).
+- The AVIF mitigation (A-15) exists only on the unmerged work branch. Production `16b8d6a` still has `formats: ['image/webp', 'image/avif']` (`next.config.mjs:88`) — see O-21.
+- Whether GHSA-2xp9 (libheif inside `sharp`) reaches a Vercel-hosted site is **unknown**: the advisory text does not say, and Vercel's docs describe `/_next/image` as served by "Vercel's native Image Optimization API" without saying whether it uses `sharp`.
+
+**Update 2026-09-15:** GHSA-2xp9-vwfh-vxw4 (AVIF RCE) attack path closed by A-15 (`next.config.mjs` `images.formats` no longer includes `image/avif`). This is a **mitigation, not a fix** — the underlying `next` version is still vulnerable and would be re-exposed the moment AVIF is reintroduced. Regression tripwire at `tests/next-image-avif-disabled.test.ts`. The other CVE (GHSA-p293-qw3h-jr36, Windows-host RCE) still stands; production is Vercel/Linux so attack surface there is dev machines only. The proper fix (patch bump to `next@15.5.24+`) remains scheduled below.
+
+
+- **Since**: 2026-09-15 (surfaced by C-01 install audit)
+- **Layer**: L0 dependency
+- **Owner**: unassigned — maintainer needs to schedule the Next patch bump
+- **Advisories** (both `next` @ current 14.2.35):
+  1. **GHSA-p293-qw3h-jr36** — Unauthenticated Remote Code Execution on windows-hosted servers. `>=13.4.0 <15.5.24`. Production hosted on Vercel (Linux) — attack surface is dev machines only.
+  2. **GHSA-2xp9-vwfh-vxw4** — Unauthenticated Remote Code Execution in Image Optimization API when AVIF files are used. `>=10.0.0 <15.5.24`. This project uses Next Image; AVIF is negotiated by modern browsers. Exploitability on the Vercel-hosted site: **unknown** (see the 2026-09-30 correction above).
+- **Why it isn't done**: `PROGRESS.md` §4.1 already flags "Next.js 14 → 16 upgrade" as its own project because it's a breaking two-major-version jump. The fixes landed in the 15.x line — moving to `15.5.24` (a major upgrade from 14, not a patch; `pnpm audit` lists `>=15.5.24` as the patched range for both criticals) plugs them without the full 14→16 migration.
+- **What would close it**: owner approves a 14 → 15 upgrade as its own branch; then (a) `pnpm add next@15.5.24 --save-exact`, (b) run `pnpm tsc --noEmit` and address any type-drift, (c) run `pnpm vitest --run` and address any regressions, (d) test in a preview deploy, (e) merge to `Version-3`. Full 14→16 upgrade stays as its own separate future project.
+
+## O-10 — CLOSED 2026-09-30 by R-11 (was: Playwright e2e suite had no runner)
+
+**Closed**: `.github/workflows/e2e-production-monitor.yml` runs daily once merged to `Version-3`. First run: 77 passed, 42 failed, 1 flaky — see O-29.
+
+
+- **Since**: 2026-09-15 (A-14)
+- **Layer**: L0 (test infra)
+- **Owner**: unassigned
+- **Why it isn't done**: A-14 removed the Playwright steps from `.github/workflows/ci.yml` because the existing spec suite is a *production monitor*, not a PR gate — it asserts real robots.txt content, real `.co.uk` canonicals, real blog posts, real schema markup, "no 'James Harper' author" and similar production-content properties. Against a fresh `pnpm dev` those assertions produce 40+ failures per run for reasons unrelated to any PR. Reinstating in CI would either need (a) rewriting the specs to work against a fresh dev server (large project), or (b) pointing Playwright at a real preview deploy (needs Vercel preview URL wiring), or (c) a nightly scheduled workflow that hits production with a read-only check (simplest, adds one workflow file).
+- **What would close it**: option (c) — new `.github/workflows/e2e-production-monitor.yml` on cron (e.g. `0 3 * * *`), sets `PLAYWRIGHT_BASE_URL=https://smartlivetv.co.uk`, runs `pnpm exec playwright test`, opens an issue on failure. Small workflow, no code changes to the specs themselves.
