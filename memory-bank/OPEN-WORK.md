@@ -267,3 +267,31 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Facts**: `grep -n 'page\.\$\$\?(' e2e/ tests/ --include=*.spec.ts` finds roughly 18 `page.$` / `page.$$` calls in `e2e/smartlivetv.spec.ts` outside the H1 check, plus about 10 `$eval` / `$$eval` calls. None auto-wait. The H1 check is the one that has actually flaked, which is why it is the only one PR #18 changes.
 - **Why it isn't done**: converting all of them is a large diff with no failure driving it, and many assert only on absence or follow an explicit wait, so they are not all races. Owner chose the H1 fix alone for PR #18.
 - **What would close it**: audit each call, convert the ones whose assertion can race to locators with web-first assertions, leave the rest with a comment saying why they are safe. Then widen `tests/h1-check-auto-waits.test.ts` from the single test block to the whole file.
+
+## O-36 — why /api/spotlight's upstream faulted is still unverified
+
+- **Since**: 2026-10-10. The bypass itself is fixed (QA-LOG R-26); this entry is the part that is not.
+- **Layer**: L0 configuration / upstream account.
+- **Owner**: site owner — this is the one thing the session cannot see.
+- **Facts**: `/api/spotlight` answered `503 {"error":"Spotlight temporarily unavailable — we could not check just now."}` with `Cache-Control: no-store` on the live site, checked against `dpl_ijahsxyla` (the `0dd2456` production deployment). `anySuccess` was false, so every upstream call had failed or returned non-2xx. The two ESPN routes the countdown uses both returned 200 at the same moment, so this was specific to TheSportsDB. The route's three raw, uncached, unthrottled requests per invocation (× two calling components) are consistent with exhausting the 25 req/min ceiling, which is what R-26 fixes.
+- **Not established**: whether `THESPORTSDB_API_KEY` is actually set in Vercel Production. If it is unset, `ENV.THESPORTSDB_KEY` falls back to the public `"123"` test key, which is throttled hard and would produce exactly this. Environment values were not decrypted. Vercel runtime logs returned nothing for the window (Hobby retention).
+- **Why it isn't done**: needs the Vercel Production environment, which only the owner can read.
+- **What would close it**: owner confirms `THESPORTSDB_API_KEY` is set to the paid/registered key in Production; then one request to `/api/spotlight` on the live site returns 200.
+
+## O-37 — two more routes reach TheSportsDB without the cache or the rate limiter
+
+- **Since**: 2026-10-10, found while fixing /api/spotlight.
+- **Layer**: L2 API routes.
+- **Owner**: unassigned.
+- **Facts**: `app/api/fixtures/today/route.ts` (three requests) and `app/api/scores/today/route.ts` (one) still build a TheSportsDB URL and call `fetch` directly, so they bypass `lib/cache.ts` and `enqueueRateLimit()` exactly as spotlight did. `app/api/fixtures/today` is called from the homepage by `components/homepage/match-card.tsx`, so it carries the same spiral risk. Both are allow-listed in `tests/sportsdb-fetches-go-through-cache.test.ts`, which fails if a third route joins them, and also fails if one of these is fixed and left on the list.
+- **Why it isn't done**: no failure is driving them yet, and converting them is a behavioural change with the same latency trade-off spotlight needed (one blocking call plus a request budget, not three serialised calls — see R-26's measurements before repeating the mistake).
+- **What would close it**: convert each to the client in `lib/api/the-sports-db.ts`, measure the fault path against Vercel's 10s function limit, then remove it from `KNOWN_DEBT`.
+
+## O-38 — the hybrid rule and "no console errors" still disagree in principle
+
+- **Since**: 2026-10-10 (owner decision the same day).
+- **Layer**: e2e specs / architecture.
+- **Owner**: resolved for now; revisit if the trade-off bites.
+- **Facts**: CLAUDE.md requires a fault to answer 503. A browser logs `Failed to load resource ... 503` for any non-2xx regardless of how cleanly the app handles it. So obeying the fault rule made `no console errors on homepage` fail whenever any upstream was down. Owner chose to excuse a 503 from a same-origin `/api/` route and keep failing on everything else; implemented by attributing 503s through `page.on('response')`, since the console message carries no URL. Pinned by `tests/console-check-excuses-own-503.test.ts`.
+- **What is still not covered**: CLAUDE.md also promises "Components must never go blank — show 'Data temporarily unavailable'". Nothing asserts that on the homepage. A check on the rendered result, rather than on the console, would test the thing actually promised to visitors.
+- **What would close it**: add a homepage assertion that each data section shows either content or the unavailable message, never nothing.
