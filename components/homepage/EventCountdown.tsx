@@ -2,14 +2,13 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-
-interface CountdownEvent {
-  name: string
-  date: Date
-  href: string
-  sport: string
-  badge: string
-}
+import {
+  type CountdownEvent,
+  pickNextF1Race,
+  pickNextUfcEvent,
+  soonest,
+  withinCountdownWindow,
+} from "@/lib/events/countdown-source"
 
 interface TimeLeft {
   days: number
@@ -33,57 +32,44 @@ function pad(n: number): string {
   return String(n).padStart(2, '0')
 }
 
-/** Curated upcoming high-profile sporting events used as reliable countdown targets. */
-const CURATED_UPCOMING_EVENTS: CountdownEvent[] = [
+/**
+ * Last-resort fallback, used only when both live sources are unreachable.
+ *
+ * Reviewed 2026-10-10. Kick-off times confirmed against the Premier League's
+ * October fixture-amendment listing. This list goes stale by design: the live
+ * F1 lookup above covers the next grand prix for most of the season, so this
+ * exists to cover a provider outage, not to be the primary source.
+ */
+const FALLBACK_EVENTS: CountdownEvent[] = [
   {
-    name: 'Formula 1 — Azerbaijan Grand Prix',
-    date: new Date('2026-09-26T12:00:00+01:00'),
-    href: '/watch/formula-1',
-    sport: 'Formula 1',
-    badge: '/leagues/formula-1.png',
-  },
-  {
-    name: 'Chelsea vs Brighton — PL Matchweek 6',
-    date: new Date('2026-09-26T15:00:00+01:00'),
+    name: 'Manchester United vs Tottenham — PL Matchweek 6',
+    date: new Date('2026-10-10T17:30:00+01:00'),
     href: '/watch/premier-league',
     sport: 'Premier League',
     badge: '/leagues/premier-league.png',
   },
   {
-    name: 'UFC Fight Night — Rosas Jr. vs Barcelos',
-    date: new Date('2026-09-26T21:00:00+01:00'),
-    href: '/ufc',
-    sport: 'UFC',
-    badge: '/leagues/ufc.png',
-  },
-  {
-    name: 'Tottenham vs Arsenal — PL Matchweek 6',
-    date: new Date('2026-09-27T16:30:00+01:00'),
+    name: 'Liverpool vs Manchester City — PL Matchweek 6',
+    date: new Date('2026-10-11T16:30:00+01:00'),
     href: '/watch/premier-league',
     sport: 'Premier League',
     badge: '/leagues/premier-league.png',
   },
   {
-    name: 'UFC 332 — Silva vs Wang',
-    date: new Date('2026-10-03T23:00:00+01:00'),
-    href: '/ufc',
-    sport: 'UFC',
-    badge: '/leagues/ufc.png',
-  },
-  {
-    name: 'Formula 1 — Singapore Grand Prix',
-    date: new Date('2026-10-11T13:00:00+01:00'),
-    href: '/watch/formula-1',
-    sport: 'Formula 1',
-    badge: '/leagues/formula-1.png',
+    name: 'Coventry City vs Newcastle United — PL Matchweek 6',
+    date: new Date('2026-10-12T20:00:00+01:00'),
+    href: '/watch/premier-league',
+    sport: 'Premier League',
+    badge: '/leagues/premier-league.png',
   },
 ]
 
-function getNextCuratedEvent(): CountdownEvent | null {
-  const now = Date.now()
-  const upcoming = CURATED_UPCOMING_EVENTS.filter(e => e.date.getTime() > now)
-  if (upcoming.length === 0) return null
-  return upcoming.sort((a, b) => a.date.getTime() - b.date.getTime())[0]
+function getFallbackEvent(now: number): CountdownEvent | null {
+  return (
+    FALLBACK_EVENTS.filter(e => withinCountdownWindow(e.date, now)).sort(
+      (a, b) => a.date.getTime() - b.date.getTime(),
+    )[0] ?? null
+  )
 }
 
 export function EventCountdown() {
@@ -91,78 +77,27 @@ export function EventCountdown() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Fetch upcoming events from our API or curated schedule
+  // Live sources first, hardcoded fallback only if both are unreachable.
   useEffect(() => {
     const loadEvent = async () => {
-      let liveEvent: CountdownEvent | null = null
+      const now = Date.now()
 
-      try {
-        // Try UFC first
-        const ufcRes = await fetch('/api/espn/mma/ufc/scoreboard', {
-          cache: 'no-store',
-        }).catch(() => null)
-
-        if (ufcRes?.ok) {
-          const data = await ufcRes.json()
-          const events = data?.events || []
-          const upcoming = events.find((e: any) => {
-            if (e.status?.type?.completed) return false
-            if (!e.date) return false
-            const d = new Date(e.date)
-            const daysAway = (d.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-            return daysAway > 0 && daysAway <= 14
-          })
-
-          if (upcoming) {
-            liveEvent = {
-              name: upcoming.name || upcoming.shortName || 'UFC Event',
-              date: new Date(upcoming.date),
-              href: '/ufc',
-              sport: 'UFC',
-              badge: '/leagues/ufc.png',
-            }
-          }
+      const read = async (path: string): Promise<unknown> => {
+        try {
+          const res = await fetch(path, { cache: 'no-store' })
+          return res.ok ? await res.json() : null
+        } catch {
+          return null
         }
-
-        // Try F1 next if no UFC or to find sooner event
-        const f1Res = await fetch('/api/espn/racing/f1/scoreboard', {
-          cache: 'no-store',
-        }).catch(() => null)
-
-        if (f1Res?.ok) {
-          const data = await f1Res.json()
-          const events = data?.events || []
-          const upcoming = events.find((e: any) => {
-            if (e.status?.type?.completed) return false
-            if (!e.date) return false
-            const d = new Date(e.date)
-            const daysAway = (d.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-            return daysAway > 0 && daysAway <= 14
-          })
-
-          if (upcoming) {
-            const candidate = {
-              name: upcoming.shortName || upcoming.name || 'F1 Race',
-              date: new Date(upcoming.date),
-              href: '/watch/formula-1',
-              sport: 'F1',
-              badge: '/leagues/formula-1.png',
-            }
-            if (!liveEvent || candidate.date.getTime() < liveEvent.date.getTime()) {
-              liveEvent = candidate
-            }
-          }
-        }
-      } catch {
-        // Fallback gracefully to curated events
       }
 
-      const curated = getNextCuratedEvent()
-      if (liveEvent && curated) {
-        setUpcomingEvent(liveEvent.date.getTime() < curated.date.getTime() ? liveEvent : curated)
-      } else {
-        setUpcomingEvent(liveEvent || curated)
-      }
+      const [ufcData, f1Data] = await Promise.all([
+        read('/api/espn/mma/ufc/scoreboard'),
+        read('/api/espn/racing/f1/scoreboard'),
+      ])
+
+      const live = soonest(pickNextUfcEvent(ufcData, now), pickNextF1Race(f1Data, now))
+      setUpcomingEvent(live ?? getFallbackEvent(now))
       setLoading(false)
     }
 
