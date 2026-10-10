@@ -52,22 +52,34 @@ const KNOWN_DEBT = new Set([
 ])
 
 /**
- * Detect by the hostname, not by `fetch(`. The first version of this test
- * matched `fetch(` with the URL inline, and missed app/api/scores/today,
- * which assigns the URL to a variable first:
+ * TheSportsDB's API path. Every direct caller builds a URL containing it,
+ * whatever hostname spelling it uses.
  *
- *   const url = `https://www.thesportsdb.com/.../eventsday.php?...`
- *   const res = await fetch(url)
+ * Two earlier versions of this detector were worse:
  *
- * A route has no reason to name the upstream host at all — that is what the
- * client in lib/api/the-sports-db.ts is for — so the hostname itself is the
- * signal, and it catches every shape.
+ *  1. Matching `fetch(` with the URL inline missed app/api/scores/today,
+ *     which assigns the URL to a variable first:
+ *       const url = `https://www.thesportsdb.com/api/v1/json/${key}/...`
+ *       const res = await fetch(url)
+ *
+ *  2. Matching the hostname tripped two high-severity CodeQL rules —
+ *     js/incomplete-url-substring-sanitization and js/regex/missing-regexp-anchor
+ *     — because an unanchored hostname substring test is the shape of a
+ *     broken URL check. There is no vulnerability here (this reads repo
+ *     files off disk and makes no security decision), but the path is the
+ *     better signal anyway: it is what the route is actually reconstructing,
+ *     and it does not care how the host is written.
+ *
+ * Verified 2026-10-10: path and hostname detectors flag the same three
+ * route files.
  */
-function namesUpstreamHost(source: string): boolean {
+const SPORTSDB_API_PATH = "api/v1/json"
+
+function reachesUpstreamDirectly(source: string): boolean {
   return source
     .split("\n")
     .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
-    .some((line) => line.includes("thesportsdb.com"))
+    .some((line) => line.includes(SPORTSDB_API_PATH))
 }
 
 function routeFiles(dir: string): string[] {
@@ -79,9 +91,9 @@ function routeFiles(dir: string): string[] {
 }
 
 describe("TheSportsDB calls go through the cached, rate-limited client", () => {
-  it("no new route reaches thesportsdb.com directly", () => {
+  it("no new route reaches TheSportsDB directly", () => {
     const offenders = routeFiles("app/api")
-      .filter((file) => namesUpstreamHost(readFileSync(file, "utf8")))
+      .filter((file) => reachesUpstreamDirectly(readFileSync(file, "utf8")))
       .filter((file) => file !== PROXY && !KNOWN_DEBT.has(file))
 
     expect(
@@ -97,10 +109,10 @@ describe("TheSportsDB calls go through the cached, rate-limited client", () => {
 
     expect(route, "spotlight must call the shared client").toMatch(/eventsDay\(/)
     expect(
-      route,
-      "spotlight must not rebuild a TheSportsDB base URL — that is how it " +
+      route.includes(SPORTSDB_API_PATH),
+      "spotlight must not rebuild a TheSportsDB API URL — that is how it " +
         "escaped the cache and the rate limiter in the first place",
-    ).not.toMatch(/thesportsdb\.com/)
+    ).toBe(false)
     expect(
       route,
       "cache: 'no-store' on an upstream call defeats both caches",
@@ -124,13 +136,13 @@ describe("TheSportsDB calls go through the cached, rate-limited client", () => {
     }
   })
 
-  it("every file on the debt list really does still reach the host directly", () => {
+  it("every file on the debt list really does still reach upstream directly", () => {
     // If one gets fixed, it must leave the list — otherwise the list grows
     // stale and stops meaning anything.
     for (const file of KNOWN_DEBT) {
       expect(
-        namesUpstreamHost(readFileSync(file, "utf8")),
-        `${file} no longer names thesportsdb.com — remove it from KNOWN_DEBT`,
+        reachesUpstreamDirectly(readFileSync(file, "utf8")),
+        `${file} no longer builds a TheSportsDB API URL — remove it from KNOWN_DEBT`,
       ).toBe(true)
     }
   })
