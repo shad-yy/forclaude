@@ -6,15 +6,15 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
-## O-29 — Production monitor: triage done; live site waits on deploy, one flaky check unexplained
+## O-29 — Production monitor green on the live site; one flaky check unexplained
 
 - **Since**: 2026-09-30 (first run `36769200235`)
 - **Layer**: production content / e2e specs.
-- **Owner**: site owner (merge + deploy); H1 flake: unassigned.
-- **Facts**: run `36769200235` 77 passed / 42 failed / 1 flaky → run `36788028302` 101 / 18 / 1 (both against the live site). Every originally failing check is triaged and handled: robots.txt (R-12), mobile ×5, buy form, image sizes (R-18), byline, dates, hero video, footer link, `/buy` title, `/faq` schema (R-20), `/faq` description and support hours (R-22). The 18 failures left on the live site (footer 404, "James Harper" ×2, 6 unsized badges, coverr console errors, `/faq` description) are all fixed on the work branch.
-- **Still unexplained**: "H1 exists and is unique" fails once per run on a different page and passes on retry — run 1 `/free-trial` (Mobile Chrome), run 2 `/ufc` and run 3 `/watch/champions-league` (both Desktop Chrome). The page sources render an `<h1>`; the cause is not established. The report artifact cannot be downloaded from the sandbox (egress 403); its screenshots are on the run page.
-- **Why it isn't done**: production runs `Version-3` without these fixes (O-21); the H1 flake has no root cause.
-- **What would close it**: merge PR #6 and deploy; one green monitor run on the live site; for H1, read the failure screenshot of the next run that hits it.
+- **Owner**: H1 flake: unassigned.
+- **Facts**: run `36769200235` 77 passed / 42 failed / 1 flaky → `36788028302` 101 / 18 / 1 (both before the fixes were live) → `36857712355` (first **scheduled** run, 2026-10-01 11:48 UTC — the 05:47 cron slot, delayed by GitHub — live site on `6e11a76` since 01:28 UTC) **120 passed / 0 failed / 0 flaky** → `36902488798` (PR #14 push run, 17:51 UTC) **119 passed / 0 failed / 1 flaky**. Every originally failing check is fixed: robots.txt (R-12), mobile ×5, buy form, image sizes (R-18), byline, dates, hero video, footer link, `/buy` title, `/faq` schema (R-20), `/faq` description and support hours (R-22).
+- **Still unexplained**: "H1 exists and is unique" fails once per run and passes on retry — `/free-trial` (Mobile Chrome, run 1), `/ufc` (run 2), `/watch/champions-league` (run 3), `/free-trial` (Desktop Chrome, run `36902488798`); it passed on all three browsers in the scheduled run `36857712355`. The page sources render an `<h1>`; the cause is not established. The report artifact cannot be downloaded from the sandbox (egress 403); its screenshots are on the run page.
+- **Why it isn't done**: the H1 flake has no root cause.
+- **What would close it**: read the failure screenshot of a run that hits it (the daily schedule runs from `Version-3` at 05:47 UTC), then fix the page or the check.
 
 ## O-30 — CLOSED 2026-09-30 by R-17 (was: three components have no importers)
 
@@ -106,14 +106,14 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: this is why the RapidAPI key and the HAR (committed before C-04) were never flagged. A full-history scan would fail today on those two until they are rotated and allowlisted (O-23).
 - **What would close it**: after O-23, add a weekly `schedule:` trigger (or a `gitleaks detect --no-git` step) that scans the whole repo, with the rotated secrets' fingerprints in `.gitleaksignore`.
 
-## O-21 — Merged into `Version-3`, but production is not deployed from `Version-3`
+## O-21 — Production is live on `Version-3`; the Vercel production-branch setting still points elsewhere
 
-- **Since**: 2026-09-20 20:25 UTC (found 2026-09-24); re-checked 2026-10-01 after the merge.
+- **Since**: 2026-09-20 20:25 UTC (found 2026-09-24); live again on `Version-3` since 2026-10-01 01:28 UTC.
 - **Layer**: L0 release process.
-- **Owner**: site owner (Vercel action).
-- **Facts (2026-10-01, `mcp__Vercel__get_deployment smartlivetv.co.uk`)**: the live deployment is `dpl_DpLEnX1ejMfEBNDRzWCHfCTbQXCp`, `source: redeploy`, created 2026-09-30 02:41 UTC from branch `vercel/install-vercel-web-analytics-vl9i5d`, commit `83d856f` = this work branch at `e652009` (R-07) plus Vercel's "Install Vercel Web Analytics" commit (adds `<Analytics />` to `app/layout.tsx`; not in `Version-3`). PR #6 merged as `0a46169`; its Vercel build `dpl_4eywqY82SrKYEGT3ngmckGaJWZkS` has `target: null` and only the branch alias, i.e. a preview. The 2026-09-20 `Version-3` push (`16b8d6a`) did build with `target: production`, so the production branch setting has changed since then (project `updatedAt` 2026-09-30 10:27 UTC). The earlier history (52 commits lost on 2026-09-20) is PROGRESS.md Bug 9.
-- **Why it isn't done**: promoting a deployment or changing the production branch changes the live site; the owner decides. Promoting a `Version-3` build without the analytics line would switch Vercel Web Analytics off.
-- **What would close it**: bring the `<Analytics />` line into `Version-3`; then promote that `Version-3` build to production and set the production branch back to `Version-3`; confirm with `get_deployment smartlivetv.co.uk` that the live SHA contains `0a46169`.
+- **Owner**: site owner (one Vercel dashboard setting).
+- **Facts (2026-10-01)**: PR #6 merged as `0a46169`, PR #8 (Web Analytics line from Vercel's `83d856f`) as `6e11a76`. Pushes to `Version-3` build only previews (`target: null`), so a production build was created from `Version-3` at `6e11a76` through the Vercel API (`dpl_VGMcgFXN6etAPTRi5nGFTdeToAEM`, `target: production`), which builds with the Production env vars; the preview was not promoted because 16 of 17 env vars are Production-only. `get_deployment smartlivetv.co.uk` → that deployment. Live checks: `/blog/is-iptv-legal-uk` 200 with byline "Smart Live TV" and no "James Harper"; `/faq` description 154 chars, no "24/7", footer links `/blog/iptv-vs-netflix-disney-sky-2026`; `/api/leagues` 200 with data; `/_vercel/insights/script.js` 200; no runtime errors in the first minutes. The previous live build was a manual redeploy of `83d856f` (work branch at `e652009` + the analytics commit); PROGRESS.md Bug 9 has the earlier history.
+- **Why it isn't done**: the Vercel API tool available in-session has no production-branch field, so the next `Version-3` merge would again build only a preview.
+- **What would close it**: owner sets the production branch back to `Version-3` in the Vercel project settings; the next merge then deploys to production on its own (check with `get_deployment smartlivetv.co.uk`).
 
 ## O-20 — CLOSED 2026-09-30 by R-15 (was: six routes still answer an upstream fault with 200 + `[]`)
 
