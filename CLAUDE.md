@@ -86,7 +86,12 @@ See `memory-bank/PROGRESS.md` §4 for the current queue. Summary:
 
 *   `next`, `postcss`, `sharp`, `undici` carry high-severity advisories. Resolving them
     needs a breaking Next.js 14 → 16 upgrade — its own task with its own regression pass.
-*   `/api/espn/mma/ufc/scoreboard` returns 503; the UFC widget degrades silently.
+*   `/api/spotlight` returned 503 on the live site on 2026-10-10 — the route's cache and
+    rate-limiter bypass is fixed (QA-LOG R-26), but why the upstream faulted is open as
+    O-36 and needs `THESPORTSDB_API_KEY` confirmed in Vercel Production.
+*   `/api/espn/mma/ufc/scoreboard` and `/api/espn/racing/f1/scoreboard` both returned **200**
+    when checked on 2026-10-10 against the `0dd2456` production deployment. The earlier note
+    here that the UFC scoreboard returns 503 was stale.
 *   `next.config.mjs`'s `typescript.ignoreBuildErrors` and `eslint.ignoreDuringBuilds` are
     both `false` — a real `next build` now fails on any TypeScript or ESLint **error**
     (not a warning). Verified 2026-09-22 with a full local build (`Linting and checking
