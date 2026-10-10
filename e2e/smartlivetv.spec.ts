@@ -250,22 +250,33 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         ]
 
         for (const path of pagesToCheck) {
-            await page.goto(`${BASE}${path}`)
+            // O-29: this check used `page.$$('h1')`, a one-shot DOM snapshot
+            // that does not auto-wait. It reported "No H1" five times across
+            // five runs — on a different page each time, always passing on
+            // retry — which is what a snapshot assertion does to a page that
+            // is a moment slow, not what a missing H1 looks like. A locator
+            // retries until the timeout, so a genuinely missing H1 still
+            // fails and a slow one no longer does.
+            const response = await page.goto(`${BASE}${path}`)
 
-            const h1s = await page.$$('h1')
+            // The old version never looked at the status: a 404 or a 500
+            // would render an error page and fail as "No H1", hiding what
+            // actually went wrong.
             expect(
-                h1s.length,
-                `No H1 on ${path}`
-            ).toBeGreaterThan(0)
+                response?.status(),
+                `${path} did not return a 2xx — the H1 assertions below would ` +
+                `report "No H1" for what is really a bad response`
+            ).toBeLessThan(400)
 
-            expect(
-                h1s.length,
-                `Multiple H1s on ${path} — only one allowed`
-            ).toBe(1)
+            const h1 = page.locator('h1')
+            await expect(
+                h1,
+                `${path} must render exactly one H1`
+            ).toHaveCount(1)
 
-            const h1Text = await h1s[0].textContent()
+            const h1Text = (await h1.textContent())?.trim() ?? ''
             expect(
-                h1Text?.trim().length,
+                h1Text.length,
                 `H1 is empty on ${path}`
             ).toBeGreaterThan(5)
 
@@ -275,7 +286,7 @@ test.describe('SEO — Critical Indexing Requirements', () => {
                 `H1 still has concatenation bug on ${path}: "${h1Text}"`
             ).not.toContain('UFCOCTAGON')
 
-            console.log(`${path} H1: "${h1Text?.trim()}"`)
+            console.log(`${path} H1: "${h1Text}"`)
         }
     })
 })

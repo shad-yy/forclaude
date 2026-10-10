@@ -6,15 +6,17 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
-## O-29 — Production monitor green on the live site; one flaky check unexplained
+## O-29 — Production monitor green on the live site; H1 flake root-caused, fix in PR #18
 
 - **Since**: 2026-09-30 (first run `36769200235`)
 - **Layer**: production content / e2e specs.
 - **Owner**: H1 flake: unassigned.
 - **Facts**: run `36769200235` 77 passed / 42 failed / 1 flaky → `36788028302` 101 / 18 / 1 (both before the fixes were live) → `36857712355` (first **scheduled** run, 2026-10-01 11:48 UTC — the 05:47 cron slot, delayed by GitHub — live site on `6e11a76` since 01:28 UTC) **120 passed / 0 failed / 0 flaky** → `36902488798` (PR #14 push run, 17:51 UTC) **119 passed / 0 failed / 1 flaky**. Every originally failing check is fixed: robots.txt (R-12), mobile ×5, buy form, image sizes (R-18), byline, dates, hero video, footer link, `/buy` title, `/faq` schema (R-20), `/faq` description and support hours (R-22).
-- **Still unexplained**: "H1 exists and is unique" fails once per run and passes on retry — `/free-trial` (Mobile Chrome, run 1), `/ufc` (run 2), `/watch/champions-league` (run 3), `/free-trial` (Desktop Chrome, run `36902488798`); it passed on all three browsers in the scheduled run `36857712355`. The page sources render an `<h1>`; the cause is not established. The report artifact cannot be downloaded from the sandbox (egress 403); its screenshots are on the run page.
-- **Why it isn't done**: the H1 flake has no root cause.
-- **What would close it**: read the failure screenshot of a run that hits it (the daily schedule runs from `Version-3` at 05:47 UTC), then fix the page or the check.
+- **H1 flake — root cause (2026-10-10)**: five failures across five runs, a different page each time, every one passing on retry — `/free-trial` (Mobile Chrome, run 1), `/ufc` (run 2), `/watch/champions-league` (run 3), `/free-trial` (Desktop Chrome, run `36902488798`), `/watch/premier-league` (Desktop Chrome, run `38017922181`, PR #17 push). It passed on all three browsers in the scheduled run `36857712355`. A genuinely missing `<h1>` fails the same page every run; a single rotating failure that clears on retry is a timing artefact, and the check had a mechanism for one: it read `await page.$$('h1')`, a one-shot DOM snapshot with no auto-waiting, where a Playwright locator retries until the timeout. It also never asserted the navigation's status, so a 404 or 500 rendered an error page and was reported as "No H1".
+- **Verified not a real missing H1 (2026-10-10)**: a direct fetch of `/watch/premier-league` on `dpl_32exDhgeKBzuLChfQYCB65xNmwor`, the deployment then serving the production alias, returned HTTP 200 with exactly one `<h1>` ("The World's Most Watched League"). The `<h1>` at `app/watch/[slug]/page.tsx:220` is unconditional. One re-run of the failed job passed. PR #17's diff does not touch that route — its only component is imported solely by `app/page.tsx`.
+- **Not reproducible from the sandbox**: the live domain does not resolve here (DNS blocked) and the report artifact cannot be downloaded (egress 403), so the fix is reasoned from Playwright's documented `$$` vs locator behaviour rather than from a local reproduction. Screenshots are on the run page.
+- **Why it isn't done**: the fix is in PR #18, not yet merged.
+- **What would close it**: merge PR #18, then two consecutive scheduled runs (05:47 UTC from `Version-3`) with 0 failed and 0 flaky. If the H1 check fails again after that, the snapshot was not the cause and the page itself needs reading.
 
 ## O-30 — CLOSED 2026-09-30 by R-17 (was: three components have no importers)
 
@@ -256,3 +258,12 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Owner**: unassigned
 - **Why it isn't done**: A-14 removed the Playwright steps from `.github/workflows/ci.yml` because the existing spec suite is a *production monitor*, not a PR gate — it asserts real robots.txt content, real `.co.uk` canonicals, real blog posts, real schema markup, "no 'James Harper' author" and similar production-content properties. Against a fresh `pnpm dev` those assertions produce 40+ failures per run for reasons unrelated to any PR. Reinstating in CI would either need (a) rewriting the specs to work against a fresh dev server (large project), or (b) pointing Playwright at a real preview deploy (needs Vercel preview URL wiring), or (c) a nightly scheduled workflow that hits production with a read-only check (simplest, adds one workflow file).
 - **What would close it**: option (c) — new `.github/workflows/e2e-production-monitor.yml` on cron (e.g. `0 3 * * *`), sets `PLAYWRIGHT_BASE_URL=https://smartlivetv.co.uk`, runs `pnpm exec playwright test`, opens an issue on failure. Small workflow, no code changes to the specs themselves.
+
+## O-35 — e2e spec uses non-waiting DOM queries in ~28 more places
+
+- **Since**: 2026-10-10, found while root-causing the O-29 H1 flake.
+- **Layer**: e2e specs.
+- **Owner**: unassigned.
+- **Facts**: `grep -n 'page\.\$\$\?(' e2e/ tests/ --include=*.spec.ts` finds roughly 18 `page.$` / `page.$$` calls in `e2e/smartlivetv.spec.ts` outside the H1 check, plus about 10 `$eval` / `$$eval` calls. None auto-wait. The H1 check is the one that has actually flaked, which is why it is the only one PR #18 changes.
+- **Why it isn't done**: converting all of them is a large diff with no failure driving it, and many assert only on absence or follow an explicit wait, so they are not all races. Owner chose the H1 fix alone for PR #18.
+- **What would close it**: audit each call, convert the ones whose assertion can race to locators with web-first assertions, leave the rest with a comment saying why they are safe. Then widen `tests/h1-check-auto-waits.test.ts` from the single test block to the whole file.
