@@ -92,6 +92,12 @@ jobs:
               await github.rest.issues.update({ owner, repo, issue_number: open[0].number, state: 'closed', state_reason: 'completed' });
             }
 
+      # A push run reports; it does not gate. These specs assert live
+      # production content, so a problem on the live site — or a deploy still
+      # settling — would otherwise turn an unrelated pull request red. The
+      # uploaded report above is the output of a push run. Scheduled and
+      # manual runs still fail, which is the signal the tracking issue above
+      # keys off. Pinned by tests/production-monitor-reports-not-gates.test.ts.
       - name: Fail the job when checks failed
-        if: steps.e2e.outcome == 'failure'
+        if: steps.e2e.outcome == 'failure' && github.event_name != 'push'
         run: exit 1
