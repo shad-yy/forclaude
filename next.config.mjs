@@ -99,7 +99,6 @@ const nextConfig = {
     // unoptimized: false — using Next.js built-in image optimization for LCP
   },
   experimental: {
-    instrumentationHook: true,
     optimizePackageImports: ['lucide-react'],
   },
   compiler: {
@@ -117,7 +116,6 @@ const nextConfig = {
   },
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
-  swcMinify: true,
   trailingSlash: false,
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,

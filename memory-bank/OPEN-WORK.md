@@ -6,6 +6,24 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 
 ---
 
+## O-31 — 26 files read route `params` synchronously (deprecated in Next 15, removed in 16)
+
+- **Since**: noted 2026-09-30 during R-16
+- **Layer**: L1/L3 pages and route handlers.
+- **Owner**: unassigned
+- **Facts**: `grep` of `app/` finds 26 files using `params.x` / `{ params }: { params: { … } }` directly. Next 15 still supports this (production build and `next start` worked), but it is deprecated and Next 16 removes it.
+- **Why it isn't done**: kept out of R-16 so the upgrade stays small and reviewable.
+- **What would close it**: `npx @next/codemod@latest next-async-request-api .` (or by hand), then tsc, suite, build and a runtime check of each dynamic route.
+
+## O-34 — IndexNow rejects the production build's ping (403)
+
+- **Since**: seen 2026-10-01 in the production build log of `dpl_VGMcgFXN6etAPTRi5nGFTdeToAEM`.
+- **Layer**: L0 build / SEO tooling.
+- **Owner**: site owner (IndexNow / Bing Webmaster account).
+- **Facts**: `scripts/ping-indexnow.js` submitted 60 URLs and got `403 {"errorCode":"UserForbiddedToAccessSite","message":"User is unauthorized to access the site. Please verify the site using the key and try again"}`. The key file is served correctly: `https://smartlivetv.co.uk/f63234d7ee824249a5b3260c6d2c49e2.txt` → 200, body = the key (checked 2026-10-01). Cause not established from here.
+- **Why it isn't done**: verification state lives in the IndexNow/Bing account, which this session cannot see.
+- **What would close it**: owner checks the site's verification in Bing Webmaster Tools (or IndexNow) for this key; the next production build log shows a 200/202 from the ping.
+
 ## O-29 — Production monitor green on the live site; one flaky check unexplained
 
 - **Since**: 2026-09-30 (first run `36769200235`)
@@ -226,7 +244,9 @@ Was: `package-lock.json` and `pnpm-lock.yaml` both committed, drifting apart on 
 
 Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/api/search/news`'s response, which is `{status, articles, totalResults}` — an object, not an array. `Array.isArray(...)` was always false; the news branch of the site-wide search rendered nothing. Fixed by reading `newsJson?.articles` explicitly (option (a) from the original entry, chosen because changing the route shape would ripple through other callers). Regression tripwire at `tests/search-bar-news-contract.test.ts` refuses the plain `Array.isArray(newsJson)` shape re-appearing and pins the route's response shape.
 
-## O-11 — `next` 14.2.35 carries 2 critical + 8 high advisories; every fix needs `next` ≥ 15 (a major upgrade)
+## O-11 — `next` 14.2.35 carries 2 critical + 8 high advisories — upgrade done on branch `claude/next15-upgrade` (R-16), awaiting review
+
+**Update 2026-09-30**: upgraded to 15.5.27 on its own branch (`6fae178`); `pnpm audit` shows 0 advisories on `next`. Closes when that branch is merged to `Version-3` and deployed.
 
 **Correction 2026-09-30** (source: `pnpm audit --prod --json`, 2026-09-30T19:26:27Z):
 - The fix is **not a patch bump**: 14.2.35 → 15.5.24 is a major-version upgrade (14 → 15). The line below that calls it a "patch bump" was wrong.

@@ -16,7 +16,11 @@ import type { ReactNode } from "react"
 import { UpstreamFaultError, isUpstreamFault, dataErrorMessage } from "@/lib/api/errors"
 
 const fault = () => new UpstreamFaultError("eventsnextleague.php?id=4328", 503)
-const NOT_FOUND = "NEXT_NOT_FOUND"
+/** notFound()'s marker: "NEXT_NOT_FOUND" on Next 14, "NEXT_HTTP_ERROR_FALLBACK;404" on Next 15. */
+function isNotFound(e: unknown): boolean {
+  const digest = (e as { digest?: string })?.digest ?? ""
+  return digest === "NEXT_NOT_FOUND" || digest.startsWith("NEXT_HTTP_ERROR_FALLBACK;404")
+}
 
 const getFixture = vi.fn()
 const getFixtures = vi.fn()
@@ -73,7 +77,7 @@ describe("O-26 step D: detail pages", () => {
     getFixture.mockRejectedValue(fault())
     const { default: EventPage } = await import("@/app/events/[id]/page")
     const e = await reason(EventPage({ params: { id: "123" } }))
-    expect((e as { digest?: string })?.digest ?? "", "outage must not become notFound()").not.toContain(NOT_FOUND)
+    expect(isNotFound(e), "outage must not become notFound()").toBe(false)
     expect(isUpstreamFault(e)).toBe(true)
   })
 
@@ -81,14 +85,14 @@ describe("O-26 step D: detail pages", () => {
     getFixture.mockResolvedValue(null)
     const { default: EventPage } = await import("@/app/events/[id]/page")
     const e = await reason(EventPage({ params: { id: "123" } }))
-    expect((e as { digest?: string })?.digest ?? "").toContain(NOT_FOUND)
+    expect(isNotFound(e)).toBe(true)
   })
 
   it("match/[id]: an outage is an error, not a 404", async () => {
     lookupEvent.mockRejectedValue(fault())
     const { default: MatchPage } = await import("@/app/match/[id]/page")
     const e = await reason(MatchPage({ params: { id: "123" } }))
-    expect((e as { digest?: string })?.digest ?? "").not.toContain(NOT_FOUND)
+    expect(isNotFound(e)).toBe(false)
     expect(isUpstreamFault(e)).toBe(true)
   })
 
@@ -96,7 +100,7 @@ describe("O-26 step D: detail pages", () => {
     lookupEvent.mockResolvedValue(null)
     const { default: MatchPage } = await import("@/app/match/[id]/page")
     const e = await reason(MatchPage({ params: { id: "123" } }))
-    expect((e as { digest?: string })?.digest ?? "").toContain(NOT_FOUND)
+    expect(isNotFound(e)).toBe(true)
   })
 })
 
