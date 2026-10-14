@@ -92,3 +92,18 @@ Per `documentation-discipline` rule: every secret removed on a specific date, do
 - **RapidAPI MMA hardcoded fallback** — removed from `lib/api/mma-rapidapi.ts` and `lib/config/env.ts` (see `PROGRESS.md` Bug 5). Do not reintroduce a plaintext key as a fallback. `RAPIDAPI_MMA_KEY` now defaults to `""`. **2026-09-24:** the same key was also found in `app/api/test-mma/route.ts` and `README.env.example` and removed (QA-LOG R-07). It was never rotated — rotate it at RapidAPI and set the new value in Vercel (OPEN-WORK O-23).
 - **`cms-8k.com.har`** — a panel-site browser recording holding two panel line logins; removed 2026-09-24 (QA-LOG R-07). `*.har` is now in `.gitignore`; never commit a network recording.
 - **Admin password backdoor** — removed from `app/api/auth/admin/route.ts` (see `PROGRESS.md` Bug 6). Do not reintroduce a fallback password hash. Route now returns 500 when `ADMIN_PASSWORD_HASH` is unset.
+
+---
+
+## Daily growth routine (Claude Code cloud environment — not Vercel)
+
+Read by `scripts/routine/*.mjs`, which the scheduled routine runs (`playbook/routines/daily-growth-routine.md`). These live in the **cloud environment settings** of the Claude Code session that runs the routine, never in the repo and never in Vercel. Scripts are outside the app scan above, so this table is informational. Added 2026-10-14.
+
+| Name | Required | Consumer | If missing |
+| :-- | :-- | :-- | :-- |
+| `GSC_SERVICE_ACCOUNT_JSON` | Strongly recommended | `scripts/routine/gsc.mjs` | Script exits 2; the routine reports Search Console as unavailable and publishes without query data. The key is a Google Cloud service account JSON (raw or base64); the account's email must be added as a user (Restricted is enough) on the Search Console property. |
+| `GSC_SITE_URL` | Optional | `scripts/routine/gsc.mjs` | Defaults to `sc-domain:smartlivetv.co.uk`. Set to `https://smartlivetv.co.uk/` if the property is a URL-prefix property. |
+| `PSI_API_KEY` | Strongly recommended | `scripts/routine/pagespeed.mjs` | Falls back to Google's shared anonymous quota, which returned HTTP 429 on 2026-10-14. The routine then reports page speed as unavailable. |
+
+Network: the routine environment must reach `*.googleapis.com` (confirmed reachable 2026-10-14). `trends.google.com` was refused by the environment's network policy on 2026-10-14; add it under Allowed domains if Google Trends data is wanted.
+

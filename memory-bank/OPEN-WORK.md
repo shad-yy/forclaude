@@ -256,3 +256,39 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Owner**: unassigned
 - **Why it isn't done**: A-14 removed the Playwright steps from `.github/workflows/ci.yml` because the existing spec suite is a *production monitor*, not a PR gate — it asserts real robots.txt content, real `.co.uk` canonicals, real blog posts, real schema markup, "no 'James Harper' author" and similar production-content properties. Against a fresh `pnpm dev` those assertions produce 40+ failures per run for reasons unrelated to any PR. Reinstating in CI would either need (a) rewriting the specs to work against a fresh dev server (large project), or (b) pointing Playwright at a real preview deploy (needs Vercel preview URL wiring), or (c) a nightly scheduled workflow that hits production with a read-only check (simplest, adds one workflow file).
 - **What would close it**: option (c) — new `.github/workflows/e2e-production-monitor.yml` on cron (e.g. `0 3 * * *`), sets `PLAYWRIGHT_BASE_URL=https://smartlivetv.co.uk`, runs `pnpm exec playwright test`, opens an issue on failure. Small workflow, no code changes to the specs themselves.
+
+## O-39 — The daily growth routine has no Search Console data
+
+- **Since**: 2026-10-14.
+- **Owner**: site owner.
+- **Facts**: there is no Search Console connector in the claude.ai registry. Ahrefs is connected but every endpoint, including the free subscription-info one, returns "Insufficient plan", so its `gsc-*` tools are unusable. `scripts/routine/gsc.mjs` reads Search Console directly through a Google Cloud service account and is tested offline (JWT signing, date window, filters), but has not run against the real API.
+- **What would close it**: owner creates a service account in Google Cloud, enables the Search Console API, adds the account's email as a user on the Search Console property, and stores the key JSON as `GSC_SERVICE_ACCOUNT_JSON` in the routine's cloud environment. Then one routine run prints real 28-day totals.
+
+## O-40 — Page speed checks need a PageSpeed Insights API key
+
+- **Since**: 2026-10-14.
+- **Owner**: site owner.
+- **Facts**: `scripts/routine/pagespeed.mjs` works, but Google's shared anonymous quota returned HTTP 429 on 2026-10-14, so no Core Web Vitals numbers can be fetched without a key.
+- **What would close it**: enable the PageSpeed Insights API in the same Google Cloud project, create an API key restricted to that API, store it as `PSI_API_KEY` in the routine's cloud environment.
+
+## O-41 — Production is serving a promoted dependabot preview, not Version-3
+
+- **Since**: 2026-10-12 about 23:02 UTC (deployment `dpl_Gh4MNYdc3wnHDzQBW2fypDNbnGdZ`; GitHub's Production deployment record for `538ce506` is stamped 23:07 UTC). An earlier note said 2026-10-13 06:22 UTC — that was a misconverted timestamp.
+- **Owner**: site owner.
+- **Facts**: on 2026-10-14 the newest READY production deployment was built from `dependabot/npm_and_yarn/minor-and-patch-ffdc05e603` (PR #21 head `538ce506`), not from `Version-3` (`0dd2456`). PR #21 is open and unmerged. The site worked when probed (robots.txt and `/api/spotlight` returned 200), but git no longer describes what is live.
+- **What would close it**: owner either merges PR #21 so git matches production, or leaves it — the routine's first merge to `Version-3` replaces the promoted build with a `Version-3` build automatically.
+
+## O-42 — Google Trends is blocked by the cloud environment's network policy
+
+- **Since**: 2026-10-14.
+- **Owner**: site owner (environment settings).
+- **Facts**: `https://trends.google.com/trending/rss?geo=GB` was refused by the environment's proxy (HTTP 403 on CONNECT). The routine uses web search for trending topics instead and reports query phrasing as "observed in results", never as volume.
+- **What would close it**: add `trends.google.com` under Allowed domains in the cloud environment's network settings.
+
+## O-43 — The scheduled routine runs on the default model with no connectors
+
+- **Since**: 2026-10-14.
+- **Owner**: site owner (routine settings in claude.ai).
+- **Facts**: the routine `trig_011W5QzFnRRwNGWjykchLJ6F` was created through the remote-session tool, which could not attach connectors ("the connectors parameter is not available for this organization"). Its test run served on `claude-sonnet-5-5`. The spec works without connectors (it uses `add_repo`, `gh api`, GitHub deployment records and web search), but with the Vercel connector the routine could read build logs and preview URLs directly.
+- **What would close it**: if wanted, open the routine in claude.ai and attach the Vercel connector; choose the model there too. Neither is required for the routine to run.
+

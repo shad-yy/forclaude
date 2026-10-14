@@ -1,0 +1,87 @@
+name: Routine content auto-merge
+
+# Owner decision 2026-10-14: content-only pull requests from the daily growth
+# routine (playbook/routines/daily-growth-routine.md) may deploy to production
+# without a human merge. The agent only opens PRs; this workflow decides.
+#
+# Every gate runs from the Version-3 copy of the scripts, never the PR's own
+# copy, so a PR cannot rewrite the rule that judges it.
+#   1. Head branch routine/*, same repository, not a draft, base Version-3.
+#   2. scripts/routine/tier.mjs says Tier A (content only) for the PR's files.
+#   3. scripts/routine/wait-for-checks.mjs: every other check on the head
+#      commit passed — test, scan, CodeQL, the Vercel preview, and the rest.
+# Then merge with a merge commit; Vercel deploys Version-3 to production.
+# Afterwards scripts/routine/verify-production.mjs waits for the posts to go
+# live and checks the key pages and sitemap; a failure opens an issue.
+#
+# Anything that is not Tier A fails gate 1 and is left for the owner.
+# Pinned by tests/routine-automerge-workflow.test.ts.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [Version-3]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  issues: write
+
+concurrency:
+  group: routine-automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  automerge:
+    if: >-
+      startsWith(github.event.pull_request.head.ref, 'routine/') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Check out Version-3 (the trusted copy of the gate scripts)
+        uses: actions/checkout@v7
+        with:
+          ref: Version-3
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Gate 1 — content only (Tier A)
+        run: |
+          git fetch --no-tags origin "+refs/pull/${PR}/head:refs/remotes/origin/pr-head"
+          test "$(git rev-parse origin/pr-head)" = "$HEAD_SHA"
+          git diff --name-only "origin/Version-3...origin/pr-head" | tee changed-files.txt | node scripts/routine/tier.mjs -
+
+      - name: Gate 2 — every other check passed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          SELF_CHECK: automerge
+        run: node scripts/routine/wait-for-checks.mjs
+
+      - name: Merge (this deploys to production)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge "$PR" --merge --match-head-commit "$HEAD_SHA" --repo "$GITHUB_REPOSITORY"
+
+      - name: Verify production
+        id: verify
+        run: CHANGED_FILES="$(cat changed-files.txt)" node scripts/routine/verify-production.mjs
+
+      - name: Open an issue if production did not come up clean
+        if: failure() && steps.verify.conclusion == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" --label production-monitor \
+            --title "Routine merge #${PR}: production check failed" \
+            --body "The routine auto-merge of #${PR} deployed, but the production check failed. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Roll back in Vercel (Deployments, previous production deployment, Promote) if key pages are down."
