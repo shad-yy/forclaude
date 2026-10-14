@@ -1,13 +1,74 @@
 import { NextResponse } from "next/server"
-import { ENV } from "@/lib/config/env"
+import { eventsDay, type SportsDbEvent } from "@/lib/api/the-sports-db"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// B-03: read TheSportsDB key through ENV (centralised fallback + warning
-// in lib/config/env.ts), no longer hardcode `/json/123/` — see A-15's
-// sibling in QA-LOG.md and playbook/skills/ci-runs-without-secrets.md.
-const SPORTSDB_BASE = () => `https://www.thesportsdb.com/api/v1/json/${ENV.THESPORTSDB_KEY}`
+/**
+ * How long this route will wait for the upstream data it actually needs.
+ *
+ * Every TheSportsDB call goes through makeRequest → enqueueRateLimit(), which
+ * serialises requests 2400ms apart (RATE_LIMIT_MS), and retries a 5xx twice.
+ * Measured on 2026-10-10 with the three original calls in place:
+ *
+ *   healthy, cold cache   4812 ms   (two 2400ms rate-limit gaps)
+ *   total upstream outage 19236 ms  (3 calls x 3 attempts x 2400ms + backoff)
+ *
+ * A Vercel Node function defaults to a 10s limit, so the outage case did not
+ * return the 503 below at all — it ran past the limit and the caller got a
+ * gateway timeout. Worse than the raw `fetch` this replaced, which failed
+ * fast. Hence one blocking call and a 3s ceiling, which allows the first
+ * retry (attempts land at ~0s and ~2.6s) and cuts off the third at ~5.2s: a
+ * fault now answers 503
+ * well inside the function limit, and the abandoned swrGet still finishes in
+ * the background and populates the cache for the next request.
+ */
+const REQUEST_BUDGET_MS = 3_000
+
+/** Long enough for a cache hit, too short to queue for a rate-limit slot. */
+const CACHE_HIT_MS = 300
+
+/**
+ * Reject if `work` has not settled within `ms`, so a slow or dead upstream
+ * cannot hold the request open past the function limit.
+ */
+async function withinBudget<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const budget = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label}: exceeded ${ms}ms budget`)), ms)
+  })
+  try {
+    return await Promise.race([work, budget])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
+ * Resolve to `work`'s value if it is already cached (i.e. settles almost
+ * immediately), otherwise to an empty list. Never rejects: this is optional
+ * data, and a failure here must not turn a good response into a 503.
+ *
+ * The losing promise is left running on purpose — swrGet will still fill the
+ * cache — so its rejection is swallowed to avoid an unhandled rejection.
+ */
+async function ifAlreadyCached<T>(work: Promise<T[]>): Promise<T[]> {
+  work.catch(() => {})
+  try {
+    return await withinBudget(work, CACHE_HIT_MS, 'cache-only read')
+  } catch {
+    return []
+  }
+}
+
+/**
+ * An event after scoring, which adds three derived fields.
+ */
+type ScoredEvent = SportsDbEvent & {
+  importanceScore: number
+  eventStatus: 'live' | 'upcoming' | 'tonight' | 'tomorrow'
+  countdown: string
+}
 
 // League tier weighting for importance scoring
 const TIER_1_LEAGUES = ['4328', '4480', '4481'] // PL, UCL, World Cup
@@ -30,7 +91,7 @@ const RIVALRY_KEYWORDS = [
   ['Real Madrid', 'Atletico Madrid'],
 ]
 
-function isRivalryMatch(event: any): boolean {
+function isRivalryMatch(event: SportsDbEvent): boolean {
   const home = (event.strHomeTeam || '').toLowerCase()
   const away = (event.strAwayTeam || '').toLowerCase()
   return RIVALRY_KEYWORDS.some(([a, b]) =>
@@ -39,7 +100,7 @@ function isRivalryMatch(event: any): boolean {
   )
 }
 
-function getHoursUntilEvent(event: any): number {
+function getHoursUntilEvent(event: SportsDbEvent): number {
   try {
     const dateStr = event.dateEvent || event.strDate
     const timeStr = event.strTime || ''
@@ -60,7 +121,7 @@ function getHoursUntilEvent(event: any): number {
   }
 }
 
-function calculateEventImportance(event: any): number {
+function calculateEventImportance(event: SportsDbEvent): number {
   let score = 0
   const leagueId = String(event.idLeague || '')
 
@@ -92,7 +153,7 @@ function calculateEventImportance(event: any): number {
   return score
 }
 
-function getEventStatus(event: any): 'live' | 'upcoming' | 'tonight' | 'tomorrow' {
+function getEventStatus(event: SportsDbEvent): 'live' | 'upcoming' | 'tonight' | 'tomorrow' {
   const status = (event.strStatus || '').toLowerCase()
   if (['live', 'ht', '1h', '2h', 'in play', 'in progress'].some(s => status.includes(s))) {
     return 'live'
@@ -104,7 +165,7 @@ function getEventStatus(event: any): 'live' | 'upcoming' | 'tonight' | 'tomorrow
   return 'tomorrow'
 }
 
-function formatCountdown(event: any): string {
+function formatCountdown(event: SportsDbEvent): string {
   const hoursUntil = getHoursUntilEvent(event)
   if (hoursUntil < 0) return ''
   if (hoursUntil < 1) return `${Math.round(hoursUntil * 60)}m`
@@ -118,48 +179,29 @@ export async function GET() {
     const todayUTC = now.toISOString().split('T')[0]
     const tomorrowUTC = new Date(now.getTime() + 86400000).toISOString().split('T')[0]
 
-    // Fetch today and tomorrow's events across all sports
-    const [todaySoccerRes, tomorrowSoccerRes, todayAllRes] = await Promise.allSettled([
-      fetch(
-        `${SPORTSDB_BASE()}/eventsday.php?d=${todayUTC}&s=Soccer`,
-        { cache: 'no-store' }
-      ),
-      fetch(
-        `${SPORTSDB_BASE()}/eventsday.php?d=${tomorrowUTC}&s=Soccer`,
-        { cache: 'no-store' }
-      ),
-      fetch(
-        `${SPORTSDB_BASE()}/eventsday.php?d=${todayUTC}`,
-        { cache: 'no-store' }
-      ),
-    ])
+    // One blocking upstream call, not three. See the note on REQUEST_BUDGET_MS.
+    //
+    // `eventsDay({ date })` with no sport returns every sport for that date,
+    // so it covers what the old `{ date, sport: 'Soccer' }` call fetched
+    // separately — and the dedupe by idEvent below already merged the two.
+    const todayAll = await withinBudget(
+      eventsDay({ date: todayUTC }),
+      REQUEST_BUDGET_MS,
+      `spotlight: today (${todayUTC})`,
+    )
 
-    // B-04.10: distinguish total outage from partial degradation. If NONE
-    // of the three upstream fetches produced a usable response, treat as
-    // a fault (throw → caught below → 503). Previously `Promise.allSettled`
-    // silently masked total outage into empty results (the skill's exact
-    // anti-pattern: allSettled(...).map(r => fulfilled ? value : [])).
-    const anySuccess = [todaySoccerRes, tomorrowSoccerRes, todayAllRes]
-      .some(r => r.status === 'fulfilled' && r.value.ok)
-    if (!anySuccess) {
-      throw new Error('Spotlight upstream: all three requests failed or non-2xx')
-    }
-
-    const extractEvents = async (res: PromiseSettledResult<Response>) => {
-      if (res.status === 'fulfilled' && res.value.ok) {
-        const data = await res.value.json()
-        return data?.events || []
-      }
-      return []
-    }
-
-    const todaySoccer = await extractEvents(todaySoccerRes)
-    const tomorrowSoccer = await extractEvents(tomorrowSoccerRes)
-    const todayAll = await extractEvents(todayAllRes)
+    // Tomorrow is a bonus, not a requirement. Ask for it, but only wait long
+    // enough for a cache hit: a cold read has to queue behind the 2400ms
+    // rate-limit slot, and that is not worth a visitor's time for the
+    // "tomorrow" row. On a warm cache this resolves in single-digit ms, so
+    // in steady state tomorrow's fixtures are still here.
+    const tomorrowSoccer = await ifAlreadyCached(
+      eventsDay({ date: tomorrowUTC, sport: 'Soccer' }),
+    )
 
     // Combine and deduplicate by idEvent
-    const eventMap = new Map<string, any>()
-    for (const event of [...todaySoccer, ...tomorrowSoccer, ...todayAll]) {
+    const eventMap = new Map<string, SportsDbEvent>()
+    for (const event of [...todayAll, ...tomorrowSoccer]) {
       if (event.idEvent && !eventMap.has(event.idEvent)) {
         eventMap.set(event.idEvent, event)
       }
@@ -172,7 +214,7 @@ export async function GET() {
     })
 
     // Score and sort events
-    const scoredEvents = activeEvents
+    const scoredEvents: ScoredEvent[] = activeEvents
       .map(event => ({
         ...event,
         importanceScore: calculateEventImportance(event),

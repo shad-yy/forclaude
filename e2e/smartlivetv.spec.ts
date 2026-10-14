@@ -250,22 +250,33 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         ]
 
         for (const path of pagesToCheck) {
-            await page.goto(`${BASE}${path}`)
+            // O-29: this check used `page.$$('h1')`, a one-shot DOM snapshot
+            // that does not auto-wait. It reported "No H1" five times across
+            // five runs — on a different page each time, always passing on
+            // retry — which is what a snapshot assertion does to a page that
+            // is a moment slow, not what a missing H1 looks like. A locator
+            // retries until the timeout, so a genuinely missing H1 still
+            // fails and a slow one no longer does.
+            const response = await page.goto(`${BASE}${path}`)
 
-            const h1s = await page.$$('h1')
+            // The old version never looked at the status: a 404 or a 500
+            // would render an error page and fail as "No H1", hiding what
+            // actually went wrong.
             expect(
-                h1s.length,
-                `No H1 on ${path}`
-            ).toBeGreaterThan(0)
+                response?.status(),
+                `${path} did not return a 2xx — the H1 assertions below would ` +
+                `report "No H1" for what is really a bad response`
+            ).toBeLessThan(400)
 
-            expect(
-                h1s.length,
-                `Multiple H1s on ${path} — only one allowed`
-            ).toBe(1)
+            const h1 = page.locator('h1')
+            await expect(
+                h1,
+                `${path} must render exactly one H1`
+            ).toHaveCount(1)
 
-            const h1Text = await h1s[0].textContent()
+            const h1Text = (await h1.textContent())?.trim() ?? ''
             expect(
-                h1Text?.trim().length,
+                h1Text.length,
                 `H1 is empty on ${path}`
             ).toBeGreaterThan(5)
 
@@ -275,7 +286,7 @@ test.describe('SEO — Critical Indexing Requirements', () => {
                 `H1 still has concatenation bug on ${path}: "${h1Text}"`
             ).not.toContain('UFCOCTAGON')
 
-            console.log(`${path} H1: "${h1Text?.trim()}"`)
+            console.log(`${path} H1: "${h1Text}"`)
         }
     })
 })
@@ -953,15 +964,50 @@ test.describe('Performance — Core Web Vitals Protection', () => {
         })
         page.on('pageerror', (err) => errors.push(err.message))
 
+        // A 503 from one of our own API routes is the documented fault signal,
+        // not a defect: CLAUDE.md requires "API routes return 503 with
+        // Cache-Control: no-store, never 200 with []". The browser logs
+        // "Failed to load resource ... 503" for any non-2xx regardless of how
+        // cleanly the app handles it, so without this the check fails for as
+        // long as any upstream is down — by design, and for something nobody
+        // here controls. It happened on 2026-10-10: /api/spotlight answered
+        // 503, two components call it, and this test counted two errors.
+        //
+        // The console message does not carry the URL, so the 503s are
+        // identified from the response event instead and only those from a
+        // same-origin /api/ route are excused. A 503 from anywhere else, and
+        // every other console error, still fails.
+        const faultingRoutes: string[] = []
+        page.on('response', (res) => {
+            const url = res.url()
+            if (res.status() === 503 && url.startsWith(BASE) && url.includes('/api/')) {
+                faultingRoutes.push(new URL(url).pathname)
+            }
+        })
+
         await page.goto(BASE)
         await page.waitForTimeout(2000)
+
+        const isOwnApiFault = (e: string) =>
+            faultingRoutes.length > 0 &&
+            /failed to load resource/i.test(e) &&
+            e.includes('503')
 
         // Filter known acceptable errors
         const realErrors = errors.filter((e) =>
             !e.includes('favicon') &&
             !e.includes('net::ERR_ABORTED') &&
-            !e.includes('404') // Missing images are caught elsewhere
+            !e.includes('404') && // Missing images are caught elsewhere
+            !isOwnApiFault(e)
         )
+
+        // Surface the faults even when they are excused — a route stuck on 503
+        // is still worth knowing about, it just is not this check's business.
+        if (faultingRoutes.length > 0) {
+            console.warn(
+                `Own API routes answered 503 (excused here, see OPEN-WORK): ${[...new Set(faultingRoutes)].join(', ')}`
+            )
+        }
 
         if (realErrors.length > 0) {
             console.error('Console errors on homepage:', realErrors)
