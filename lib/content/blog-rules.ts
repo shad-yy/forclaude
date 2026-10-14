@@ -66,6 +66,39 @@ function firstParagraph(body: string): string {
   return prose ?? ""
 }
 
+/** Hosts that are this site — a source on them does not count as independent. */
+const OWN_HOSTS = new Set(["smartlivetv.co.uk", "www.smartlivetv.co.uk"])
+
+/**
+ * The hostname of a source URL, or null if it is not an absolute https URL.
+ * Parsed with URL rather than matched with a regex: an unanchored pattern
+ * would treat "smartlivetv.co.uk.example.com" as this site (CodeQL
+ * js/regex/missing-regexp-anchor, 2026-10-14).
+ */
+function sourceHost(source: unknown): string | null {
+  if (typeof source !== "string") return null
+  try {
+    const u = new URL(source)
+    return u.protocol === "https:" && u.hostname.includes(".") ? u.hostname.toLowerCase() : null
+  } catch {
+    return null
+  }
+}
+
+/** Every markdown link target in the body: the `x` in `[text](x)`. */
+function linkTargets(markdown: string): string[] {
+  return Array.from(markdown.matchAll(/\]\(([^)\s]+)\)/g), (m) => m[1])
+}
+
+/**
+ * True if `target` points at `path` on this site, allowing a trailing
+ * sub-path, fragment or query. Plain string comparison — no regex built from
+ * input (CodeQL js/incomplete-sanitization, 2026-10-14).
+ */
+function linksTo(target: string, path: string): boolean {
+  return target === path || target.startsWith(`${path}/`) || target.startsWith(`${path}#`) || target.startsWith(`${path}?`)
+}
+
 function wordCount(s: string): number {
   return s.split(/\s+/).filter(Boolean).length
 }
@@ -94,8 +127,7 @@ export function auditPost(slug: string, source: string): PostAudit {
   if (typeof data.category !== "string" || !data.category) say("category is required")
 
   const sources: unknown[] = Array.isArray(data.sources) ? data.sources : []
-  const urls = sources.filter((s): s is string => typeof s === "string" && /^https:\/\/[^\s/]+\.[^\s]+/.test(s))
-  const external = urls.filter((u) => !/^https:\/\/(?:www\.)?smartlivetv\.co\.uk/i.test(u))
+  const external = sources.map(sourceHost).filter((h): h is string => h !== null && !OWN_HOSTS.has(h))
   if (external.length < 2) {
     say("sources must list at least two external https URLs the facts in this post were taken from")
   }
@@ -104,9 +136,9 @@ export function auditPost(slug: string, source: string): PostAudit {
   const lead = firstParagraph(content)
   if (wordCount(lead) > 60) say(`first paragraph must answer the query in 60 words or fewer (is ${wordCount(lead)})`)
 
+  const targets = linkTargets(content)
   for (const link of REQUIRED_INTERNAL_LINKS) {
-    const re = new RegExp(`\\]\\(${link.replace(/\//g, "\\/")}(?:[/#?][^)]*)?\\)`)
-    if (!re.test(content)) say(`must link to ${link}`)
+    if (!targets.some((t) => linksTo(t, link))) say(`must link to ${link}`)
   }
 
   if (!/^\|.*\|\s*$\n^\|\s*:?-{3,}/m.test(content)) say("must include at least one comparison table")

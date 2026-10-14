@@ -105,6 +105,39 @@ describe("each rule fails the post that breaks it", () => {
   }
 })
 
+describe("hosts and links are compared exactly (CodeQL, 2026-10-14)", () => {
+  const withSources = (a: string, b: string) =>
+    GOOD.replace(/sources:\n(?:  - ".*"\n)+/, `sources:\n  - "${a}"\n  - "${b}"\n`)
+
+  it("a lookalike host is a different site and counts as external", () => {
+    // The first version matched /^https:\/\/(?:www\.)?smartlivetv\.co\.uk/ with no end
+    // anchor, so this URL was wrongly treated as our own site.
+    const v = violationsFor(withSources("https://smartlivetv.co.uk.example.com/report", "https://www.premierleague.com/fixtures"))
+    expect(v.filter((m) => /sources must list/.test(m))).toEqual([])
+  })
+
+  it("our own host, with or without www, never counts as an independent source", () => {
+    const v = violationsFor(withSources("https://www.smartlivetv.co.uk/pricing", "https://www.premierleague.com/fixtures"))
+    expect(v.some((m) => /sources must list/.test(m))).toBe(true)
+  })
+
+  it("a non-https source does not count", () => {
+    const v = violationsFor(withSources("http://www.bbc.co.uk/sport", "https://www.premierleague.com/fixtures"))
+    expect(v.some((m) => /sources must list/.test(m))).toBe(true)
+  })
+
+  it("a lookalike path does not satisfy a required internal link", () => {
+    const v = violationsFor(GOOD.replace("[pricing](/pricing)", "[pricing](/pricing-old)"))
+    expect(v.some((m) => /must link to \/pricing/.test(m))).toBe(true)
+  })
+
+  it("a sub-path, fragment or query on the required link still counts", () => {
+    for (const t of ["/pricing/annual", "/pricing#plans", "/pricing?ref=blog"]) {
+      expect(violationsFor(GOOD.replace("[pricing](/pricing)", `[pricing](${t})`)), t).toEqual([])
+    }
+  })
+})
+
 describe("scope", () => {
   it("posts dated before the cutoff are not retro-failed", () => {
     const old = GOOD.replace(`date: "${RULES_APPLY_FROM}"`, 'date: "2026-09-20"').replace(/sources:\n(?:  - ".*"\n)+/, "")
