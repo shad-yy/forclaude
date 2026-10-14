@@ -277,6 +277,13 @@ template.
 2. Fetch the new post on the Vercel **preview** URL; it must return 200 with the
    right `<title>` and exactly one `<h1>`.
 3. **Merge the PR** (merge commit). This deploys to production.
+   **If the merge is refused** — a permission prompt nobody can answer, or the
+   auto-mode classifier denying it — do not retry it and do not look for another way
+   to merge. Leave the PR open and green, skip steps 4–6, and put
+   **"Owner: tap merge on PR #N — <title>"** with the link as the first line of
+   "Waiting on the owner". A green PR the owner merges from their phone is the
+   designed fallback, not a failure. (Observed 2026-10-14: the classifier refused
+   an agent merge to `Version-3` as "Merge Without Review".)
 4. Wait for the production deployment from the merge SHA: `target: production`,
    `READY`, aliased to `smartlivetv.co.uk`.
 5. Verify live: the post URL returns 200, `/sitemap.xml` contains it, and `/`,
