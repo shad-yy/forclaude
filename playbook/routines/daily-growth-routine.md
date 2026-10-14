@@ -80,11 +80,23 @@ not embellish.
 
 ## 2. Bootstrap (5 minutes)
 
+The scheduled session starts **without the repository and without GitHub or Vercel
+tools** (verified on a test run, 2026-10-14). So:
+
+1. Call `add_repo` with `owner: shad-yy`, `repo: forclaude`, `access: push`, and run
+   the clone command it returns. This is what lets you push branches and use
+   `gh api` against the repo.
+2. Then:
+
 ```bash
-cd forclaude || git clone https://github.com/shad-yy/forclaude && cd forclaude
-git fetch origin Version-3 && git checkout -B routine/$(date -u +%F) origin/Version-3
+cd forclaude
+git fetch origin Version-3 && git checkout -B "routine/$(date -u +%F)" origin/Version-3
 pnpm install --frozen-lockfile
 ```
+
+GitHub operations use the built-in `gh api <REST endpoint>` client (not the GitHub
+CLI, and there are no `mcp__github__*` tools). If a session does have Vercel or GitHub
+tools, you may use them, but nothing below depends on them.
 
 Then read, in this order: `memory-bank/ROUTINE-LOG.md` (what previous runs did and
 planned), `memory-bank/OPEN-WORK.md`, the Trouble Registry in
@@ -97,16 +109,23 @@ planned), `memory-bank/OPEN-WORK.md`, the Trouble Registry in
 Record every result in the report. Use the Vercel tools; `curl` to the live domain is
 blocked by the sandbox proxy, so fetch live pages with `web_fetch_vercel_url`.
 
-1. **Production state.** `list_deployments` with `target: production`, limit 3.
-   - Is the newest READY production deployment built from `Version-3` at the current
-     `origin/Version-3` HEAD? If it was built from any other branch (a promoted
-     preview), report **PRODUCTION DRIFT** with both SHAs. Do not "fix" it by
-     redeploying — the next merge to `Version-3` replaces it.
-   - Is the latest production build in ERROR? Report it with the build log summary.
-2. **Live smoke test** — fetch each and record status code and, for pages, the
-   `<title>`: `/`, `/pricing`, `/free-trial`, `/buy`, `/channels`,
-   `/watch/premier-league`, `/blog`, `/robots.txt`, `/sitemap.xml`, `/api/spotlight`,
-   `/api/espn/racing/f1/scoreboard`, `/api/espn/mma/ufc/scoreboard`.
+1. **Production state** — Vercel records every deployment on GitHub:
+   `gh api "repos/shad-yy/forclaude/deployments?environment=Production&per_page=3"`,
+   then `gh api repos/shad-yy/forclaude/deployments/<id>/statuses` for the newest.
+   - Compare the newest Production deployment's `sha` with `git rev-parse origin/Version-3`.
+     If they differ, report **PRODUCTION DRIFT** with both SHAs and the deployment's
+     `ref` (a promoted preview shows a branch name). Do not "fix" it — the next merge
+     to `Version-3` replaces it.
+   - A latest status of `failure` or `error` means production failed to build: report it.
+2. **Live smoke test.** The sandbox proxy blocks the live domain (curl 403, WebFetch
+   DNS failure on 2026-10-14). Try `WebFetch https://smartlivetv.co.uk/` once; if it
+   works, check `/`, `/pricing`, `/free-trial`, `/buy`, `/channels`,
+   `/watch/premier-league`, `/blog`, `/robots.txt`, `/sitemap.xml`, `/api/spotlight`
+   for status and `<title>`. If it is blocked, say so and rely on the evidence that
+   comes from outside the sandbox: the latest **production monitor** run (item 5) and
+   the latest **routine auto-merge** run's "Verify production" step
+   (`gh api "repos/shad-yy/forclaude/actions/workflows/routine-automerge.yml/runs?per_page=3"`).
+   Open issues labelled `production-monitor` count as RED until closed.
 3. **Crawlability.**
    - `robots.txt` must not contain `Disallow: /` for `*` or Googlebot.
    - Count `<loc>` entries in `/sitemap.xml`; every file in `content/blog` must have
@@ -116,8 +135,9 @@ blocked by the sandbox proxy, so fetch live pages with `web_fetch_vercel_url`.
      a preview URL) and there must be exactly one `<h1>`.
 4. **Open PRs** — list them with CI state and age. Recommend an action for each; do
    not merge any that are not yours under Tier A (section 8).
-5. **Production monitor** — latest run of `e2e-production-monitor.yml`: pass/fail and
-   which checks failed.
+5. **Production monitor** — latest run of `e2e-production-monitor.yml`
+   (`gh api "repos/shad-yy/forclaude/actions/workflows/e2e-production-monitor.yml/runs?per_page=1"`,
+   then its jobs and log for failures): pass/fail and which checks failed.
 
 **If the homepage, `/pricing`, `/free-trial` or `/buy` is not 200, stop all other
 work.** Diagnose, open a fix PR (Tier B), and put it at the top of the report.
@@ -265,36 +285,48 @@ pnpm generate-posts && node -r ./polyfill-self.cjs node_modules/next/dist/bin/ne
 node scripts/routine/tier.mjs origin/Version-3     # prints A or B
 ```
 
-Then commit (end the message with the attribution lines the session gives you), push
-the `routine/<date>-<slug>` branch, and open a PR to `Version-3` using the repo's PR
-template.
+Then commit (end the message with the attribution lines the session gives you).
 
-**Tier A — content only** (`tier.mjs` prints `A`: only `content/blog/*.mdx`,
-`lib/blog/posts.ts`, `public/llms-full.txt`, `public/blog/**` images, `memory-bank/ROUTINE-LOG.md`):
-1. Wait for every check on the PR head to finish: `test`, `scan`, `CodeQL`,
-   `Analyze`, Vercel preview. All must be success. A failure is investigated and
-   fixed on the branch — never re-run to "get lucky" more than once, never skip a test.
-2. Fetch the new post on the Vercel **preview** URL; it must return 200 with the
-   right `<title>` and exactly one `<h1>`.
-3. **Merge the PR** (merge commit). This deploys to production.
-   **If the merge is refused** — a permission prompt nobody can answer, or the
-   auto-mode classifier denying it — do not retry it and do not look for another way
-   to merge. Leave the PR open and green, skip steps 4–6, and put
-   **"Owner: tap merge on PR #N — <title>"** with the link as the first line of
-   "Waiting on the owner". A green PR the owner merges from their phone is the
-   designed fallback, not a failure. (Observed 2026-10-14: the classifier refused
-   an agent merge to `Version-3` as "Merge Without Review".)
-4. Wait for the production deployment from the merge SHA: `target: production`,
-   `READY`, aliased to `smartlivetv.co.uk`.
-5. Verify live: the post URL returns 200, `/sitemap.xml` contains it, and `/`,
-   `/pricing`, `/free-trial`, `/buy` still return 200.
-6. **If any of those four key pages fails after the deploy**, roll back production to
-   the previous READY production deployment (`request_rollback`), confirm the pages
-   recover, and put **ROLLED BACK** at the top of the report with the reason.
+**Branch names decide what happens next — get this right:**
 
-**Tier B — anything else** (`tier.mjs` prints `B`): open the PR, make sure CI is
-green, and list it under "Owner: merge" in the report with a one-line reason it is
-safe. Do not merge it.
+| `tier.mjs` says | Branch name | What happens |
+| --- | --- | --- |
+| `A` (content only) | `routine/<YYYY-MM-DD>-<slug>` | `.github/workflows/routine-automerge.yml` merges it to production once every check passes |
+| `B` (anything else) | `routine-owner/<YYYY-MM-DD>-<slug>` | Waits for the owner. The auto-merge workflow ignores it |
+
+Push the branch and open the PR against `Version-3` (not a draft), using the repo's
+PR template sections, with:
+`gh api -X POST repos/shad-yy/forclaude/pulls -f title="…" -f head="<branch>" -f base=Version-3 -f body="…"`
+
+**You never merge.** The Claude Code auto-mode classifier refuses agent merges to
+`Version-3` ("Merge Without Review", 2026-10-14), and the owner chose to let a GitHub
+workflow make that decision instead. Its gates, all run from the `Version-3` copy of
+the scripts so a PR cannot change its own judge:
+1. branch `routine/*`, same repository, not a draft, base `Version-3`;
+2. `tier.mjs` says Tier A for the PR's files;
+3. every other check on the head commit passed — `test`, `scan`, `CodeQL`, the Vercel
+   preview status and anything else that ran.
+Then it merges with a merge commit (Vercel deploys production), waits for the posts
+to answer 200 on the live site, checks `/`, `/pricing`, `/free-trial`, `/buy` and the
+sitemap, and opens a `production-monitor` issue if anything fails.
+
+**After opening a Tier A PR:**
+1. Watch the PR's checks (`gh api repos/shad-yy/forclaude/commits/<sha>/check-runs`). A
+   failing `test`, `scan` or `CodeQL` is yours: fix it on the branch and push. Never
+   skip or weaken a test to get green.
+2. Poll the PR (`gh api repos/shad-yy/forclaude/pulls/<n>`) for up to 45 minutes for
+   `merged: true`, then read the auto-merge run's "Verify production" step.
+3. Report the outcome exactly: **merged and verified live** (with the live URL), or
+   **merged but verification failed** (link the issue it opened), or **not merged**
+   (which gate failed and why). If it is still pending when your time runs out, say
+   "auto-merge pending" with the PR link.
+
+**Tier B PRs:** make sure CI is green and list each under "Waiting on the owner" with a
+one-line reason it is safe to merge.
+
+**Rollback** is the owner's call (Vercel → Deployments → previous production
+deployment → Promote). If the verify step failed and key pages are down, put
+**PRODUCTION DOWN — roll back** at the very top of the report with the link.
 
 ---
 

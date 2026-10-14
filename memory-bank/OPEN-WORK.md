@@ -273,7 +273,7 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 
 ## O-41 — Production is serving a promoted dependabot preview, not Version-3
 
-- **Since**: 2026-10-13 06:22 UTC (deployment `dpl_Gh4MNYdc3wnHDzQBW2fypDNbnGdZ`).
+- **Since**: 2026-10-12 about 23:02 UTC (deployment `dpl_Gh4MNYdc3wnHDzQBW2fypDNbnGdZ`; GitHub's Production deployment record for `538ce506` is stamped 23:07 UTC). An earlier note said 2026-10-13 06:22 UTC — that was a misconverted timestamp.
 - **Owner**: site owner.
 - **Facts**: on 2026-10-14 the newest READY production deployment was built from `dependabot/npm_and_yarn/minor-and-patch-ffdc05e603` (PR #21 head `538ce506`), not from `Version-3` (`0dd2456`). PR #21 is open and unmerged. The site worked when probed (robots.txt and `/api/spotlight` returned 200), but git no longer describes what is live.
 - **What would close it**: owner either merges PR #21 so git matches production, or leaves it — the routine's first merge to `Version-3` replaces the promoted build with a `Version-3` build automatically.
@@ -284,4 +284,11 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Owner**: site owner (environment settings).
 - **Facts**: `https://trends.google.com/trending/rss?geo=GB` was refused by the environment's proxy (HTTP 403 on CONNECT). The routine uses web search for trending topics instead and reports query phrasing as "observed in results", never as volume.
 - **What would close it**: add `trends.google.com` under Allowed domains in the cloud environment's network settings.
+
+## O-43 — The scheduled routine runs on the default model with no connectors
+
+- **Since**: 2026-10-14.
+- **Owner**: site owner (routine settings in claude.ai).
+- **Facts**: the routine `trig_011W5QzFnRRwNGWjykchLJ6F` was created through the remote-session tool, which could not attach connectors ("the connectors parameter is not available for this organization"). Its test run served on `claude-sonnet-5-5`. The spec works without connectors (it uses `add_repo`, `gh api`, GitHub deployment records and web search), but with the Vercel connector the routine could read build logs and preview URLs directly.
+- **What would close it**: if wanted, open the routine in claude.ai and attach the Vercel connector; choose the model there too. Neither is required for the routine to run.
 

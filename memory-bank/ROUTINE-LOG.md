@@ -23,7 +23,15 @@ waiting on the owner. Absolute dates only. Spec: `playbook/routines/daily-growth
 - PageSpeed Insights: unavailable without a key (O-40).
 - Keyword volumes: unavailable (Ahrefs plan; no other keyword tool connected).
 - Google Trends: blocked by network policy (O-42).
-- Web search and fetch: available. Vercel: available. GitHub: available.
+- Web search: available. The live domain is blocked from the sandbox (curl 403,
+  WebFetch DNS failure), so live checks come from the production monitor and the
+  auto-merge workflow's verify step, both of which run on GitHub's runners.
+- The scheduled session itself starts with no repository and no GitHub or Vercel
+  tools (test run `session_01XNSqGnihAkw99TCr3KmPTV`, 2026-10-14). It attaches the repo
+  with `add_repo` and uses `gh api`. Production drift is read from GitHub's
+  Production deployment records, which Vercel writes.
+- Merging: the routine never merges. `.github/workflows/routine-automerge.yml` merges
+  `routine/*` content-only PRs once all checks pass (owner decision 2026-10-14).
 
 **Correction to the owner's brief:** llms.txt is already implemented — `public/llms.txt`
 (hand-maintained, last reviewed 20 Sep 2026) and `public/llms-full.txt` (generated from

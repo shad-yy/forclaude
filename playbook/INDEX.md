@@ -28,5 +28,5 @@ node playbook/scripts/build-index.mjs
 
 ## Routines
 
-- [`routines/daily-growth-routine.md`](routines/daily-growth-routine.md) — the scheduled morning routine: platform health, real Search Console and PageSpeed data, sourced research, one useful post, gated automatic deploy of content-only changes, and a plain report. Gates: `tests/blog-content-rules.test.ts`, `scripts/routine/tier.mjs`.
+- [`routines/daily-growth-routine.md`](routines/daily-growth-routine.md) — the scheduled morning routine: platform health, real Search Console and PageSpeed data, sourced research, one useful post, gated automatic deploy of content-only changes, and a plain report. Gates: `tests/blog-content-rules.test.ts`, `scripts/routine/tier.mjs`; content-only PRs on `routine/*` branches are merged by `.github/workflows/routine-automerge.yml` (pinned by `tests/routine-automerge-workflow.test.ts`).
 
