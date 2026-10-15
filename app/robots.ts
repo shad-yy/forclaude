@@ -8,16 +8,25 @@ export default function robots(): MetadataRoute.Robots {
   
   return {
     rules: [
+      // AI Search/Citation Crawlers — ALLOW (these drive traffic from AI search results)
       {
         userAgent: [
           'OAI-SearchBot',
           'PerplexityBot',
-          'ClaudeBot',
-          'Anthropic-ai',
           'ChatGPT-User',
-          'Google-Extended'
         ],
         allow: '/',
+      },
+      // AI Training Crawlers — BLOCK (protect content IP from model training)
+      {
+        userAgent: [
+          'GPTBot',
+          'ClaudeBot',
+          'Google-Extended',
+          'CCBot',
+          'Anthropic-ai',
+        ],
+        disallow: '/',
       },
       {
         userAgent: '*',

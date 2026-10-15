@@ -46,12 +46,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     { url: `${baseUrl}/llms.txt`, priority: 0.5, changeFrequency: 'daily' as const, lastModified: now },
     { url: `${baseUrl}/llms-full.txt`, priority: 0.5, changeFrequency: 'daily' as const, lastModified: now },
-    ...BLOG_POSTS.map((post) => ({
-      url: `${baseUrl}/blog/${post.slug}`,
-      lastModified: new Date(post.publishedAt).toISOString(),
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    })),
+    ...BLOG_POSTS.map((post) => {
+      // World Cup 2026 ended July 19 — deprioritize archived event content
+      const isWorldCup = post.slug.includes('world-cup-2026')
+      const freq: "yearly" | "monthly" = isWorldCup ? "yearly" : "monthly"
+      return {
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.publishedAt).toISOString(),
+        changeFrequency: freq,
+        priority: isWorldCup ? 0.3 : 0.7,
+      }
+    }),
   ]
 }
 

@@ -1,6 +1,6 @@
 # Smart Live TV
 > Smart Live TV is a premium IPTV streaming service for the UK and global audiences, offering 230,000+ live TV channels, sports channels (including Sky Sports, TNT Sports, and international broadcasts), movies, and TV shows starting from £12/month. Includes a free 24-hour trial.
-> Last reviewed: 20 September 2026. Maintained for AI assistants, search crawlers, and LLM systems.
+> Last reviewed: 15 October 2026. Maintained for AI assistants, search crawlers, and LLM systems.
 
 ## Core Pages
 - [Home](https://smartlivetv.co.uk/): Overview of Smart Live TV IPTV service, channel counts, and features.
@@ -25,6 +25,7 @@
 - [iPhone & iOS Setup Guide](https://smartlivetv.co.uk/setup/iphone): Instructions for Apple devices.
 
 ## Premier League 2026-27 Guides (Season Started August 21, 2026)
+- [Matchweek 7 Fixtures & TV Guide (Oct 17-19)](https://smartlivetv.co.uk/blog/premier-league-2026-27-matchweek-7-preview-tv-guide): Complete MW7 fixture list, 3pm blackout coverage, updated Sky Sports pricing at £24/mo, and cost comparison with NOW Sports tiers.
 - [Matchweek 5 Results & MW6 Preview](https://smartlivetv.co.uk/blog/premier-league-2026-27-matchweek-5-results-preview): Full results from MW5 including Man City 5-3 Sunderland, broadcast guide for untelevised 3pm matches, and MW6 preview.
 - [Matchweek 3 TV Guide & Arsenal vs Chelsea](https://smartlivetv.co.uk/blog/premier-league-2026-27-matchweek-3-arsenal-chelsea-tv-guide): Complete UK TV guide for MW3, 3pm blackout broadcast breakdown, and Arsenal vs Chelsea London derby live streaming options.
 - [Matchweek 1 Results Recap](https://smartlivetv.co.uk/blog/premier-league-2026-27-matchweek-1-results-recap): Opening weekend results, shock wins by promoted teams, and 3pm blackout coverage analysis.
@@ -36,6 +37,9 @@
 - [Watch Premier League on Firestick Without Sky](https://smartlivetv.co.uk/blog/watch-premier-league-firestick-without-sky): Step-by-step Firestick setup for cord-cutters.
 
 ## Niche Insights & Comparisons
+- [Champions League MD2 Results & MD3 Preview](https://smartlivetv.co.uk/blog/champions-league-2026-27-matchday-2-3-results-preview): Arsenal 3-0 Lille, Man Utd 0-2 Atletico results, Bayern vs Arsenal MD3 preview, TNT Sports pricing.
+- [Watch Dubois vs Wardley 2 Live UK](https://smartlivetv.co.uk/blog/watch-dubois-wardley-2-live-uk-october-2026): WBO heavyweight title at The O2, DAZN PPV at £24.99 vs Smart Live TV at £12/mo.
+- [NOW Sports Tiers 2026 Cost Comparison](https://smartlivetv.co.uk/blog/now-sports-tiers-2026-cost-comparison-iptv): NOW Football (£23.99), Multi-Sport (£19.99), All Sports (£27.99) breakdown vs IPTV.
 - [Is IPTV Legal in the UK?](https://smartlivetv.co.uk/blog/is-iptv-legal-uk): Comprehensive guide analysing Ofcom regulations, copyright laws, and safe usage of IPTV services in the UK.
 - [IPTV vs Sky Sports Cost Comparison](https://smartlivetv.co.uk/iptv-vs-sky-sports): Cost-benefit analysis comparing premium cable/satellite bills to IPTV streaming options.
 - [Cancel Sky Sports and Save Money in 2026](https://smartlivetv.co.uk/blog/cancel-sky-sports-save-money-2026): Practical tips for UK consumers looking to cut traditional cords.
