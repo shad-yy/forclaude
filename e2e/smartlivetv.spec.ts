@@ -1,5 +1,6 @@
 // e2e/smartlivetv.spec.ts
 import { test, expect, Page } from '@playwright/test'
+import { agentsBlockedFromSite } from '../lib/seo/robots-rules'
 
 // A-10: baseURL driven by env, not hardcoded to production. Set
 // PLAYWRIGHT_BASE_URL=https://smartlivetv.co.uk for the production-hit
@@ -18,9 +19,10 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         expect(res.status()).toBe(200)
         const body = await res.text()
 
-        // Must allow everything: no bare "Disallow: /" line. (A substring check
-        // also matched "Disallow: /api/" and failed on a correct file.)
-        expect(body).not.toMatch(/^Disallow:\s*\/\s*$/m)
+        // Google and Bing must not be blocked from the site. Judged per
+        // user-agent group: "Disallow: /" under GPTBot does not apply to
+        // Googlebot. (A bare-line check failed on exactly that, issue #23.)
+        expect(agentsBlockedFromSite(body, ['Googlebot', 'Bingbot'])).toEqual([])
 
         // Must block only these specific paths
         expect(body).toContain('Disallow: /api/')

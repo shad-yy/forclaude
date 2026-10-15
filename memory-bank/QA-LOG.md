@@ -38,6 +38,28 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### R-28 — Remove auto-index.yml: a dead Google ping and an off-policy Indexing API call
+
+- **Date**: 2026-10-15
+- **Commit**: the commit that adds this entry (PR from `claude/exciting-planck-6a4nbr`).
+- **Layer**: L0 CI / deployment.
+- **Severity**: low (did nothing useful; one half was against Google's API policy).
+- **Was**: on every push to `Version-3` touching content or pages, `.github/workflows/auto-index.yml` (1) pinged `https://www.google.com/ping?sitemap=…`, an endpoint Google deprecated in June 2023 and which now returns 404 (https://developers.google.com/search/blog/2023/06/sitemaps-lastmod-ping); (2) if the `GSC_SERVICE_ACCOUNT_JSON` secret was set, sent blog URLs to the Indexing API, which Google restricts to JobPosting and livestream (BroadcastEvent) pages (https://developers.google.com/search/apis/indexing-api/v3/quickstart). Its "wait for deployment" step only checked the domain answered 200, which the previous deployment also does, and it ran whether CI passed or not — it ran on `9a393e1`, whose `test` failed. An earlier note in this session called it the IndexNow job; it never was. IndexNow runs from `scripts/ping-indexnow.js` at the end of every Vercel production build.
+- **Now**: workflow deleted. With both calls removed nothing was left for it to do. Discovery goes through the sitemap (listed in robots.txt) and Search Console.
+- **Still open in**: O-44 — the IndexNow ping fails with HTTP 403 on every production build.
+
+### R-27 — robots.txt monitor check judges Googlebot's own rule group (issue #23)
+
+- **Date**: 2026-10-15
+- **Commit**: the commit that adds this entry (PR from `claude/exciting-planck-6a4nbr`).
+- **Layer**: L0 e2e monitor + L2 metadata route.
+- **Severity**: medium (the production monitor was red on a robots.txt that does not block Google; a real block would have been indistinguishable).
+- **Was**: `2359e46` added a group in `app/robots.ts` that disallows `/` for GPTBot, ClaudeBot, Google-Extended, CCBot and Anthropic-ai. The monitor's "robots.txt must NOT block Googlebot" check failed on any line matching `^Disallow:\s*\/\s*$`, so it failed on all three Playwright projects from the 2026-10-15 scheduled run (issue #23). Rendering `app/robots.ts` through Next's `resolveRobots` confirmed the line is present and that the `*` group still allows `/`.
+- **Now**: `lib/seo/robots-rules.ts` — `agentsBlockedFromSite(txt, agents)` picks the group a crawler obeys (its named group, else `*`, per RFC 9309) and reports it blocked only if `/` is disallowed and not re-allowed. The monitor and a new PR-time test both use it.
+- **Test**: `tests/robots-allows-search-engines.test.ts` (11 cases) renders `app/robots.ts` on every PR and asserts Googlebot and Bingbot are not blocked, the chosen AI-training crawlers still are, and documents that the old regex flags this file. Mutation check: removing the `*` group's `Allow: /` and disallowing `/` turns it red (`expected [ 'Googlebot', 'Bingbot' ] to deeply equal []`).
+- **Run it**: `npx vitest run tests/robots-allows-search-engines.test.ts`.
+- **Result**: see the PR body for the full-suite count, tsc and build.
+
 ### R-22 — One statement of support hours: 9am–11pm UK, 7 days (O-29)
 
 - **Date**: 2026-10-01

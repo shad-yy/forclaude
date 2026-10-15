@@ -310,7 +310,10 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Facts**: `scripts/routine/pagespeed.mjs` works, but Google's shared anonymous quota returned HTTP 429 on 2026-10-14, so no Core Web Vitals numbers can be fetched without a key.
 - **What would close it**: enable the PageSpeed Insights API in the same Google Cloud project, create an API key restricted to that API, store it as `PSI_API_KEY` in the routine's cloud environment.
 
-## O-41 — Production is serving a promoted dependabot preview, not Version-3
+## O-41 — CLOSED 2026-10-14 (was: production serving a promoted dependabot preview)
+
+**Closed**: merging PR #22 deployed `Version-3` (`4a4c184`) and `smartlivetv.co.uk` was confirmed on it the same evening. It recurred once — see O-46.
+
 
 - **Since**: 2026-10-12 about 23:02 UTC (deployment `dpl_Gh4MNYdc3wnHDzQBW2fypDNbnGdZ`; GitHub's Production deployment record for `538ce506` is stamped 23:07 UTC). An earlier note said 2026-10-13 06:22 UTC — that was a misconverted timestamp.
 - **Owner**: site owner.
@@ -331,3 +334,37 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Facts**: the routine `trig_011W5QzFnRRwNGWjykchLJ6F` was created through the remote-session tool, which could not attach connectors ("the connectors parameter is not available for this organization"). Its test run served on `claude-sonnet-5-5`. The spec works without connectors (it uses `add_repo`, `gh api`, GitHub deployment records and web search), but with the Vercel connector the routine could read build logs and preview URLs directly.
 - **What would close it**: if wanted, open the routine in claude.ai and attach the Vercel connector; choose the model there too. Neither is required for the routine to run.
 
+## O-44 — IndexNow ping fails with HTTP 403 on every production build
+
+- **Since**: at least 2026-10-14 (Vercel build logs of `dpl_D44xMGPHedKfZbuLnpjQwBv7azQS` and `dpl_Eien1Mu18mfdzLq1CidfwvvgnWNN`).
+- **Owner**: unassigned; needs a check from outside the sandbox.
+- **Facts**: `scripts/ping-indexnow.js` runs at the end of `npm run build` on Vercel production and logs `IndexNow ping failed with status 403: {"errorCode":"UserForbiddedToAccessSite","message":"User is unauthorized to access the site. Please verify the site using the key and try again"}`. The key file in `public/` exists and holds exactly the key the script sends (32 characters plus a newline). So the likely cause is that IndexNow cannot fetch the key file from the live domain (for example a firewall or bot challenge), but this is not established — the live domain is unreachable from the cloud sandbox.
+- **What would close it**: fetch `https://smartlivetv.co.uk/<key>.txt` from outside (browser or `curl`) and confirm a 200 with the key as the body; check Vercel Firewall / bot protection for challenges to that path; then confirm a production build logs a 200/202 from IndexNow.
+
+## O-45 — Nothing stops a red commit reaching production
+
+- **Since**: observed 2026-10-15: `9a393e1` was pushed straight to `Version-3`, deployed to production at 02:30 UTC, and its CI `test` job failed afterwards.
+- **Owner**: site owner (GitHub and Vercel settings).
+- **Facts**: `Version-3` has no branch protection (`GET /repos/shad-yy/forclaude/branches/Version-3` → `protected: false`) and no rulesets. Vercel deploys every push to `Version-3` without waiting for GitHub checks.
+- **What would close it**: (1) a GitHub ruleset on `Version-3` requiring a pull request and the `test`, `scan` and CodeQL checks — with no required approvals, or `routine-automerge.yml` can never merge; (2) Vercel Deployment Checks requiring `test` before a production deployment is assigned to the domain (https://vercel.com/docs/deployment-checks).
+
+## O-46 — Dependabot previews promoted to production by hand
+
+- **Since**: 2026-10-12 (PR #21's build, see O-41) and again 2026-10-15 02:04 UTC (`dpl_CDgB2USgWPkben5aCFmacmJnM3kG`, built from `dependabot/npm_and_yarn/web-vitals-6.2.2`, live about 26 minutes until `9a393e1` replaced it).
+- **Owner**: site owner.
+- **Facts**: both production deployments are recorded under the owner's Vercel account. Neither branch was merged at the time.
+- **What would close it**: find what promotes previews (a person, a tool or an agent with Vercel access) and stop it; production should only ever come from `Version-3`.
+
+## O-47 — Daily dependency audit red: 2 critical Next.js advisories
+
+- **Since**: at least 2026-10-06 (every scheduled `dependency-audit.yml` run since has failed).
+- **Owner**: unassigned — blocked on the Next.js upgrade (PR #14).
+- **Facts**: `pnpm audit --prod` on `4d1f877`: 2 critical, 21 high. Both criticals are in `next` <15.5.24 (published 2026-09-08): GHSA-p293-qw3h-jr36 (remote code execution on Windows-hosted servers — Vercel is not Windows) and GHSA-2xp9-vwfh-vxw4 (remote code execution via libheif/sharp when AVIF files are optimised — `next.config.mjs` outputs WebP only, so exposure is lower, not shown to be zero).
+- **What would close it**: land Next.js 15.5.24 or later. PR #14 (15.5.27) still fails static generation.
+
+## O-48 — Scheduled routine did not run on 2026-10-15
+
+- **Since**: 2026-10-15 04:53 UTC.
+- **Owner**: site owner (claude.ai plan / usage).
+- **Facts**: routine `trig_011W5QzFnRRwNGWjykchLJ6F` fired and failed after 7 seconds with `ROUTINE_RUN_FAILURE_REASON_USAGE_LIMIT_REACHED`. No branch, PR or report was produced.
+- **What would close it**: a scheduled run that completes; the next is 2026-10-16 04:52 UTC.
