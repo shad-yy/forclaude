@@ -9,10 +9,11 @@ export async function GET() {
       { headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=300" } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/ufc/events error:", error)
+    // B-04.7: fault → 503+no-store per api-fault-vs-absence hybrid rule.
+    console.warn("[API] GET /api/ufc/events fault:", error)
     return NextResponse.json(
-      { data: [], error: "UFC events temporarily unavailable" },
-      { status: 200 }
+      { error: "UFC events temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }

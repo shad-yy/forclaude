@@ -510,7 +510,7 @@ export default function PricingPage() {
           { Icon: RotateCcw, text: "7-Day Money Back" },
           { Icon: Zap, text: "Instant Activation" },
           { Icon: Ban, text: "No Contract" },
-          { Icon: Headphones, text: "24/7 Support" },
+          { Icon: Headphones, text: "Support 9am–11pm, 7 days" },
         ] as const).map(badge => (
           <div key={badge.text} className="flex items-center gap-2 bg-[#12121a] border border-[#2a2a3a] rounded-full px-4 py-2">
             <badge.Icon className="w-3.5 h-3.5 text-[#00e676]" />

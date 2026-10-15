@@ -65,3 +65,6 @@ test-credentials.*
 .claude/skills/
 .cursor/
 
+
+# Browser network recordings hold cookies, tokens and form data — never commit them.
+*.har

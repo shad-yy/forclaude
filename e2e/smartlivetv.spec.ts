@@ -1,8 +1,11 @@
-// tests/smartlivetv.spec.ts
+// e2e/smartlivetv.spec.ts
 import { test, expect, Page } from '@playwright/test'
 
-const BASE = 'https://smartlivetv.co.uk'
-// For local: const BASE = 'http://localhost:3000'
+// A-10: baseURL driven by env, not hardcoded to production. Set
+// PLAYWRIGHT_BASE_URL=https://smartlivetv.co.uk for the production-hit
+// suite; leave it unset for local (defaults to http://localhost:3000
+// via playwright.config.ts).
+const BASE = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // SUITE 1 — SEO CRITICAL (these failures = Google won't index you)
@@ -15,8 +18,9 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         expect(res.status()).toBe(200)
         const body = await res.text()
 
-        // Must allow everything
-        expect(body).not.toContain('Disallow: /')
+        // Must allow everything: no bare "Disallow: /" line. (A substring check
+        // also matched "Disallow: /api/" and failed on a correct file.)
+        expect(body).not.toMatch(/^Disallow:\s*\/\s*$/m)
 
         // Must block only these specific paths
         expect(body).toContain('Disallow: /api/')
@@ -107,7 +111,8 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         const pages = [
             { path: '/', titleMustContain: 'Smart Live TV' },
             { path: '/pricing', titleMustContain: '£12' },
-            { path: '/buy', titleMustContain: 'Access' },
+            // O-29 (owner decision 2026-09-30): match the live title, which has no "Access".
+            { path: '/buy', titleMustContain: 'Start Watching' },
             { path: '/free-trial', titleMustContain: 'Trial' },
             { path: '/watch/premier-league', titleMustContain: 'Premier League' },
             { path: '/ufc', titleMustContain: 'UFC' },
@@ -179,11 +184,9 @@ test.describe('SEO — Critical Indexing Requirements', () => {
                 expectedTypes: ['Product', 'FAQPage'],
                 mustHaveId: true,
             },
-            {
-                path: '/faq',
-                expectedTypes: ['FAQPage'],
-                mustHaveId: false,
-            },
+            // O-29 (owner decision 2026-09-30): /faq shows the same 8 Q&As
+            // that /pricing marks up. Google: mark up repeated FAQs once per
+            // site; FAQ rich results stopped appearing on 7 May 2026.
             {
                 path: '/setup/firestick',
                 expectedTypes: ['HowTo', 'FAQPage'],
@@ -247,22 +250,33 @@ test.describe('SEO — Critical Indexing Requirements', () => {
         ]
 
         for (const path of pagesToCheck) {
-            await page.goto(`${BASE}${path}`)
+            // O-29: this check used `page.$$('h1')`, a one-shot DOM snapshot
+            // that does not auto-wait. It reported "No H1" five times across
+            // five runs — on a different page each time, always passing on
+            // retry — which is what a snapshot assertion does to a page that
+            // is a moment slow, not what a missing H1 looks like. A locator
+            // retries until the timeout, so a genuinely missing H1 still
+            // fails and a slow one no longer does.
+            const response = await page.goto(`${BASE}${path}`)
 
-            const h1s = await page.$$('h1')
+            // The old version never looked at the status: a 404 or a 500
+            // would render an error page and fail as "No H1", hiding what
+            // actually went wrong.
             expect(
-                h1s.length,
-                `No H1 on ${path}`
-            ).toBeGreaterThan(0)
+                response?.status(),
+                `${path} did not return a 2xx — the H1 assertions below would ` +
+                `report "No H1" for what is really a bad response`
+            ).toBeLessThan(400)
 
-            expect(
-                h1s.length,
-                `Multiple H1s on ${path} — only one allowed`
-            ).toBe(1)
+            const h1 = page.locator('h1')
+            await expect(
+                h1,
+                `${path} must render exactly one H1`
+            ).toHaveCount(1)
 
-            const h1Text = await h1s[0].textContent()
+            const h1Text = (await h1.textContent())?.trim() ?? ''
             expect(
-                h1Text?.trim().length,
+                h1Text.length,
                 `H1 is empty on ${path}`
             ).toBeGreaterThan(5)
 
@@ -272,7 +286,7 @@ test.describe('SEO — Critical Indexing Requirements', () => {
                 `H1 still has concatenation bug on ${path}: "${h1Text}"`
             ).not.toContain('UFCOCTAGON')
 
-            console.log(`${path} H1: "${h1Text?.trim()}"`)
+            console.log(`${path} H1: "${h1Text}"`)
         }
     })
 })
@@ -452,22 +466,24 @@ test.describe('Conversion Funnel — Forms and CTAs', () => {
     test('buy form validates required fields before submitting', async ({ page }) => {
         await page.goto(`${BASE}/buy`)
 
-        // Click submit without filling anything
-        const submitBtn = await page.$('button:has-text("Access"), button:has-text("Get"), button[type="submit"]')
-        if (submitBtn) {
-            await submitBtn.click()
+        // O-29: the old selectors mixed CSS with `text=` in one string. The
+        // error check threw ("Unexpected token '='"), and the success check
+        // was read as a single text query that could never match, so it
+        // could never fail. Locators below are one kind each.
+        const submitBtn = page.getByRole('button', { name: /Get Access Now/ })
+        await submitBtn.click()
 
-            // Should show validation error, not submit
-            await page.waitForTimeout(500)
+        // Should show the form's own validation message (components/buy/BuyForm.tsx)
+        await expect(
+            page.getByText('Please fill in all required fields.'),
+            'No validation error shown for empty form'
+        ).toBeVisible()
 
-            // Should not show success state
-            const successState = await page.$('text=Order Received, text=credentials, text=WhatsApp within')
-            expect(successState, 'Form submitted without required fields').toBeNull()
-
-            // Should show error message
-            const errorMsg = await page.$('[class*="red"], [class*="error"], text=required, text=Please fill')
-            expect(errorMsg, 'No validation error shown for empty form').not.toBeNull()
-        }
+        // Should not show the success state
+        await expect(
+            page.getByText(/Order Received/),
+            'Form submitted without required fields'
+        ).toHaveCount(0)
     })
 
     test('/free-trial page has form with correct fields', async ({ page }) => {
@@ -862,9 +878,15 @@ test.describe('Performance — Core Web Vitals Protection', () => {
         await page.goto(BASE)
         await page.waitForTimeout(2000)
 
+        // O-29: skip absolute/fixed images, as Lighthouse's unsized-images
+        // audit does (core/audits/unsized-images.js, `isFixedImage`): their
+        // box comes from CSS, so loading them cannot shift layout. The hero
+        // and spotlight backgrounds are `absolute inset-0` and were 4 of the
+        // 16 flagged in run 36769200235.
         const imagesWithoutDimensions = await page.$$eval(
             'img[src*="thesportsdb"], img[src*="/leagues/"]',
             (imgs: any[]) => imgs
+                .filter((img: HTMLImageElement) => !['absolute', 'fixed'].includes(getComputedStyle(img).position))
                 .filter((img: any) => !img.width || !img.height ||
                     (!img.getAttribute('width') && !img.getAttribute('height')))
                 .map((img: any) => ({
@@ -942,15 +964,50 @@ test.describe('Performance — Core Web Vitals Protection', () => {
         })
         page.on('pageerror', (err) => errors.push(err.message))
 
+        // A 503 from one of our own API routes is the documented fault signal,
+        // not a defect: CLAUDE.md requires "API routes return 503 with
+        // Cache-Control: no-store, never 200 with []". The browser logs
+        // "Failed to load resource ... 503" for any non-2xx regardless of how
+        // cleanly the app handles it, so without this the check fails for as
+        // long as any upstream is down — by design, and for something nobody
+        // here controls. It happened on 2026-10-10: /api/spotlight answered
+        // 503, two components call it, and this test counted two errors.
+        //
+        // The console message does not carry the URL, so the 503s are
+        // identified from the response event instead and only those from a
+        // same-origin /api/ route are excused. A 503 from anywhere else, and
+        // every other console error, still fails.
+        const faultingRoutes: string[] = []
+        page.on('response', (res) => {
+            const url = res.url()
+            if (res.status() === 503 && url.startsWith(BASE) && url.includes('/api/')) {
+                faultingRoutes.push(new URL(url).pathname)
+            }
+        })
+
         await page.goto(BASE)
         await page.waitForTimeout(2000)
+
+        const isOwnApiFault = (e: string) =>
+            faultingRoutes.length > 0 &&
+            /failed to load resource/i.test(e) &&
+            e.includes('503')
 
         // Filter known acceptable errors
         const realErrors = errors.filter((e) =>
             !e.includes('favicon') &&
             !e.includes('net::ERR_ABORTED') &&
-            !e.includes('404') // Missing images are caught elsewhere
+            !e.includes('404') && // Missing images are caught elsewhere
+            !isOwnApiFault(e)
         )
+
+        // Surface the faults even when they are excused — a route stuck on 503
+        // is still worth knowing about, it just is not this check's business.
+        if (faultingRoutes.length > 0) {
+            console.warn(
+                `Own API routes answered 503 (excused here, see OPEN-WORK): ${[...new Set(faultingRoutes)].join(', ')}`
+            )
+        }
 
         if (realErrors.length > 0) {
             console.error('Console errors on homepage:', realErrors)

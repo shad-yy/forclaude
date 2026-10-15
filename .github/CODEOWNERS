@@ -1,0 +1,21 @@
+# CODEOWNERS (C-04 / I-05).
+#
+# Any PR touching a path listed here auto-requests review from its
+# owner. Repository owner is the sole maintainer today; this file is
+# ready to grow when the team does.
+
+*                       @shad-yy
+
+# Areas where breakage has the highest blast radius get an explicit
+# review request even though the wildcard above already covers them.
+/middleware.ts          @shad-yy
+/lib/fraud/             @shad-yy
+/lib/panel/             @shad-yy
+/lib/security/          @shad-yy
+/app/api/orders/        @shad-yy
+/app/api/subscribe/     @shad-yy
+/app/api/auth/          @shad-yy
+/app/api/admin/         @shad-yy
+/.github/               @shad-yy
+/memory-bank/           @shad-yy
+/playbook/              @shad-yy

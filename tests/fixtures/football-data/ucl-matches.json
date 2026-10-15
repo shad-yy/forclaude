@@ -1,0 +1,70 @@
+{
+  "count": 2,
+  "filters": {
+    "status": "SCHEDULED"
+  },
+  "competition": {
+    "id": 2001,
+    "name": "UEFA Champions League",
+    "code": "CL",
+    "type": "CUP",
+    "emblem": "https://crests.football-data.org/CL.png"
+  },
+  "matches": [
+    {
+      "id": 497821,
+      "utcDate": "2026-10-01T19:00:00Z",
+      "status": "SCHEDULED",
+      "stage": "LEAGUE_STAGE",
+      "group": "Champions League",
+      "homeTeam": {
+        "id": 65,
+        "name": "Manchester City FC",
+        "shortName": "Man City",
+        "tla": "MCI",
+        "crest": "https://crests.football-data.org/65.png"
+      },
+      "awayTeam": {
+        "id": 5,
+        "name": "FC Bayern München",
+        "shortName": "Bayern München",
+        "tla": "FCB",
+        "crest": "https://crests.football-data.org/5.png"
+      },
+      "score": {
+        "winner": null,
+        "duration": "REGULAR",
+        "fullTime": { "home": null, "away": null },
+        "halfTime": { "home": null, "away": null }
+      },
+      "venue": "Etihad Stadium"
+    },
+    {
+      "id": 497822,
+      "utcDate": "2026-09-24T19:00:00Z",
+      "status": "FINISHED",
+      "stage": "LEAGUE_STAGE",
+      "group": "Champions League",
+      "homeTeam": {
+        "id": 86,
+        "name": "Real Madrid CF",
+        "shortName": "Real Madrid",
+        "tla": "RMA",
+        "crest": "https://crests.football-data.org/86.png"
+      },
+      "awayTeam": {
+        "id": 524,
+        "name": "SL Benfica",
+        "shortName": "Benfica",
+        "tla": "BEN",
+        "crest": "https://crests.football-data.org/524.png"
+      },
+      "score": {
+        "winner": "HOME_TEAM",
+        "duration": "REGULAR",
+        "fullTime": { "home": 3, "away": 1 },
+        "halfTime": { "home": 1, "away": 0 }
+      }
+    }
+  ]
+}

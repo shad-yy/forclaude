@@ -1,5 +1,17 @@
 import { cacheGet, cacheSet } from '@/lib/cache/redis'
 
+// X-09: deterministic fallback ID when the upstream response omits
+// one — same input yields the same id, forever. Previously used
+// `String(Math.random())` which produced a new id every call and
+// caused React key thrash / cache misses / (rare) collisions.
+function fallbackEventId(e: Record<string, unknown>, index: number): string {
+  const name = String(e.name ?? e.event_name ?? e.title ?? '').trim().toLowerCase()
+  const date = String(e.date ?? e.event_date ?? e.scheduled_date ?? '').trim()
+  const key = `${name}|${date}`.replace(/[^a-z0-9|-]/g, '-')
+  if (key === '|') return `mma-event-fallback-${index}`
+  return `mma-event-${key}`
+}
+
 const MMA_BASE = 'https://mmaapi.p.rapidapi.com'
 const MMA_KEY = process.env.RAPIDAPI_MMA_KEY || ''
 
@@ -90,8 +102,8 @@ export async function getUpcomingMMAEvents(): Promise<MMAEvent[]> {
   const events = Array.isArray(data) ? data : 
     data?.events || data?.data || data?.results || []
   
-  return events.map((e: any) => ({
-    id: e.id || e.event_id || String(Math.random()),
+  return events.map((e: any, i: number) => ({
+    id: e.id || e.event_id || fallbackEventId(e, i),
     name: e.name || e.event_name || e.title || 'UFC Event',
     date: e.date || e.event_date || e.scheduled_date || '',
     location: e.location || e.city || e.venue_location || '',
@@ -120,8 +132,8 @@ export async function getRecentMMAResults(): Promise<MMAEvent[]> {
   const events = Array.isArray(data) ? data : 
     data?.events || data?.data || []
   
-  return events.map((e: any) => ({
-    id: e.id || String(Math.random()),
+  return events.map((e: any, i: number) => ({
+    id: e.id || fallbackEventId(e, i),
     name: e.name || e.event_name || 'UFC Event',
     date: e.date || e.event_date || '',
     location: e.location || e.venue || '',

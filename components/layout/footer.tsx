@@ -40,7 +40,7 @@ const footerLinks = [
       { name: "Android", href: "/setup/android" },
       { name: "iPhone", href: "/setup/iphone" },
       { name: "IPTV vs Sky Sports", href: "/iptv-vs-sky-sports" },
-      { name: "IPTV vs Netflix", href: "/iptv-vs-netflix" },
+      { name: "IPTV vs Netflix", href: "/blog/iptv-vs-netflix-disney-sky-2026" },
     ],
   },
   {

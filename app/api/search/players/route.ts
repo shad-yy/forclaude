@@ -21,8 +21,12 @@ export async function GET(request: Request) {
       })),
     )
   } catch (e) {
-    console.warn("[API] GET /api/search/players failed:", e)
-    return NextResponse.json([]) // Return empty array instead of error
+    // O-26 step C: an outage is a 503, never [] (tests/routes-outage-network.test.ts).
+    console.warn("[API] GET /api/search/players fault:", e)
+    return NextResponse.json(
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
+    )
   } finally {
     if (timer) clearTimeout(timer)
   }

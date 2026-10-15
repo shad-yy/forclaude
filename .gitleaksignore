@@ -1,0 +1,6 @@
+# Verified false positives only — one exact finding per line (commit:file:rule:line).
+# Each needs a reason. Never add a real secret here; rotate it instead.
+
+# "HUNTER2ABC123" is a made-up marker the PII-redaction test asserts never
+# reaches console output (QA-LOG A-02). Not a credential. Flagged 2026-09-24.
+8f13feb2e99f56d39f14c6705bab81c70a44ada8:tests/pii-redaction.test.ts:generic-api-key:14

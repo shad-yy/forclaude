@@ -31,33 +31,6 @@ export default function ApiManagementPage() {
     }
   }, [mounted, isAdmin])
 
-  // Load initial data
-  useEffect(() => {
-    if (mounted && isAdmin) {
-      testApiConnection()
-    }
-  }, [mounted, isAdmin])
-
-  // Extend admin session on activity
-  useEffect(() => {
-    const handleActivity = () => {
-      if (isAdmin) {
-        extendSession()
-      }
-    }
-
-    const events = ["mousedown", "keydown", "scroll", "touchstart"]
-    events.forEach((event) => {
-      document.addEventListener(event, handleActivity, { passive: true })
-    })
-
-    return () => {
-      events.forEach((event) => {
-        document.removeEventListener(event, handleActivity)
-      })
-    }
-  }, [isAdmin, extendSession])
-
   const testApiConnection = useCallback(async () => {
     setIsTesting(true)
     try {
@@ -88,6 +61,33 @@ export default function ApiManagementPage() {
       setIsLoading(false)
     }
   }, [toast])
+
+  // Load initial data
+  useEffect(() => {
+    if (mounted && isAdmin) {
+      testApiConnection()
+    }
+  }, [mounted, isAdmin, testApiConnection])
+
+  // Extend admin session on activity
+  useEffect(() => {
+    const handleActivity = () => {
+      if (isAdmin) {
+        extendSession()
+      }
+    }
+
+    const events = ["mousedown", "keydown", "scroll", "touchstart"]
+    events.forEach((event) => {
+      document.addEventListener(event, handleActivity, { passive: true })
+    })
+
+    return () => {
+      events.forEach((event) => {
+        document.removeEventListener(event, handleActivity)
+      })
+    }
+  }, [isAdmin, extendSession])
 
   // Loading state
   if (!mounted || isLoading) {

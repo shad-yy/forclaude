@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
+import { getClientIp } from "@/lib/security/client-ip"
+import { checkRateLimit } from "@/lib/security/rate-limit"
 
 const subscribeSchema = z.object({
   email: z.string().email().max(200).toLowerCase().trim(),
 })
-
-// Module-level rate limiter (typed, no globalThis as any)
-const rateLimitMap = new Map<string, number>()
 
 export async function POST(request: Request) {
   try {
@@ -33,21 +32,24 @@ export async function POST(request: Request) {
 
     const validEmail = parsed.data.email
 
-    // Rate limit: 1 subscribe per email per 60 seconds
-    const now = Date.now()
-    const last = rateLimitMap.get(validEmail) || 0
-    if (now - last < 60_000) {
+    // B-07: rate limit by client IP (unforgeable; see A-05), not by email.
+    // Fall back to "0.0.0.0" only when getClientIp cannot extract one; that
+    // bucket then blocks all IP-unknown callers together, which is fine.
+    //
+    // B-06: shared Redis-backed limiter — 1 subscribe per IP per 60s.
+    // Retires the per-instance Map that let the ceiling scale with
+    // <number of lambdas> in serverless (S-06).
+    const rateKey = getClientIp(request.headers) ?? "0.0.0.0"
+    const { allowed } = await checkRateLimit({
+      key: `subscribe:${rateKey}`,
+      limit: 1,
+      windowSeconds: 60,
+    })
+    if (!allowed) {
       return NextResponse.json({
         success: false,
         message: "Please wait before trying again.",
       }, { status: 429 })
-    }
-    rateLimitMap.set(validEmail, now)
-
-    // Clamp map size to prevent unbounded growth
-    if (rateLimitMap.size > 1000) {
-      const oldest = [...rateLimitMap.entries()].sort((a, b) => a[1] - b[1])[0]
-      if (oldest) rateLimitMap.delete(oldest[0])
     }
 
     // Send notification email via Resend

@@ -1,0 +1,22 @@
+{
+  "leagues": [
+    {
+      "idLeague": "4328",
+      "strLeague": "English Premier League",
+      "strSport": "Soccer",
+      "strLeagueAlternate": "Premier League, EPL, English Premier League",
+      "strCountry": "England",
+      "strDescriptionEN": "The Premier League is the top level of the English football league system. Contested by 20 clubs, it operates on a system of promotion and relegation with the English Football League (EFL).",
+      "intFormedYear": "1992",
+      "strBadge": "https://www.thesportsdb.com/images/media/league/badge/i6o0kh1549879062.png",
+      "strLogo": "https://www.thesportsdb.com/images/media/league/logo/pkzoku1734028997.png",
+      "strFanart1": "https://www.thesportsdb.com/images/media/league/fanart/vsvxwr1420229007.jpg",
+      "strFanart2": null,
+      "strFanart3": null,
+      "strFanart4": null,
+      "strBanner": "https://www.thesportsdb.com/images/media/league/banner/9dsjhg1617468328.jpg",
+      "strNaming": "{Home Team} vs {Away Team}",
+      "strLocked": "unlocked"
+    }
+  ]
+}

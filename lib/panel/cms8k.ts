@@ -1,21 +1,13 @@
 /**
  * CMS8K Reseller Panel API
- * 
- * Panel: cms-8k.com
- * Protocol: Xtream Codes (lines)
- * 
- * How it works:
- * 1. Login to get session cookies (PHPSESSID)
- * 2. Check if username is free: POST /api_check.php
- * 3. Create line: GET /api.php?action=add_new&data={...}
- * 4. Fetch credentials: GET /api.php?action=get_line_info&mac={username}
- * 
- * Required env vars:
- *   CMS8K_URL        = https://cms-8k.com  (or your panel's URL if whitelabel)
- *   CMS8K_USERNAME   = your panel login username
- *   CMS8K_PASSWORD   = your panel login password
- *   CMS8K_TRIAL_SUB_ID = 8  (the 24h trial subscription package ID)
+ *
+ * Panel: cms-8k.com. Protocol: Xtream Codes (lines).
+ *
+ * See memory-bank/SETUP-REQUIRED.md for env vars (CMS8K_*).
  */
+
+import { randomInt } from "node:crypto";
+import { summarizeResponse } from "@/lib/log/redact";
 
 export interface LineCredentials {
   username: string
@@ -131,7 +123,7 @@ async function getSession(): Promise<string | null> {
  */
 export function generateUsername(customerName: string): string {
   const clean = customerName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 5).toLowerCase()
-  const rand = Math.floor(1000 + Math.random() * 9000)
+  const rand = randomInt(1000, 10000)
   return `SLTV_${clean}_${rand}`
 }
 
@@ -237,7 +229,7 @@ export async function createTrialAccount(customerName: string, comment?: string)
       })
 
       const responseText = await res.text()
-      console.log('[CMS8K API] Raw response:', responseText.slice(0, 300))
+      console.log('[CMS8K API] Response:', summarizeResponse(responseText))
 
       let data: any = null
       try {
@@ -268,7 +260,7 @@ export async function createTrialAccount(customerName: string, comment?: string)
         }
       }
 
-      console.warn('[CMS8K API] API key call did not return verified credentials. Response was:', responseText.slice(0, 200))
+      console.warn('[CMS8K API] API key call did not return verified credentials. Response:', summarizeResponse(responseText))
     } catch (err) {
       console.error('[CMS8K API] Error during API key trial creation:', err)
     }
@@ -307,7 +299,7 @@ export async function createTrialAccount(customerName: string, comment?: string)
       })
 
       const responseText = await res.text()
-      console.log('[CMS8K SESSION] Create line response:', responseText)
+      console.log('[CMS8K SESSION] Create line response:', summarizeResponse(responseText))
 
       let parsedResult: any = null
       try {

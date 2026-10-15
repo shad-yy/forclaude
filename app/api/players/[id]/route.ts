@@ -19,10 +19,12 @@ export async function GET(
       { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/players/[id] error:", error)
+    // B-04.6: fault → 503+no-store. Absence path above (getPlayer → null →
+    // "Player not found") stays 200.
+    console.warn("[API] GET /api/players/[id] fault:", error)
     return NextResponse.json(
-      { data: null, error: "Data temporarily unavailable" },
-      { status: 200 }
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }

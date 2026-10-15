@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Trophy, Globe, Users, Calendar, Star, TrendingUp, Zap, ArrowRight, Shield } from "lucide-react"
 import { unifiedSportsAPI, type UnifiedLeague } from "@/lib/api/unified-sports-api"
 import { OptimizedImage } from "@/components/ui/optimized-image"
+import { dataErrorMessage } from "@/lib/api/errors"
 
 export const metadata: Metadata = {
   title: "Football Leagues – Live Standings & Fixtures | Smart Live TV",
@@ -165,7 +166,7 @@ async function LeaguesContent() {
   try {
     leagues = await unifiedSportsAPI.getLeagues()
   } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to load leagues"
+    error = dataErrorMessage(err, "Failed to load leagues")
   }
 
   // Current season — calculated server-side so it's always correct
@@ -219,7 +220,7 @@ async function LeaguesContent() {
             </span>
           </h1>
           <p className="text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
-            Explore the world's top football leagues — from Europe's elite competitions to emerging leagues worldwide.
+            Explore the world&apos;s top football leagues — from Europe&apos;s elite competitions to emerging leagues worldwide.
             Live standings, fixtures, and full match coverage.
           </p>
         </div>

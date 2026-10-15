@@ -1,0 +1,45 @@
+# Dependabot configuration (C-04 / part of I-05).
+#
+# npm ecosystem: weekly PRs for direct dependencies. Groups patch/minor
+# updates into a single PR per week so a maintainer doesn't drown in
+# 40 tiny bumps.
+#
+# github-actions ecosystem: same cadence for workflow versions.
+#
+# Manual dep audits still run via .github/workflows/dependency-audit.yml
+# (see C-01) — that job fails the run only on critical prod-tree
+# advisories; Dependabot handles the ongoing bump PRs.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+      security-any:
+        applies-to: security-updates
+        update-types:
+          - major
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns:
+          - "*"

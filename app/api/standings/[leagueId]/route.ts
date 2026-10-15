@@ -32,7 +32,10 @@ export async function GET(request: Request, { params }: { params: { leagueId: st
         })
 
     } catch (error) {
-        console.error(`[Standings API] Error fetching standings for league ${params.leagueId}: `, error)
-        return NextResponse.json({ error: "Failed to fetch standings data" }, { status: 500 })
+        console.warn("[Standings API] fault:", error)
+        return NextResponse.json(
+            { error: "Upstream temporarily unavailable — we could not check just now." },
+            { status: 503, headers: { "Cache-Control": "no-store" } }
+        )
     }
 }

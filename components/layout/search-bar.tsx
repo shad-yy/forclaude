@@ -19,6 +19,12 @@ interface SearchResult {
   description?: string
 }
 
+// Row shapes returned by app/api/search/{teams,players,leagues,news}/route.ts.
+type TeamHit = { id: string | number; name: string; league?: string | null }
+type PlayerHit = { id: string | number; name: string; position?: string | null; team?: string | null }
+type LeagueHit = { id: string | number; name: string; sport?: string | null; country?: string | null }
+type NewsHit = { title: string; description?: string | null }
+
 export function SearchBar({ className }: { className?: string }) {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
@@ -83,7 +89,7 @@ export function SearchBar({ className }: { className?: string }) {
       if (teamsRes.status === "fulfilled" && teamsRes.value.ok) {
         const teamsJson = await teamsRes.value.json().catch(() => [])
         if (Array.isArray(teamsJson)) {
-          const teamResults = teamsJson.slice(0, 3).filter((t) => t && t.id && t.name).map((team: any) => ({
+          const teamResults = teamsJson.slice(0, 3).filter((t) => t && t.id && t.name).map((team: TeamHit) => ({
             id: `team-${team.id}`,
             title: team.name,
             type: "team" as const,
@@ -100,7 +106,7 @@ export function SearchBar({ className }: { className?: string }) {
           const playerResults = playersJson
             .slice(0, 3)
             .filter((p) => p && p.id && p.name)
-            .map((player: any) => ({
+            .map((player: PlayerHit) => ({
               id: `player-${player.id}`,
               title: player.name,
               type: "player" as const,
@@ -112,17 +118,23 @@ export function SearchBar({ className }: { className?: string }) {
       }
 
       if (newsRes.status === "fulfilled" && newsRes.value.ok) {
-        const newsJson = await newsRes.value.json().catch(() => [])
-        if (Array.isArray(newsJson)) {
-          const newsSearchResults = newsJson
+        // O-14: /api/search/news returns { status, articles, totalResults },
+        // not a bare array. The previous `Array.isArray(newsJson)` check
+        // was always false, so the news branch of the search bar never
+        // rendered results. Read `.articles` explicitly and array-check
+        // that instead.
+        const newsJson = await newsRes.value.json().catch(() => null) as { articles?: unknown } | null
+        const newsArticles = Array.isArray(newsJson?.articles) ? newsJson.articles : []
+        if (newsArticles.length > 0) {
+          const newsSearchResults = newsArticles
             .slice(0, 2)
-            .filter((a) => a && a.title)
-            .map((article: any, idx: number) => ({
+            .filter((a: NewsHit | null) => a && a.title)
+            .map((article: NewsHit, idx: number) => ({
               id: `news-${idx}`,
               title: article.title,
               type: "news" as const,
               url: `/news?search=${encodeURIComponent(searchQuery)}`,
-              description: (article.description || "").substring(0, 100) + "..." || "Sports news article",
+              description: article.description ? article.description.substring(0, 100) + "..." : "Sports news article",
             }))
           searchResults.push(...newsSearchResults)
         }
@@ -134,7 +146,7 @@ export function SearchBar({ className }: { className?: string }) {
           const leagueResults = leaguesJson
             .slice(0, 2)
             .filter((l) => l && l.id && l.name)
-            .map((league: any) => ({
+            .map((league: LeagueHit) => ({
               id: `league-${league.id}`,
               title: league.name,
               type: "league" as const,
@@ -145,39 +157,11 @@ export function SearchBar({ className }: { className?: string }) {
         }
       }
 
-      if (searchResults.length === 0) {
-        const mockResults: SearchResult[] = [
-          {
-            id: "1",
-            title: "Manchester United",
-            type: "team" as const,
-            url: "/teams/manchester-united",
-            description: "English Premier League team",
-          },
-          {
-            id: "2",
-            title: "Cristiano Ronaldo",
-            type: "player" as const,
-            url: "/players/cristiano-ronaldo",
-            description: "Portuguese forward",
-          },
-          {
-            id: "3",
-            title: "Premier League",
-            type: "league" as const,
-            url: "/leagues/premier-league",
-            description: "English top division",
-          },
-        ].filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase()))
-
-        setResults(mockResults)
-      } else {
-        const sortedResults = searchResults.sort((a, b) => {
-          const typeOrder = { team: 0, player: 1, news: 2, league: 3 }
-          return typeOrder[a.type] - typeOrder[b.type]
-        })
-        setResults(sortedResults.slice(0, 8))
-      }
+      // No match shows the "No results found" empty state — never
+      // placeholder rows (tests/search-bar-no-fake-results.test.ts).
+      const typeOrder = { team: 0, player: 1, news: 2, league: 3 }
+      searchResults.sort((a, b) => typeOrder[a.type] - typeOrder[b.type])
+      setResults(searchResults.slice(0, 8))
     } catch (error) {
       console.error("Search error:", error)
       setResults([])
@@ -318,7 +302,7 @@ export function SearchBar({ className }: { className?: string }) {
               </div>
             ) : query.length > 2 ? (
               <div className="p-4 text-center">
-                <p className="text-sm text-gray-400">No results found for "{query}"</p>
+                <p className="text-sm text-gray-400">No results found for &quot;{query}&quot;</p>
               </div>
             ) : (
               <div className="p-4">

@@ -17,6 +17,18 @@
  */
 
 import { Redis } from '@upstash/redis'
+import { shouldBypassIpChecks } from '@/lib/security/client-ip'
+
+/**
+ * A-06: answers "can fraud dedup + IP-limit checks actually run?".
+ * Trial provisioning callers should preflight with this and return 503
+ * if false — otherwise every dedup gate silently no-ops and duplicate
+ * trials go through. Library-level checkFraud remains best-effort by
+ * design (paid orders don't require dedup infra).
+ */
+export function isFraudInfraReady(): boolean {
+  return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+}
 
 let redis: Redis | null = null
 if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -219,14 +231,23 @@ export async function checkFraud(input: FraudCheckInput): Promise<FraudCheckResu
   if (!ipResult.allowed) return ipResult
 
   if (!redis) {
+    // Library contract: dedup/IP-limit checks are best-effort when Redis
+    // is unset. Callers that require dedup (trial provisioning) should
+    // preflight with isFraudInfraReady() and reject the request themselves.
+    // See A-06 in QA-LOG.md.
     return { allowed: true }
   }
 
   const canonical = canonicalEmail(email)
 
-  // 6b. Concurrency lock — prevent parallel racing requests with the same canonical email
+  // 6b. Concurrency lock — prevent parallel racing requests with the same canonical email.
+  // A-07: TTL was 30s and provisionTrialAndNotify can exceed 30s under panel latency
+  // (cms-8k call + two Resend emails). Extended to 300s (5 min) so the lock outlives
+  // any realistic provision. Complementary fix: recordFraudFingerprints is now called
+  // BEFORE the outbound provision in orders/route.ts, so even if the lock does expire
+  // the dedup fingerprint blocks duplicates.
   const lockKey = `fraud:lock:${canonical}`
-  const lockAcquired = await redis.set(lockKey, '1', { nx: true, ex: 30 })
+  const lockAcquired = await redis.set(lockKey, '1', { nx: true, ex: 300 })
   if (!lockAcquired) {
     return {
       allowed: false,
@@ -328,7 +349,12 @@ export async function recordFraudFingerprints(input: {
 // ─── IP Cooldown & Rate Limiting ──────────────────────────────────────────────
 
 async function checkIpLimits(ip: string): Promise<FraudCheckResult> {
-  if (!redis || !ip || ip === '0.0.0.0' || ip === '127.0.0.1') return { allowed: true }
+  // A-05: the loopback bypass used to be unconditional and was the E-02
+  // attack path — an attacker sent X-Forwarded-For: 0.0.0.0 to disable
+  // IP cooldown+rate-limit entirely. Now gated on NODE_ENV so production
+  // never bypasses even if a real 0.0.0.0 arrives (extraction failure).
+  if (!redis || !ip) return { allowed: true }
+  if (shouldBypassIpChecks(ip)) return { allowed: true }
 
   // A. Cooldown: Max 1 trial request per 3 minutes (prevents spam clicking/scripts)
   const cooldownKey = `fraud:ip_cooldown:${ip}`

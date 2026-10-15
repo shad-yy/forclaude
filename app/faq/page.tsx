@@ -6,7 +6,7 @@ import { AnswerBlock } from '@/components/seo/AnswerBlock'
 
 export const metadata: Metadata = {
   title: 'Smart Live TV FAQ — Channels, Setup, Billing & Support Answered',
-  description: 'Answers to every question about Smart Live TV: what channels are included, how to set up on Firestick & Smart TV, billing options, free trial details, and 24/7 support.',
+  description: 'Answers about Smart Live TV: channels included, setup on Firestick and Smart TV, billing, the free trial and WhatsApp support hours (9am–11pm UK, 7 days).',
   alternates: { canonical: `${ENV.BASE_URL}/faq` },
 }
 

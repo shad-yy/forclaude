@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
+import { ENV } from "@/lib/config/env"
 
 const TODAY_SCORES_TTL = 30 // 30 seconds — fresh enough for live scores, saves API quota
 
+// B-03 follow-up: read TheSportsDB key through ENV (centralised fallback +
+// startup warning in lib/config/env.ts). Previously did `process.env.THESPORTSDB_API_KEY
+// || "123"` inline — subtler form of the same trap B-03 fixed elsewhere.
 export async function GET(_request: NextRequest) {
   try {
     const today = new Date().toISOString().split('T')[0]
-    const apiKey = process.env.THESPORTSDB_API_KEY || "123"
-    const url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsday.php?d=${today}&s=Soccer`
+    const url = `https://www.thesportsdb.com/api/v1/json/${ENV.THESPORTSDB_KEY}/eventsday.php?d=${today}&s=Soccer`
 
     // Use next.js fetch cache for server-side deduplication (30s revalidation)
     const res = await fetch(url, { next: { revalidate: TODAY_SCORES_TTL } })
@@ -45,10 +48,13 @@ export async function GET(_request: NextRequest) {
       { headers: { 'Cache-Control': `public, s-maxage=${TODAY_SCORES_TTL}, stale-while-revalidate=90` } }
     )
   } catch (error) {
-    console.warn("[API] GET /api/scores/today error:", error)
+    // B-04.3: previously returned {matches:[], message:"No matches scheduled today"}
+    // with status 200 — a false claim about a normal future state, asserted during
+    // an outage. Now surfaces the fault honestly (api-fault-vs-absence §D-01b).
+    console.warn("[API] GET /api/scores/today fault:", error)
     return NextResponse.json(
-      { matches: [], message: "No matches scheduled today" },
-      { status: 200 }
+      { error: "Upstream temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
     )
   }
 }

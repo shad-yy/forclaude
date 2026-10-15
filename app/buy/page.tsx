@@ -109,7 +109,7 @@ export default function BuyPage() {
           <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#00e676]" /> Instant activation</span>
           <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#00e676]" /> 7-day money back</span>
           <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#00e676]" /> No contract</span>
-          <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#00e676]" /> 24/7 support</span>
+          <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-[#00e676]" /> Support 9am–11pm, 7 days</span>
         </div>
 
         <h1 className="text-3xl md:text-4xl font-extrabold text-white text-center mb-3">
