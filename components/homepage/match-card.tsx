@@ -143,6 +143,7 @@ export function MatchCard() {
     const [matches, setMatches] = useState<MatchData[]>([])
     const [results, setResults] = useState<MatchData[]>([])
     const [loading, setLoading] = useState(true)
+    const [unavailable, setUnavailable] = useState(false)
     const [dayLabel, setDayLabel] = useState<string>("today")
     const [tab, setTab] = useState<"upcoming" | "results">("upcoming")
     const [selectedMatch, setSelectedMatch] = useState<MatchData | null>(null)
@@ -156,9 +157,13 @@ export function MatchCard() {
                     setMatches(json.upcoming || json.events || [])
                     setResults(json.results || [])
                     setDayLabel(json.label || "today")
+                } else {
+                    // A 503 is an outage, not "no matches" (CLAUDE.md: fault vs absence).
+                    setUnavailable(true)
                 }
             } catch (error) {
                 console.error("Failed to load matches", error)
+                setUnavailable(true)
             } finally {
                 setLoading(false)
             }
@@ -402,7 +407,9 @@ export function MatchCard() {
                 ) : (
                     <div className="text-center py-12 bg-surface rounded-2xl border border-border">
                         <p className="text-text-secondary text-lg">
-                            {tab === "results" ? "No results yet today. Check back after kick-off." : "No matches found."}
+                            {unavailable
+                                ? "Data temporarily unavailable. Please check back shortly."
+                                : tab === "results" ? "No results yet today. Check back after kick-off." : "No matches found."}
                         </p>
                     </div>
                 )}

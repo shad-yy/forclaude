@@ -3,11 +3,12 @@
 // news was already returning 500 on fault; only its body is tightened
 // (was: {status:"error", articles:[], totalResults:0}; now: {error:...}).
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const searchAllMock = vi.fn();
 const lookupLineupMock = vi.fn();
+const eventsDayMock = vi.fn();
 const getLatestSportsNewsMock = vi.fn();
 
 vi.mock("@/lib/api/unified-sports-api", () => ({
@@ -15,6 +16,10 @@ vi.mock("@/lib/api/unified-sports-api", () => ({
 }));
 vi.mock("@/lib/api/the-sports-db", () => ({
   lookupLineup: (...a: unknown[]) => lookupLineupMock(...a),
+  // Spotlight and fixtures/today read through eventsDay(). Without it here,
+  // both routes crashed on a missing export and their 503 tests passed for
+  // that reason, not because a fault was handled.
+  eventsDay: (...a: unknown[]) => eventsDayMock(...a),
 }));
 vi.mock("@/lib/api/news", () => ({
   getLatestSportsNews: (...a: unknown[]) => getLatestSportsNewsMock(...a),
@@ -60,45 +65,41 @@ describe("B-04.9 /api/events/[id]/lineups", () => {
 });
 
 describe("B-04.10 /api/spotlight", () => {
-  const fetchStub = vi.fn();
-  beforeEach(() => {
-    fetchStub.mockReset();
-    vi.stubGlobal("fetch", fetchStub);
-    vi.resetModules();
-  });
-  afterEach(() => vi.unstubAllGlobals());
+  beforeEach(() => { eventsDayMock.mockReset(); vi.resetModules(); });
 
-  it("fetch throws → 503+no-store", async () => {
-    fetchStub.mockRejectedValue(new Error("ECONNRESET"));
+  it("eventsDay faults → 503+no-store", async () => {
+    eventsDayMock.mockRejectedValue(new Error("UpstreamFaultError: eventsday.php → 503"));
     const { GET } = await import("@/app/api/spotlight/route");
     const res = await GET();
     expect(res.status).toBe(503);
     expect(res.headers.get("Cache-Control")).toBe("no-store");
   });
+
+  it("an empty day → 200 (absence)", async () => {
+    eventsDayMock.mockResolvedValue([]);
+    const { GET } = await import("@/app/api/spotlight/route");
+    const res = await GET();
+    expect(res.status).toBe(200);
+  });
 });
 
 describe("B-04.11 /api/fixtures/today", () => {
-  const fetchStub = vi.fn();
-  beforeEach(() => {
-    fetchStub.mockReset();
-    vi.stubGlobal("fetch", fetchStub);
-    vi.resetModules();
-  });
-  afterEach(() => vi.unstubAllGlobals());
+  beforeEach(() => { eventsDayMock.mockReset(); vi.resetModules(); });
 
-  it("fetch throws on both today+tomorrow → 503+no-store", async () => {
-    // Fixtures/today uses Promise.allSettled on today/tomorrow. When both
-    // reject, `todayEvents` and `tomorrowEvents` end up as [] and the try
-    // block does NOT throw — it returns a normal 200 with empty results.
-    // That is the "absence" branch (Promise.allSettled masks the fault).
-    // Only if the outer flow throws does the catch fire.
-    // To force the catch: make fetch throw synchronously (bypassing
-    // allSettled) via a setter that throws on the first call.
-    fetchStub.mockImplementation(() => { throw new Error("sync boom") });
+  it("eventsDay faults → 503+no-store", async () => {
+    eventsDayMock.mockRejectedValue(new Error("UpstreamFaultError: eventsday.php → 503"));
     const { GET } = await import("@/app/api/fixtures/today/route");
     const res = await GET();
-    expect(res.status, "when the try-block throws, catch must return 503").toBe(503);
+    expect(res.status).toBe(503);
     expect(res.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("an empty day → 200 with empty lists (absence)", async () => {
+    eventsDayMock.mockResolvedValue([]);
+    const { GET } = await import("@/app/api/fixtures/today/route");
+    const res = await GET();
+    expect(res.status).toBe(200);
+    expect((await res.json()).upcoming).toEqual([]);
   });
 });
 

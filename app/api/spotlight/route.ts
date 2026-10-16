@@ -1,65 +1,9 @@
 import { NextResponse } from "next/server"
 import { eventsDay, type SportsDbEvent } from "@/lib/api/the-sports-db"
+import { REQUEST_BUDGET_MS, ifAlreadyCached, withinBudget } from "@/lib/api/request-budget"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-/**
- * How long this route will wait for the upstream data it actually needs.
- *
- * Every TheSportsDB call goes through makeRequest → enqueueRateLimit(), which
- * serialises requests 2400ms apart (RATE_LIMIT_MS), and retries a 5xx twice.
- * Measured on 2026-10-10 with the three original calls in place:
- *
- *   healthy, cold cache   4812 ms   (two 2400ms rate-limit gaps)
- *   total upstream outage 19236 ms  (3 calls x 3 attempts x 2400ms + backoff)
- *
- * A Vercel Node function defaults to a 10s limit, so the outage case did not
- * return the 503 below at all — it ran past the limit and the caller got a
- * gateway timeout. Worse than the raw `fetch` this replaced, which failed
- * fast. Hence one blocking call and a 3s ceiling, which allows the first
- * retry (attempts land at ~0s and ~2.6s) and cuts off the third at ~5.2s: a
- * fault now answers 503
- * well inside the function limit, and the abandoned swrGet still finishes in
- * the background and populates the cache for the next request.
- */
-const REQUEST_BUDGET_MS = 3_000
-
-/** Long enough for a cache hit, too short to queue for a rate-limit slot. */
-const CACHE_HIT_MS = 300
-
-/**
- * Reject if `work` has not settled within `ms`, so a slow or dead upstream
- * cannot hold the request open past the function limit.
- */
-async function withinBudget<T>(work: Promise<T>, ms: number, label: string): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const budget = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`${label}: exceeded ${ms}ms budget`)), ms)
-  })
-  try {
-    return await Promise.race([work, budget])
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-/**
- * Resolve to `work`'s value if it is already cached (i.e. settles almost
- * immediately), otherwise to an empty list. Never rejects: this is optional
- * data, and a failure here must not turn a good response into a 503.
- *
- * The losing promise is left running on purpose — swrGet will still fill the
- * cache — so its rejection is swallowed to avoid an unhandled rejection.
- */
-async function ifAlreadyCached<T>(work: Promise<T[]>): Promise<T[]> {
-  work.catch(() => {})
-  try {
-    return await withinBudget(work, CACHE_HIT_MS, 'cache-only read')
-  } catch {
-    return []
-  }
-}
 
 /**
  * An event after scoring, which adds three derived fields.

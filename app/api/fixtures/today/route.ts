@@ -1,126 +1,101 @@
 import { NextResponse } from "next/server"
-import { ENV } from "@/lib/config/env"
+import { eventsDay } from "@/lib/api/the-sports-db"
+import { REQUEST_BUDGET_MS, ifAlreadyCached, withinBudget } from "@/lib/api/request-budget"
+import type { SportsDbEvent } from "@/lib/types/sportsdb"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// B-03: previously hardcoded `/json/123/` (public test key), so the route
-// ignored THESPORTSDB_API_KEY when set. Now reads through ENV.THESPORTSDB_KEY
-// which centralises the fallback + startup warning in lib/config/env.ts.
-const SPORTSDB_BASE = () => `https://www.thesportsdb.com/api/v1/json/${ENV.THESPORTSDB_KEY}`
+// O-37: this route used to call TheSportsDB with raw `fetch` and
+// `cache: 'no-store'` — two or three uncached, unthrottled requests per visit,
+// with no time limit. On 2026-10-15 22:29–22:35 UTC it did not answer within
+// 30s for six production-monitor requests in a row. It also turned an outage
+// into a 200 with empty lists, so the homepage said "No matches found".
+//
+// Now: one blocking call through eventsDay() (cache + rate limiter) under
+// REQUEST_BUDGET_MS, same as /api/spotlight. Tomorrow's and yesterday's
+// fixtures are only used when already cached. A fault answers 503 + no-store;
+// a day with no matches answers 200 with empty lists.
 
-function mapEvent(e: any) {
-    return {
-        idLeague: e.idLeague ?? null,
-        idEvent: e.idEvent,
-        strEvent: e.strEvent,
-        strHomeTeam: e.strHomeTeam,
-        strAwayTeam: e.strAwayTeam,
-        strHomeTeamBadge: e.strHomeTeamBadge ?? null,
-        strAwayTeamBadge: e.strAwayTeamBadge ?? null,
-        intHomeScore: e.intHomeScore !== null && e.intHomeScore !== undefined ? String(e.intHomeScore) : null,
-        intAwayScore: e.intAwayScore !== null && e.intAwayScore !== undefined ? String(e.intAwayScore) : null,
-        strTime: e.strTime || e.strTimeLocal || "",
-        strDate: e.dateEvent || e.strDate || "",
-        strLeague: e.strLeague,
-        strLeagueBadge: e.strLeagueBadge ?? null,
-        strStatus: e.strStatus || e.strResult || "Scheduled",
-    }
+type Event = SportsDbEvent & { strLeagueBadge?: string | null }
+
+function mapEvent(e: Event) {
+  return {
+    idLeague: e.idLeague ?? null,
+    idEvent: e.idEvent,
+    strEvent: e.strEvent,
+    strHomeTeam: e.strHomeTeam,
+    strAwayTeam: e.strAwayTeam,
+    strHomeTeamBadge: e.strHomeTeamBadge ?? null,
+    strAwayTeamBadge: e.strAwayTeamBadge ?? null,
+    intHomeScore: e.intHomeScore != null ? String(e.intHomeScore) : null,
+    intAwayScore: e.intAwayScore != null ? String(e.intAwayScore) : null,
+    strTime: e.strTime || e.strTimeLocal || "",
+    strDate: e.dateEvent || e.strDate || "",
+    strLeague: e.strLeague,
+    strLeagueBadge: e.strLeagueBadge ?? null,
+    strStatus: e.strStatus || e.strResult || "Scheduled",
+  }
 }
 
+function isFinished(e: Event): boolean {
+  const status = (e.strStatus || '').toLowerCase()
+  return status.includes('finished') || status === 'ft'
+}
+
+const isoDate = (ms: number) => new Date(ms).toISOString().split('T')[0]
+
 export async function GET() {
-    try {
-        // Get today AND tomorrow in UTC to catch timezone edge cases
-        const now = new Date()
-        const todayUTC = now.toISOString().split('T')[0]
-        const tomorrowUTC = new Date(now.getTime() + 86400000)
-          .toISOString().split('T')[0]
-        const yesterdayUTC = new Date(now.getTime() - 86400000)
-          .toISOString().split('T')[0]
+  try {
+    const now = Date.now()
+    const today = isoDate(now)
 
-        // Fetch fixtures for today AND tomorrow
-        const [todayRes, tomorrowRes] = await Promise.allSettled([
-          fetch(
-            `${SPORTSDB_BASE()}/eventsday.php?d=${todayUTC}&s=Soccer`,
-            { cache: 'no-store' }
-          ),
-          fetch(
-            `${SPORTSDB_BASE()}/eventsday.php?d=${tomorrowUTC}&s=Soccer`,
-            { cache: 'no-store' }
-          ),
-        ])
+    const todayEvents: Event[] = await withinBudget(
+      eventsDay({ date: today, sport: 'Soccer' }),
+      REQUEST_BUDGET_MS,
+      `fixtures: today (${today})`,
+    )
+    const tomorrowEvents: Event[] = await ifAlreadyCached(
+      eventsDay({ date: isoDate(now + 86_400_000), sport: 'Soccer' }),
+    )
 
-        // Combine and deduplicate
-        const todayEvents = todayRes.status === 'fulfilled' && todayRes.value.ok
-          ? (await todayRes.value.json())?.events || []
-          : []
-        const tomorrowEvents = tomorrowRes.status === 'fulfilled' && tomorrowRes.value.ok
-          ? (await tomorrowRes.value.json())?.events || []
-          : []
+    const allEvents = [...todayEvents, ...tomorrowEvents]
 
-        const allEvents = [...todayEvents, ...tomorrowEvents]
+    const upcoming = allEvents
+      .filter((e) => !isFinished(e) && e.intHomeScore == null)
+      .slice(0, 8)
+      .map(mapEvent)
 
-        // Separate upcoming and results
-        const upcoming = allEvents
-          .filter((e: any) => {
-            const status = (e.strStatus || '').toLowerCase()
-            return !status.includes('finished') && 
-                   status !== 'ft' &&
-                   e.intHomeScore === null
-          })
-          .slice(0, 8)
-          .map(mapEvent)
+    const results = allEvents
+      .filter((e) => isFinished(e) || (e.intHomeScore != null && e.intHomeScore !== ''))
+      .slice(0, 8)
+      .map(mapEvent)
 
-        const results = allEvents
-          .filter((e: any) => {
-            const status = (e.strStatus || '').toLowerCase()
-            return status.includes('finished') || 
-                   status === 'ft' ||
-                   (e.intHomeScore !== null && e.intHomeScore !== '')
-          })
-          .slice(0, 8)
-          .map(mapEvent)
+    // No results yet today: show yesterday's, but only if they are cached.
+    const finalResults = results.length > 0
+      ? results
+      : (await ifAlreadyCached<Event>(eventsDay({ date: isoDate(now - 86_400_000), sport: 'Soccer' })))
+          .filter(isFinished)
+          .slice(0, 6)
+          .map((e) => ({ ...mapEvent(e), isYesterday: true }))
 
-        // If no results today, get yesterday's
-        let finalResults = results
-        if (results.length === 0) {
-          try {
-            const yestRes = await fetch(
-              `${SPORTSDB_BASE()}/eventsday.php?d=${yesterdayUTC}&s=Soccer`,
-              { cache: 'no-store' }
-            )
-            if (yestRes.ok) {
-              const yestData = await yestRes.json()
-              finalResults = (yestData?.events || [])
-                .filter((e: any) => {
-                  const s = (e.strStatus || '').toLowerCase()
-                  return s.includes('finished') || s === 'ft'
-                })
-                .slice(0, 6)
-                .map((e: any) => ({ ...mapEvent(e), isYesterday: true }))
-            }
-          } catch {}
-        }
-
-        return NextResponse.json({
-          upcoming,
-          events: upcoming, // backwards compat
-          results: finalResults,
-          label: upcoming.length > 0 ? 'today' : 'upcoming',
-          count: upcoming.length,
-        }, {
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
-          }
-        })
-    } catch (error) {
-        // B-04.11: fault → 503+no-store per hybrid rule. The inner
-        // Promise.allSettled already masks per-endpoint failures into
-        // empty arrays — only structural errors reach this catch.
-        console.error(`[Fixtures Today API] fault:`, error)
-        return NextResponse.json(
-          { error: "Fixtures temporarily unavailable — we could not check just now." },
-          { status: 503, headers: { "Cache-Control": "no-store" } }
-        )
-    }
+    return NextResponse.json({
+      upcoming,
+      events: upcoming, // backwards compat
+      results: finalResults,
+      label: upcoming.length > 0 ? 'today' : 'upcoming',
+      count: upcoming.length,
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=60',
+      },
+    })
+  } catch (error) {
+    // Fault → 503 + no-store per the hybrid rule (CLAUDE.md).
+    console.error(`[Fixtures Today API] fault:`, error)
+    return NextResponse.json(
+      { error: "Fixtures temporarily unavailable — we could not check just now." },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    )
+  }
 }
