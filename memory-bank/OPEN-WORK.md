@@ -278,14 +278,14 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Why it isn't done**: needs the Vercel Production environment, which only the owner can read.
 - **What would close it**: owner confirms `THESPORTSDB_API_KEY` is set to the paid/registered key in Production; then one request to `/api/spotlight` on the live site returns 200.
 
-## O-37 — two more routes reach TheSportsDB without the cache or the rate limiter
+## O-37 — one more route reaches TheSportsDB without the cache or the rate limiter
 
-- **Since**: 2026-10-10, found while fixing /api/spotlight.
+- **Since**: 2026-10-10, found while fixing /api/spotlight. Narrowed 2026-10-16: `/api/fixtures/today` converted after it hung in production (QA-LOG R-29).
 - **Layer**: L2 API routes.
 - **Owner**: unassigned.
-- **Facts**: `app/api/fixtures/today/route.ts` (three requests) and `app/api/scores/today/route.ts` (one) still build a TheSportsDB URL and call `fetch` directly, so they bypass `lib/cache.ts` and `enqueueRateLimit()` exactly as spotlight did. `app/api/fixtures/today` is called from the homepage by `components/homepage/match-card.tsx`, so it carries the same spiral risk. Both are allow-listed in `tests/sportsdb-fetches-go-through-cache.test.ts`, which fails if a third route joins them, and also fails if one of these is fixed and left on the list.
-- **Why it isn't done**: no failure is driving them yet, and converting them is a behavioural change with the same latency trade-off spotlight needed (one blocking call plus a request budget, not three serialised calls — see R-26's measurements before repeating the mistake).
-- **What would close it**: convert each to the client in `lib/api/the-sports-db.ts`, measure the fault path against Vercel's 10s function limit, then remove it from `KNOWN_DEBT`.
+- **Facts**: `app/api/scores/today/route.ts` still builds a TheSportsDB URL and calls `fetch` directly, with no time limit, so it bypasses `lib/cache.ts` and `enqueueRateLimit()` exactly as spotlight and fixtures/today did. It is allow-listed in `tests/sportsdb-fetches-go-through-cache.test.ts`, which fails if another route joins it and also fails if it is fixed and left on the list.
+- **Why it isn't done**: no failure is driving it yet.
+- **What would close it**: convert it the same way — one `eventsDay()` call under `REQUEST_BUDGET_MS` from `lib/api/request-budget.ts` — then remove it from `KNOWN_DEBT`.
 
 ## O-38 — the hybrid rule and "no console errors" still disagree in principle
 

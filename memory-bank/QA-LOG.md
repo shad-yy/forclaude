@@ -38,6 +38,19 @@ Corrections carried at the top per `documentation-discipline` rule 5. When an ea
 
 ## Entries
 
+### R-29 — `/api/fixtures/today` answers in bounded time; the homepage says "unavailable" on a fault
+
+- **Date**: 2026-10-16
+- **Commit**: the commit that adds this entry (PR from `claude/exciting-planck-6a4nbr`).
+- **Layer**: L2 API route + L1 homepage component.
+- **Severity**: high (a homepage data source hung in production).
+- **Was**: the production monitor's manual run `38817356999` (2026-10-15 22:29–22:35 UTC) failed only "fixtures API returns valid dates not year 5998": `GET /api/fixtures/today` did not answer within 30s, six times (three projects, two attempts). A fetch through the Vercel connector on 2026-10-16 02:23 UTC timed out after 60s, while `/api/spotlight` answered 503 at once — TheSportsDB was faulting, and only the route without a time limit hung. The route awaited two or three raw `fetch` calls with `cache: 'no-store'` and no timeout, outside `lib/cache.ts` and `enqueueRateLimit()` (O-37), and `Promise.allSettled` turned an outage into 200 with empty lists, so `components/homepage/match-card.tsx` said "No matches found".
+- **Now**: one `eventsDay()` call (cache + rate limiter) under `REQUEST_BUDGET_MS`; the next and previous days' fixtures only when already cached. Fault → 503 + no-store; an empty day → 200 with empty lists; success is CDN-cacheable for 60s. The budget helpers moved from the spotlight route to `lib/api/request-budget.ts` and both routes import them. The match card shows "Data temporarily unavailable" when the route fails. `tests/routes-fault-vs-absence/batch-8-to-12.test.ts` mocked `the-sports-db` without `eventsDay`, so its spotlight and fixtures 503 tests passed because the route crashed on a missing export; the mock now provides it and each route has a fault and an absence case.
+- **Test**: `tests/fixtures-today-fault-is-bounded.test.ts` — hanging upstream → 503 in under 8s; outage → 503 + no-store; empty day → 200; healthy day splits upcoming/results. Against the previous route the hang case ran into the 30s test timeout and the outage case returned 200.
+- **Run it**: `npx vitest run tests/fixtures-today-fault-is-bounded.test.ts`.
+- **Result**: see the PR body for the full-suite count, tsc and build. A local `next start` with TheSportsDB unreachable answered 503 in 3.0s.
+- **Not a production issue, noted**: under `next start`, `next.config.mjs`'s `/api/(.*)` header rule (`public, max-age=3600, stale-while-revalidate=86400`) replaced the route's `no-store`; on Vercel the live `/api/spotlight` 503 carried `cache-control: no-store`, so the route's header wins there.
+
 ### R-28 — Remove auto-index.yml: a dead Google ping and an off-policy Indexing API call
 
 - **Date**: 2026-10-15

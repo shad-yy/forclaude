@@ -40,14 +40,12 @@ const PROXY = "app/api/thesportsdb/[...path]/route.ts"
 
 /**
  * Routes that still reach TheSportsDB directly. Listed so that a NEW
- * occurrence fails this test — not to bless these two.
+ * occurrence fails this test — not to bless this one.
  *
- * O-37: both are the same shape as the spotlight bug. /api/fixtures/today is
- * also called from the homepage (match-card.tsx), so it carries the same
- * spiral risk and should be converted next.
+ * O-37: same shape as the spotlight bug. /api/fixtures/today was converted
+ * on 2026-10-16 after it hung in production (QA-LOG R-29).
  */
 const KNOWN_DEBT = new Set([
-  "app/api/fixtures/today/route.ts",
   "app/api/scores/today/route.ts",
 ])
 
