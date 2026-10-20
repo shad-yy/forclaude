@@ -41,6 +41,8 @@ Read at the start of every session:
 *   `memory-bank/PROJECT.md` — product, stack, integrations, repo structure.
 *   `memory-bank/PATTERNS.md` — API layer, caching TTLs, coding non-negotiables.
 *   `.cursorrules` — short form of the above.
+*   `memory-bank/AUTOMATION.md` — every workflow, schedule, script, secret and external
+    service that runs without a person, its current status, and what it is missing.
 
 Update the memory bank after any task that changes architecture, adds an integration, or
 fixes a non-obvious bug.
