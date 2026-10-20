@@ -84,7 +84,9 @@ Fields: **Since** (YYYY-MM-DD) · **Layer** · **Owner** · **Why it isn't done*
 - **Why it isn't done**: fixing it changes what visitors see site-wide during an outage (stale data, or an error state, instead of empty sections), so the approach is the owner's call.
 - **What would close it**: owner picks an approach; then red-first tests (the probe becomes the first), fix, full suite, preview check.
 
-## O-23 — URGENT: rotate the RapidAPI key and reset two panel lines (committed to a public repo)
+## O-23 — URGENT: rotate the RapidAPI and NewsData keys and reset two panel lines (committed to a public repo)
+
+- **Added 2026-10-19**: the weekly full-history Gitleaks run (2026-10-19, 531 findings) led to a history search that found a second real-looking key: `NEWS_API_KEY` (36 characters, NewsData.io `pub` format) in `env.local`, committed 2026-06-09 and 2026-06-11. It was never in the notes before. Rotate it in the NewsData.io dashboard and update Vercel. The other `env.local` values (`RESEND_API_KEY`, `UPSTASH_REDIS_REST_TOKEN`, `JWT_SECRET`) were placeholders. Most of the 531 findings are a public Cloudflare page key inside saved error pages under `logs/`, not this project's secrets.
 
 - **Since**: key since at least 2026-07-02 (`309e8bc`); HAR since 2026-09-13 (`1999666`). Found 2026-09-24.
 - **Layer**: L0 secrets.
@@ -362,9 +364,10 @@ Was: `components/layout/search-bar.tsx:115` did `Array.isArray(newsJson)` on `/a
 - **Facts**: `pnpm audit --prod` on `4d1f877`: 2 critical, 21 high. Both criticals are in `next` <15.5.24 (published 2026-09-08): GHSA-p293-qw3h-jr36 (remote code execution on Windows-hosted servers — Vercel is not Windows) and GHSA-2xp9-vwfh-vxw4 (remote code execution via libheif/sharp when AVIF files are optimised — `next.config.mjs` outputs WebP only, so exposure is lower, not shown to be zero).
 - **What would close it**: land Next.js 15.5.24 or later. PR #14 (15.5.27) still fails static generation.
 
-## O-48 — Scheduled routine did not run on 2026-10-15
+## O-48 — Scheduled routine has never completed a run
 
 - **Since**: 2026-10-15 04:53 UTC.
 - **Owner**: site owner (claude.ai plan / usage).
-- **Facts**: routine `trig_011W5QzFnRRwNGWjykchLJ6F` fired and failed after 7 seconds with `ROUTINE_RUN_FAILURE_REASON_USAGE_LIMIT_REACHED`. No branch, PR or report was produced.
-- **What would close it**: a scheduled run that completes; the next is 2026-10-16 04:52 UTC.
+- **Facts**: routine `trig_011W5QzFnRRwNGWjykchLJ6F` failed on 2026-10-15 (7 s) and 2026-10-19 (6 s) with `ROUTINE_RUN_FAILURE_REASON_USAGE_LIMIT_REACHED`; the trigger keeps only its latest run, and 2026-10-16 to 2026-10-18 left no branch, PR or commit. Separately, the spec requires every post to link to `/pricing`, `/free-trial` and `/setup/firestick`; the routine runs as Claude, which declines to write posts that sell this service (owner told 2026-10-15), so expect health reports and no published posts even once it runs.
+- **What would close it**: enough usage allowance for the 05:52 UK run, then one run that completes and reports.
+
