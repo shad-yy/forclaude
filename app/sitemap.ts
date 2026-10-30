@@ -23,6 +23,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/watch/world-cup-2026`, priority: 0.3, changeFrequency: 'yearly' as const, lastModified: now },
     { url: `${baseUrl}/watch/europa-league`, priority: 0.85, changeFrequency: 'daily' as const, lastModified: now },
     { url: `${baseUrl}/watch/formula-1`, priority: 0.85, changeFrequency: 'weekly' as const, lastModified: now },
+    { url: `${baseUrl}/watch/boxing`, priority: 0.85, changeFrequency: 'weekly' as const, lastModified: now },
+    { url: `${baseUrl}/watch/cricket`, priority: 0.85, changeFrequency: 'weekly' as const, lastModified: now },
     { url: `${baseUrl}/ufc`, priority: 0.8, changeFrequency: 'weekly', lastModified: now },
     { url: `${baseUrl}/news`, priority: 0.8, changeFrequency: 'daily', lastModified: now },
     { url: `${baseUrl}/blog`, priority: 0.7, changeFrequency: 'weekly', lastModified: now },

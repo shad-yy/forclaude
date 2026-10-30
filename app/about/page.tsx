@@ -3,15 +3,42 @@ import Link from 'next/link'
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
 import { AnswerBlock } from '@/components/seo/AnswerBlock'
+import { SchemaMarkup } from '@/components/SchemaMarkup'
+import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: 'About Smart Live TV | IPTV Streaming Service',
   description: 'Learn about Smart Live TV — the UK\'s premium IPTV service with 230,000+ channels, 4K streaming, and no contracts. Free 24-hour trial.',
+  alternates: { canonical: `${ENV.BASE_URL}/about` },
 }
 
 export default function AboutPage() {
+  const aboutSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    '@id': `${ENV.BASE_URL}/about`,
+    name: 'About Smart Live TV',
+    description: 'Learn about Smart Live TV — the UK\'s premium IPTV service with 230,000+ channels, 4K streaming, and no contracts.',
+    url: `${ENV.BASE_URL}/about`,
+    mainEntity: { '@id': `${ENV.BASE_URL}/#organization` },
+    isPartOf: { '@id': `${ENV.BASE_URL}/#website` },
+    inLanguage: 'en-GB',
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    '@id': `${ENV.BASE_URL}/about#breadcrumb`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${ENV.BASE_URL}/` },
+      { '@type': 'ListItem', position: 2, name: 'About', item: `${ENV.BASE_URL}/about` },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-100">
+      <SchemaMarkup schema={aboutSchema} />
+      <SchemaMarkup schema={breadcrumbSchema} />
       <FadeIn>
       <section className="pt-28 md:pt-36 pb-16 md:pb-20 px-4 border-b border-[#2a2a3a]">
         <div className="container mx-auto max-w-3xl">

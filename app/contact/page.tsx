@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { FadeIn } from "@/components/ui/fade-in"
 import { StaggerIn } from "@/components/ui/stagger-in"
+import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: 'Contact Smart Live TV | Get Support',
   description: 'Get in touch with the Smart Live TV team. We\'re here to help with setup, billing, or any questions about our IPTV service.',
+  alternates: { canonical: `${ENV.BASE_URL}/contact` },
 }
 
 export default function ContactPage() {

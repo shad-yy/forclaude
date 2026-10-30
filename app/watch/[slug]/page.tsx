@@ -158,9 +158,10 @@ export default async function WatchLeaguePage({ params }: Props) {
     const sportsOrgSchema = {
         '@context': 'https://schema.org',
         '@type': 'SportsOrganization',
+        '@id': `${ENV.BASE_URL}/watch/${slug}#league`,
         name: theme.name,
         url: `${ENV.BASE_URL}/watch/${slug}`,
-        sport: 'Soccer',
+        sport: 'Football',
         location: {
             '@type': 'Place',
             addressCountry: theme.country,

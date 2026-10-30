@@ -47,10 +47,11 @@ export default function HomePage() {
       height: 630,
     },
     description: 'UK IPTV service replacing Netflix, Disney+, Amazon Prime and Sky Sports with one subscription from £12/month. 230,000+ channels, 4K quality, free 24-hour trial.',
+    foundingDate: '2024',
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer support',
-      availableLanguage: ['English'],
+      availableLanguage: ['English', 'Arabic'],
       areaServed: 'GB',
       hoursAvailable: {
         '@type': 'OpeningHoursSpecification',

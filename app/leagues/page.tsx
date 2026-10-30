@@ -5,11 +5,13 @@ import { Trophy, Globe, Users, Calendar, Star, TrendingUp, Zap, ArrowRight, Shie
 import { unifiedSportsAPI, type UnifiedLeague } from "@/lib/api/unified-sports-api"
 import { OptimizedImage } from "@/components/ui/optimized-image"
 import { dataErrorMessage } from "@/lib/api/errors"
+import { ENV } from '@/lib/config/env'
 
 export const metadata: Metadata = {
   title: "Football Leagues – Live Standings & Fixtures | Smart Live TV",
   description:
     "Explore the world's top football leagues: Premier League, La Liga, Bundesliga, Serie A, Ligue 1. Live standings, fixtures, and full match coverage.",
+  alternates: { canonical: `${ENV.BASE_URL}/leagues` },
 }
 
 // ISR: revalidate every 24 hours — league metadata rarely changes

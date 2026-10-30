@@ -85,7 +85,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en-GB" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
@@ -95,53 +95,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.thesportsdb.com" />
         <link rel="preconnect" href="https://r2.thesportsdb.com" />
         <link rel="dns-prefetch" href="https://r2.thesportsdb.com" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "@id": "https://smartlivetv.co.uk/#organization",
-              name: "Smart Live TV",
-              url: "https://smartlivetv.co.uk",
-              logo: {
-                "@type": "ImageObject",
-                url: "https://smartlivetv.co.uk/favicon.svg",
-              },
-              description:
-                "UK IPTV streaming service with 230,000+ channels including Sky Sports, TNT Sports, Netflix, and Disney+ from £12/month.",
-              foundingDate: "2024",
-              contactPoint: {
-                "@type": "ContactPoint",
-                contactType: "customer service",
-                availableLanguage: ["English", "Arabic"],
-              },
-            }),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              "@id": "https://smartlivetv.co.uk/#website",
-              name: "Smart Live TV",
-              url: "https://smartlivetv.co.uk",
-              publisher: { "@id": "https://smartlivetv.co.uk/#organization" },
-              inLanguage: "en-GB",
-              potentialAction: {
-                "@type": "SearchAction",
-                target: {
-                  "@type": "EntryPoint",
-                  urlTemplate:
-                    "https://smartlivetv.co.uk/search?q={search_term_string}",
-                },
-                "query-input": "required name=search_term_string",
-              },
-            }),
-          }}
-        />
+        {/* BroadcastService — site-wide; Organization + WebSite live in page.tsx */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

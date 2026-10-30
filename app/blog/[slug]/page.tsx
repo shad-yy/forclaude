@@ -4,6 +4,7 @@ import { SchemaMarkup } from "@/components/SchemaMarkup"
 import { BLOG_POSTS } from "@/lib/blog/posts"
 import { ENV } from "@/lib/config/env"
 import { BlogPostLayout } from "@/components/blog/BlogPostLayout"
+import { resolveAuthor } from "@/lib/constants/authors"
 import sanitizeHtml from "sanitize-html"
 
 /**
@@ -82,16 +83,23 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   // Use the post's published date as dateModified (stable across builds)
   const dateModified = new Date(post.publishedAt).toISOString()
 
+  const authorData = resolveAuthor(post.author)
+
   const articleSchema = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     headline: post.title,
     description: post.description,
     datePublished: post.publishedAt,
     dateModified,
     author: {
-      "@type": "Organization",
-      name: "Smart Live TV",
+      "@type": "Person",
+      name: authorData.name,
+      jobTitle: authorData.jobTitle,
+      description: authorData.bio,
+      url: authorData.url,
+      sameAs: authorData.sameAs,
+      knowsAbout: authorData.knowsAbout,
     },
     publisher: {
       '@id': `${ENV.BASE_URL}/#organization`,
@@ -99,7 +107,13 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     isPartOf: {
       '@id': `${ENV.BASE_URL}/#website`,
     },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${ENV.BASE_URL}/blog/${post.slug}`,
+    },
     url: `${ENV.BASE_URL}/blog/${post.slug}`,
+    inLanguage: "en-GB",
+    wordCount: post.content.replace(/<[^>]+>/g, '').split(/\s+/).length,
   }
 
   // Auto-extract FAQ pairs for FAQPage schema (rich results)
@@ -136,17 +150,30 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     'comparison': ['Price Comparison', 'IPTV vs Sky', 'Streaming Value'],
   }
 
+  // SpeakableSpecification for voice assistants (AEO — Answer Engine Optimization)
+  const speakableSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${ENV.BASE_URL}/blog/${post.slug}#webpage`,
+    url: `${ENV.BASE_URL}/blog/${post.slug}`,
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['h1', '.summary', 'article p:first-of-type'],
+    },
+  }
+
   return (
     <>
       <SchemaMarkup schema={articleSchema} />
       <SchemaMarkup schema={breadcrumbSchema} />
+      <SchemaMarkup schema={speakableSchema} />
       {faqSchema && <SchemaMarkup schema={faqSchema} />}
 
       <BlogPostLayout
         title={post.title}
         description={post.description}
-        author={post.author}
-        authorTitle="Sports Streaming Expert"
+        author={authorData.name}
+        authorTitle={authorData.jobTitle}
         date={post.publishedAt}
         lastModified={post.publishedAt}
         readingTime={`${post.readTime} min read`}

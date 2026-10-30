@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { unifiedSportsAPI, type UnifiedFixture } from "@/lib/api/unified-sports-api"
 import { Card, CardContent } from "@/components/ui/card"
 import { EventCard } from "@/components/events/event-card"
@@ -12,6 +13,19 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { MotionWrapper } from "@/components/ui/motion-wrapper"
 import { cn } from "@/lib/utils"
 import { dataErrorMessage } from "@/lib/api/errors"
+import { ENV } from "@/lib/config/env"
+
+export const metadata: Metadata = {
+  title: 'Live Sports Events & Fixtures | Smart Live TV',
+  description: 'Browse today\'s live sports events, upcoming fixtures, and recent match results. Watch Premier League, La Liga, Bundesliga, Serie A, Ligue 1, UFC and more on Smart Live TV.',
+  alternates: { canonical: `${ENV.BASE_URL}/events` },
+  openGraph: {
+    title: 'Live Sports Events & Fixtures | Smart Live TV',
+    description: 'Browse today\'s live sports events, upcoming fixtures, and recent match results across all major leagues and competitions.',
+    url: `${ENV.BASE_URL}/events`,
+    type: 'website',
+  },
+}
 
 interface EventsPageProps {
   searchParams: {

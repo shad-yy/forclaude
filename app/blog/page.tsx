@@ -34,9 +34,31 @@ export default function BlogIndexPage() {
     ],
   }
 
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${ENV.BASE_URL}/blog`,
+    name: "Sports Streaming Guides & TV Setup Tips",
+    description: "Expert how-to guides, comparisons, and practical tips for watching every match from anywhere.",
+    url: `${ENV.BASE_URL}/blog`,
+    isPartOf: { "@id": `${ENV.BASE_URL}/#website` },
+    inLanguage: "en-GB",
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: BLOG_POSTS.length,
+      itemListElement: BLOG_POSTS.slice(0, 10).map((post, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `${ENV.BASE_URL}/blog/${post.slug}`,
+        name: post.title,
+      })),
+    },
+  }
+
   return (
     <main className="min-h-screen bg-background pt-28 md:pt-36 pb-16 md:pb-20">
       <SchemaMarkup schema={breadcrumbSchema} />
+      <SchemaMarkup schema={collectionSchema} />
 
       <FadeIn>
       <section className="py-16 md:py-20">
