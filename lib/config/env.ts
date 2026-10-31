@@ -2,7 +2,7 @@ import { resolveSiteUrl } from '@/lib/config/site-url'
 
 export const ENV = {
   get GA_MEASUREMENT_ID() {
-    return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ""
+    return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-NRN5M0YNNK"
   },
   get THESPORTSDB_KEY() {
     if (!process.env.THESPORTSDB_API_KEY) {

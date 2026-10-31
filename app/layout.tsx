@@ -6,7 +6,6 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { cn } from "@/lib/utils"
 import { ENV } from "@/lib/config/env"
-import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics"
 import { WebVitals } from "@/components/analytics/WebVitals"
 import { CookieBanner } from "@/components/consent/CookieBanner"
 import { WhatsAppFloat } from "@/components/chat/WhatsAppFloat"
@@ -95,6 +94,18 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.thesportsdb.com" />
         <link rel="preconnect" href="https://r2.thesportsdb.com" />
         <link rel="dns-prefetch" href="https://r2.thesportsdb.com" />
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-NRN5M0YNNK" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-NRN5M0YNNK');
+            `,
+          }}
+        />
         {/* BroadcastService — site-wide; Organization + WebSite live in page.tsx */}
         <script
           type="application/ld+json"
@@ -135,8 +146,6 @@ export default function RootLayout({
           </div>
         </SportThemeProvider>
         </ThemeProvider>
-
-        <GoogleAnalytics measurementId={ENV.GA_MEASUREMENT_ID} />
         <WebVitals />
         <CookieBanner />
         <WhatsAppFloat />
