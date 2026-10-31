@@ -4,7 +4,7 @@ export interface StructuredDataProps {
 }
 
 export function generateStructuredData({ type, data }: StructuredDataProps) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://smart-live-tv.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://smartlivetv.co.uk"
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -20,22 +20,30 @@ export function generateStructuredData({ type, data }: StructuredDataProps) {
 export const organizationStructuredData = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": "https://smartlivetv.co.uk/#organization",
   name: "Smart Live TV",
-  url: "https://smart-live-tv.vercel.app",
-  logo: "https://smart-live-tv.vercel.app/images/logo.png",
-  description: "Your ultimate sports destination for live scores, news, and updates.",
-  sameAs: ["https://twitter.com/SmartLiveTV", "https://facebook.com/SmartLiveTV"],
+  url: "https://smartlivetv.co.uk",
+  logo: "https://smartlivetv.co.uk/images/logo.png",
+  description: "UK IPTV streaming service with 230,000+ channels including Sky Sports, TNT Sports, Netflix, and Disney+ from £12/month.",
+  sameAs: [
+    "https://twitter.com/SmartLiveTV",
+    "https://facebook.com/SmartLiveTV",
+    "https://www.instagram.com/smartlivetv",
+    "https://www.trustpilot.com/review/smartlivetv.co.uk",
+  ],
 }
 
 export const websiteStructuredData = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": "https://smartlivetv.co.uk/#website",
   name: "Smart Live TV",
-  url: "https://smart-live-tv.vercel.app",
-  description: "Get live scores, news, and updates from football, UFC, and more.",
+  url: "https://smartlivetv.co.uk",
+  publisher: { "@id": "https://smartlivetv.co.uk/#organization" },
+  description: "Watch 230,000+ live TV channels including Sky Sports, TNT Sports, Netflix and Disney+ from £12/month.",
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://smart-live-tv.vercel.app/search?q={search_term_string}",
+    target: "https://smartlivetv.co.uk/search?q={search_term_string}",
     "query-input": "required name=search_term_string",
   },
 }

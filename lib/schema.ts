@@ -21,6 +21,7 @@ export function generateSportsEventSchema({ name, homeTeam, awayTeam, date, leag
     return {
         "@context": "https://schema.org",
         "@type": "SportsEvent",
+        "@id": `${baseUrl}/events/${name.toLowerCase().replace(/\s+/g, '-')}`,
         name: name,
         description: `Watch ${name} live stream in HD and 4K UHD. ${league} fixture.`,
         startDate: startIso,
@@ -47,7 +48,7 @@ export function generateSportsEventSchema({ name, homeTeam, awayTeam, date, leag
             { "@type": "SportsTeam", name: homeTeam },
             { "@type": "SportsTeam", name: awayTeam },
         ],
-        sport: "Soccer",
+        sport: "Football",
         organizer: {
             "@type": "Organization",
             name: league,
@@ -58,6 +59,15 @@ export function generateSportsEventSchema({ name, homeTeam, awayTeam, date, leag
             name: league,
             url: `${baseUrl}/watch/premier-league`,
         },
+        offers: {
+            "@type": "Offer",
+            url: `${baseUrl}/pricing`,
+            price: "12.00",
+            priceCurrency: "GBP",
+            availability: "https://schema.org/InStock",
+            validFrom: "2026-01-01",
+        },
+        inLanguage: "en-GB",
     }
 }
 
@@ -81,7 +91,8 @@ export function generateOrganizationSchema() {
     return {
         "@context": "https://schema.org",
         "@type": "Organization",
-        name: "SmartLiveTV",
+        "@id": `${baseUrl}/#organization`,
+        name: "Smart Live TV",
         url: baseUrl,
         logo: `${baseUrl}/icon.png`,
         sameAs: [
