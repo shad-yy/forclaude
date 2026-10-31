@@ -28,6 +28,7 @@ All plans include identical content, 4K UHD streaming, and 2 concurrent streams.
 - [Boxing Live](https://smartlivetv.co.uk/watch/boxing): Stream every boxing fight live — Sky Sports Boxing, DAZN, PPV events. Canelo, Buatsi, and all major promoters.
 - [Cricket Live](https://smartlivetv.co.uk/watch/cricket): Stream cricket live — The Ashes, IPL, ICC events, Tests, ODIs, and T20s. Sky Sports Cricket included.
 - [Rugby Live](https://smartlivetv.co.uk/watch/rugby): Stream rugby live — Six Nations, Nations Championship, Gallagher Premiership, and internationals. TNT Sports included.
+- [Tennis Live](https://smartlivetv.co.uk/watch/tennis): Stream tennis live — Wimbledon, ATP Finals, Australian Open, and full ATP/WTA Tour. Sky Sports Tennis included.
 
 ## Device Setup Guides
 - [Firestick Setup Guide](https://smartlivetv.co.uk/setup/firestick): Step-by-step instructions for Amazon Fire Stick, Fire TV, and Fire Cube using Downloader or IPTV apps.
