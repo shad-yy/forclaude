@@ -108,6 +108,7 @@ export default function BoxingPage() {
     description: fight.description,
     organizer: {
       '@type': 'Organization',
+      '@id': `${ENV.BASE_URL}/#organization`,
       name: 'Smart Live TV',
       url: ENV.BASE_URL,
     },

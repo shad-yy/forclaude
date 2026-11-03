@@ -93,10 +93,13 @@ export function generateOrganizationSchema() {
         "@type": "Organization",
         "@id": `${baseUrl}/#organization`,
         name: "Smart Live TV",
+        alternateName: ["SmartLiveTV", "Smart Live TV UK"],
+        disambiguatingDescription: "UK-based Internet Protocol Television (IPTV) provider streaming 230,000+ channels, live sports, and on-demand movies in 4K Ultra HD.",
         url: baseUrl,
         logo: `${baseUrl}/icon.png`,
         sameAs: [
             "https://www.trustpilot.com/review/smartlivetv.co.uk",
+            "https://x.com/SmartLiveTV",
             "https://twitter.com/SmartLiveTV",
             "https://facebook.com/SmartLiveTV",
             "https://www.instagram.com/smartlivetv",
