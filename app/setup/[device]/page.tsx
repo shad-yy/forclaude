@@ -133,55 +133,85 @@ export default async function SetupDevicePage({ params }: Props) {
 
     const howToSteps: Record<string, Array<{name: string; text: string}>> = {
       firestick: [
-        { name: 'Enable Unknown Sources', text: 'Go to Settings → My Fire TV → About → click device name 7 times. Then go back to My Fire TV → Developer Options → Install Unknown Apps → turn ON for Downloader.' },
+        { name: 'Enable Unknown Sources', text: 'Go to Settings → My Fire TV → About → click device name 7 times to enable Developer Mode. Then return to My Fire TV → Developer Options → Install Unknown Apps → turn ON for Downloader.' },
         { name: 'Install Downloader App', text: 'Search for "Downloader" in the Amazon Appstore and install it for free (orange icon by AFTVnews).' },
-        { name: 'Choose and Install Your IPTV Player', text: 'Open Downloader and enter the code for your chosen app. We recommend TiviMate (code: 278077), IPTV Smarters (code: 250931), or XCIPTV (code: 548268). See all app options below.' },
-        { name: 'Enter Your Smart Live TV Credentials', text: 'Open the app, select "Xtream Codes API" or "Login", and enter the server URL, username, and password from your Smart Live TV account.' },
-        { name: 'Start Watching', text: 'The app will load your channels automatically. Navigate to Live TV → Sports for all Premier League, Champions League, UFC, and more.' },
+        { name: 'Choose and Install Your IPTV Player', text: 'Open Downloader and enter the numeric code for your chosen app. We recommend TiviMate (code: 278077), IPTV Smarters Pro (code: 250931), or XCIPTV (code: 548268).' },
+        { name: 'Enter Your Smart Live TV Credentials', text: 'Open the installed player app, select "Xtream Codes API" or "Login", and enter the server URL, username, and password from your Smart Live TV confirmation email.' },
+        { name: 'Start Watching in 4K', text: 'The player will load your channel list and EPG guide automatically. Navigate to Live TV → Sports for Premier League, UEFA Champions League, Formula 1, UFC, and more.' },
       ],
       'smart-tv': [
-        { name: 'Open Your TV App Store', text: 'Press the Home button on your remote and navigate to Apps, Smart Hub (Samsung), or the LG Content Store (LG).' },
-        { name: 'Choose and Install an IPTV Player', text: 'Search for "IBO Player" (recommended — lets you set up from your phone), "Smarters Player Lite", or "Flix IPTV". See all app options below.' },
-        { name: 'Enter Your Smart Live TV Details', text: 'Open the app and select "Xtream Codes" login. Enter the server URL, username, and password we sent you. For IBO Player, you can do this from your phone at iboplayer.com using your TV\'s MAC address.' },
-        { name: 'Start Watching', text: 'The app will load your 230,000+ channels automatically. Navigate to Sports for live matches, or Movies for on-demand content.' },
+        { name: 'Open Your TV App Store', text: 'Press the Home button on your remote and navigate to Apps, Smart Hub (Samsung Tizen), or LG Content Store (LG webOS).' },
+        { name: 'Choose and Install an IPTV Player', text: 'Search for "IBO Player" (recommended — lets you activate playlists from your phone or PC), "Smarters Player Lite", or "Flix IPTV" and click install.' },
+        { name: 'Enter Your Smart Live TV Details', text: 'Open the app and select "Xtream Codes" login. Enter the server URL, username, and password provided in your subscription email. For IBO Player, link your device at iboplayer.com using your TV\'s Device ID and Device Key.' },
+        { name: 'Start Watching in 4K', text: 'The app will synchronize 230,000+ live channels and VOD automatically. Browse to Sports for live football, rugby, tennis, and PPV combat sports.' },
       ],
       android: [
-        { name: 'Download an IPTV Player', text: 'Go to Google Play Store and search for "Televizo" (best for phones), "IPTV Smarters Pro" (easiest), or "XCIPTV" (best for movies). See all app options below.' },
-        { name: 'Open and Add Your Account', text: 'Open the app, select "Xtream Codes API" or "Add User", and enter your Smart Live TV server URL, username, and password.' },
-        { name: 'Browse and Watch', text: 'Choose Live TV for sports channels, Movies for on-demand films, or Series for box sets. All 230,000+ channels are included.' },
+        { name: 'Download an IPTV Player', text: 'Open the Google Play Store on your Android phone, tablet, or Android TV box. Search for "Televizo" (best mobile UX), "IPTV Smarters Pro", or "XCIPTV" and install.' },
+        { name: 'Open and Add Your Account', text: 'Launch the app, select "Xtream Codes API" or "Add User", and fill in your Smart Live TV server portal URL, username, and password.' },
+        { name: 'Browse and Stream', text: 'Choose Live TV for live sports networks, Movies for on-demand cinema, or Series for box sets. All 230,000+ channels stream at up to 60fps with zero buffering.' },
       ],
       iphone: [
-        { name: 'Download an IPTV Player', text: 'Go to the App Store and search for "UHF" (best overall — syncs across Apple devices), "Smarters Player Lite" (free), or "IPTVX" (best for movies). See all app options below.' },
-        { name: 'Add Your Smart Live TV Account', text: 'Open the app, select "Xtream Codes" login, and enter the server URL, username, and password from your welcome message.' },
-        { name: 'Start Streaming', text: 'Browse Live TV for sports channels in HD and 4K, or explore Movies and Series for on-demand content across 230,000+ channels.' },
+        { name: 'Download an IPTV Player from App Store', text: 'Open the Apple App Store on your iPhone or iPad. Search for "UHF" (recommended for Apple devices with iCloud sync), "Smarters Player Lite" (free), or "IPTVX".' },
+        { name: 'Add Your Smart Live TV Account', text: 'Open the app, tap "Add Playlist", select "Xtream Codes API", and input your server address, username, and password received upon ordering.' },
+        { name: 'Start Streaming Live Sports', text: 'Your full channel lineup and electronic programme guide will load. Stream Premier League, Champions League, and international channels in HD and 4K.' },
       ],
     }
 
-    const deviceSteps = howToSteps[params.device] || []
+    const defaultSteps = [
+      { name: 'Get Your Smart Live TV Credentials', text: 'Sign up for a subscription or 24-hour free trial on our website to receive your Xtream Codes or M3U playlist credentials.' },
+      { name: 'Install a Compatible IPTV Player', text: `Download an IPTV player from the application store on your ${deviceParams.name}.` },
+      { name: 'Enter Your Account Credentials', text: 'Launch the player app, choose Xtream Codes API login, and enter your server URL, username, and password.' },
+      { name: 'Start Streaming', text: 'Your 230,000+ live channels and VOD library will load automatically.' },
+    ]
 
-    const howToSchema = deviceSteps.length > 0 ? {
+    const deviceSteps = howToSteps[params.device] || defaultSteps
+
+    const howToSchema = {
       '@context': 'https://schema.org',
       '@type': 'HowTo',
-      name: `How to Set Up Smart Live TV on ${deviceParams.name}`,
-      description: `Step-by-step guide to installing and setting up Smart Live TV IPTV service on ${deviceParams.name}. Takes under 5 minutes.`,
+      '@id': `${ENV.BASE_URL}/setup/${params.device}#howto`,
+      name: `How to Set Up Smart Live TV on ${deviceParams.name} (2026)`,
+      description: `Step-by-step guide to installing and configuring Smart Live TV IPTV service on ${deviceParams.name}. Takes under 5 minutes with zero technical hardware required.`,
       totalTime: 'PT5M',
+      estimatedCost: {
+        '@type': 'MonetaryAmount',
+        currency: 'GBP',
+        value: '0',
+      },
+      tool: [
+        {
+          '@type': 'HowToTool',
+          name: `${deviceParams.name} device connected to a display`,
+        },
+        {
+          '@type': 'HowToTool',
+          name: 'High-speed broadband Internet connection (minimum 15 Mbps for 4K streaming)',
+        },
+      ],
       supply: [
-        { '@type': 'HowToSupply', name: deviceParams.name },
-        { '@type': 'HowToSupply', name: 'Smart Live TV subscription credentials' },
+        {
+          '@type': 'HowToSupply',
+          name: 'Smart Live TV subscription or 24-hour trial credentials (M3U / Xtream Codes)',
+        },
+        {
+          '@type': 'HowToSupply',
+          name: `${deviceParams.name} compatible IPTV Player app (e.g., TiviMate, IBO Player, IPTV Smarters)`,
+        },
       ],
       step: deviceSteps.map((step, i) => ({
         '@type': 'HowToStep',
         position: i + 1,
         name: step.name,
         text: step.text,
+        url: `${ENV.BASE_URL}/setup/${params.device}#step-${i + 1}`,
       })),
-    } : null
+    }
 
     return (
         <div className="min-h-screen bg-gray-950 text-gray-100 pb-20">
             <SchemaMarkup schema={faqSchema} />
             <SchemaMarkup schema={breadcrumbSchema} />
-            {howToSchema && <SchemaMarkup schema={howToSchema} />}
+            <SchemaMarkup schema={howToSchema} />
 
             {/* Hero Section */}
             <FadeIn>
@@ -208,40 +238,27 @@ export default async function SetupDevicePage({ params }: Props) {
                 <div className="lg:col-span-2 space-y-0">
 
                     <FadeIn direction="up">
-                    <section className="bg-gray-900 p-8 md:p-10 rounded-3xl border border-gray-800 mb-16 md:mb-20">
-                        <h2 className="text-3xl font-bold text-white mb-8">Step-by-Step Setup Guide</h2>
+                    <section id="setup-steps" className="bg-gray-900 p-8 md:p-10 rounded-3xl border border-gray-800 mb-16 md:mb-20">
+                        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+                            <h2 className="text-3xl font-bold text-white">Step-by-Step Setup Guide</h2>
+                            <div className="flex items-center gap-3 text-xs text-gray-400">
+                                <span className="px-2.5 py-1 rounded-full bg-gray-800 border border-gray-700">⏱️ Est. Time: 5 Minutes</span>
+                                <span className="px-2.5 py-1 rounded-full bg-green-950/60 border border-green-800/40 text-green-400 font-semibold">Cost: Free Setup / 24h Free Trial</span>
+                            </div>
+                        </div>
+
                         <div className="space-y-6">
-                            <div className="flex gap-4">
-                                <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">1</div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Get your SmartLiveTV subscription — 24-hour free trial, no card required</h3>
-                                    <p className="text-gray-400">Head over to our pricing page and select your package. We will immediately email you your secure IPTV M3U link and portal login details.</p>
+                            {deviceSteps.map((step, idx) => (
+                                <div key={idx} id={`step-${idx + 1}`} className="flex gap-4 scroll-mt-24">
+                                    <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg shadow-sm">
+                                        {idx + 1}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-xl font-bold text-white mb-2">{step.name}</h3>
+                                        <p className="text-gray-400 leading-relaxed">{step.text}</p>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">2</div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Choose and install an IPTV player on your {deviceParams.name}</h3>
-                                    <p className="text-gray-400">Pick any IPTV player app that suits you — we recommend several options below. All work with your Smart Live TV credentials. Install from your app store or via Downloader (Firestick).</p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">3</div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Enter your SmartLiveTV details</h3>
-                                    <p className="text-gray-400">Open the app you just downloaded and select &quot;Login with Xtream Codes&quot; or &quot;M3U Playlist&quot;. Paste the credentials we emailed you in step one.</p>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <div className="shrink-0 w-10 h-10 rounded-full bg-green-500 text-black flex items-center justify-center font-bold text-lg">4</div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Start Streaming</h3>
-                                    <p className="text-gray-400">The app will download our live channel guide. You now have access to thousands of live HD sports and TV networks directly on your {deviceParams.name}.</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
 
                         <div className="mt-10 pt-8 border-t border-gray-800 text-center">

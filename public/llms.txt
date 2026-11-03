@@ -33,6 +33,7 @@ All plans include identical content, 4K UHD streaming, and 2 concurrent streams.
 - [NBA Live](https://smartlivetv.co.uk/watch/nba): Stream NBA live in the UK — Sky Sports Arena, Emirates NBA Cup, Christmas Day, playoffs, and NBA Finals. From £12/month.
 
 ## Device Setup Guides
+- [Device Setup Guides Hub](https://smartlivetv.co.uk/setup): Overview and step-by-step setup tutorials for Firestick, Smart TVs, Android, and iOS.
 - [Firestick Setup Guide](https://smartlivetv.co.uk/setup/firestick): Step-by-step instructions for Amazon Fire Stick, Fire TV, and Fire Cube using Downloader or IPTV apps.
 - [Smart TV Setup Guide](https://smartlivetv.co.uk/setup/smart-tv): Configuration guide for Samsung, LG, and Android-based Smart TVs.
 - [Android Setup Guide](https://smartlivetv.co.uk/setup/android): App installation and configuration guide for Android smartphones, tablets, and TV boxes.

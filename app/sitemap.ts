@@ -33,6 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/news`, priority: 0.8, changeFrequency: 'daily', lastModified: now },
     { url: `${baseUrl}/blog`, priority: 0.7, changeFrequency: 'weekly', lastModified: now },
     { url: `${baseUrl}/faq`, priority: 0.8, changeFrequency: 'monthly' as const, lastModified: now },
+    { url: `${baseUrl}/setup`, priority: 0.85, changeFrequency: 'monthly' as const, lastModified: now },
     { url: `${baseUrl}/setup/firestick`, priority: 0.8, changeFrequency: 'monthly', lastModified: now },
     { url: `${baseUrl}/setup/smart-tv`, priority: 0.8, changeFrequency: 'monthly', lastModified: now },
     { url: `${baseUrl}/setup/android`, priority: 0.8, changeFrequency: 'monthly', lastModified: now },
