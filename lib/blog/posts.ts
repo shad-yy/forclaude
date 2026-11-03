@@ -17,8 +17,8 @@ export interface BlogPost {
 export const BLOG_POSTS: BlogPost[] = [
   {
     "slug": "watch-canelo-vs-mbilli-live-uk-guide",
-    "title": "How to Watch Canelo vs Mbilli Live in the UK — Full Fight Card & Streaming Guide",
-    "description": "Watch Canelo Álvarez vs Christian Mbilli live in the UK on DAZN PPV tonight. Full fight card, UK start times, cost comparison, and 4K streaming options from £12/month.",
+    "title": "Watch Canelo vs Mbilli Live in the UK — Fight Card Guide",
+    "description": "Canelo vs Mbilli live on DAZN PPV in the UK. Full fight card, ring walk times, cost breakdown, and how to stream in 4K from £12/month.",
     "category": "guides",
     "publishedAt": "2026-10-31",
     "readTime": 5,
