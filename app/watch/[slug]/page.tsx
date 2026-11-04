@@ -225,6 +225,36 @@ export default async function WatchLeaguePage({ params }: Props) {
                             Tired of missing the biggest games because of expensive cable packages and restricted broadcasts? Get access to every single kick-off this season—crystal clear, on any device.
                         </p>
                         {params.slug === 'premier-league' && (
+                          <div className="mb-6 max-w-2xl mx-auto p-4 rounded-2xl bg-gradient-to-r from-[#00e676]/15 via-gray-900 to-[#00e676]/10 border border-[#00e676]/30 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="inline-block w-2 h-2 rounded-full bg-[#00e676] animate-pulse" />
+                                <span className="text-xs font-bold uppercase tracking-wider text-[#00e676]">Next Matchweek: MW10</span>
+                              </div>
+                              <p className="text-sm font-semibold text-white">
+                                Everton vs Coventry (Fri 20:00) · Leeds vs Spurs (Sat 12:30) · Arsenal vs Hull (Sat 3pm)
+                              </p>
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                All matches including 3pm blackout fixtures available in 4K UHD.
+                              </p>
+                            </div>
+                            <div className="shrink-0 flex items-center gap-2">
+                              <Link
+                                href="/free-trial"
+                                className="px-3.5 py-2 rounded-lg bg-[#00e676] text-black font-bold text-xs hover:bg-[#00ff87] transition whitespace-nowrap shadow-sm"
+                              >
+                                Test 24h Free →
+                              </Link>
+                              <Link
+                                href="/blog/premier-league-2026-27-matchweek-10-preview-tv-guide"
+                                className="px-3 py-2 rounded-lg bg-gray-800 text-gray-200 text-xs hover:bg-gray-700 transition whitespace-nowrap"
+                              >
+                                TV Guide
+                              </Link>
+                            </div>
+                          </div>
+                        )}
+                        {params.slug === 'premier-league' && (
                           <AnswerBlock
                             answer="Watch every Premier League 2026/27 match live from £12/month with Smart Live TV. All Sky Sports, TNT Sports, and Amazon Prime channels included in one subscription. No blackouts — access international feeds for 3pm Saturday kick-offs."
                             facts={[

@@ -445,6 +445,49 @@ export default function PricingPage() {
           <PricingCardsSlider fullFeatures showTrialCta />
         </div>
 
+        {/* Device Compatibility Quick Switcher */}
+        <div className="mt-8 mb-10 max-w-3xl mx-auto p-4 md:p-6 rounded-2xl bg-[#12121a] border border-[#2a2a3a]/80 text-center">
+          <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">
+            Instant 5-Minute Setup On All Your Devices
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2.5">
+            <Link
+              href="/setup/firestick"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#1a1a24] hover:bg-[#222230] border border-gray-800 hover:border-[#00e676]/40 transition text-xs font-medium text-gray-200"
+            >
+              <FirestickIcon className="w-4 h-4 text-orange-400" />
+              <span>Amazon Firestick</span>
+            </Link>
+            <Link
+              href="/setup/smart-tv"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#1a1a24] hover:bg-[#222230] border border-gray-800 hover:border-[#00e676]/40 transition text-xs font-medium text-gray-200"
+            >
+              <SmartTVIcon className="w-4 h-4 text-blue-400" />
+              <span>Smart TV (Samsung & LG)</span>
+            </Link>
+            <Link
+              href="/setup/android"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#1a1a24] hover:bg-[#222230] border border-gray-800 hover:border-[#00e676]/40 transition text-xs font-medium text-gray-200"
+            >
+              <AndroidIcon className="w-4 h-4 text-green-400" />
+              <span>Android Box & Mobile</span>
+            </Link>
+            <Link
+              href="/setup/iphone"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#1a1a24] hover:bg-[#222230] border border-gray-800 hover:border-[#00e676]/40 transition text-xs font-medium text-gray-200"
+            >
+              <IPhoneIcon className="w-4 h-4 text-purple-400" />
+              <span>Apple iPhone & iPad</span>
+            </Link>
+            <Link
+              href="/setup"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-transparent hover:bg-[#1a1a24] text-xs font-semibold text-[#00e676] hover:underline transition"
+            >
+              <span>All Guides →</span>
+            </Link>
+          </div>
+        </div>
+
 
 
         <div className="max-w-sm mx-auto mt-4">
