@@ -21,7 +21,10 @@ const HASH_SCANNED = [
 ];
 
 // Vercel / Next / Node runtime provide these; they are never user-set and need no SETUP-REQUIRED row.
-const PLATFORM_ENV = new Set(["NODE_ENV", "VERCEL_ENV", "VERCEL_URL", "NEXT_RUNTIME"]);
+// Platform-provided, never user-set, so they need no SETUP-REQUIRED row.
+// URL is set by Netlify to the site's primary URL (the counterpart of
+// Vercel's VERCEL_URL).
+const PLATFORM_ENV = new Set(["NODE_ENV", "VERCEL_ENV", "VERCEL_URL", "NEXT_RUNTIME", "URL"]);
 
 // Directories whose process.env reads count as "the app". Tests, scripts and configs
 // are excluded — they read env for their own harness, not for what the app depends on.
