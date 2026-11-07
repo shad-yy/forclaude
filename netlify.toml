@@ -1,0 +1,22 @@
+# Netlify configuration for smartlivetv.co.uk
+# Migration target: this site was on Vercel Hobby and was paused when the
+# team's shared 4-hour Fluid Active CPU limit was exceeded (by sightlinetv).
+# Moving smartlivetv here gives it its own free allowance. See
+# memory-bank/NETLIFY-MIGRATION.md for the account/secret/DNS steps.
+
+[build]
+  # Mirrors the Vercel build: generate-posts -> next build -> ping-indexnow.
+  # ping-indexnow exits early off Vercel (it gates on VERCEL_ENV), so no
+  # outward call is made from Netlify builds.
+  command = "pnpm run build"
+  publish = ".next"
+
+[build.environment]
+  # The Vercel project ran Node 24; Netlify's stable line is 22 LTS.
+  NODE_VERSION = "22"
+
+# Official Next.js runtime: App Router, route handlers, middleware, ISR,
+# and the headers()/redirects() from next.config.mjs all carry over.
+# Netlify installs this plugin automatically from this reference.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

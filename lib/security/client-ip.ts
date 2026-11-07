@@ -27,6 +27,12 @@ export function isLoopback(ip: string): boolean {
 }
 
 export function getClientIp(headers: Headers): string | null {
+  // Netlify sets this to the real client IP and strips it from inbound
+  // requests, so a client cannot forge it. It plays the same trusted role
+  // on Netlify that x-real-ip plays on Vercel, so it is preferred first.
+  const nf = headers.get("x-nf-client-connection-ip")?.trim();
+  if (nf && !isLoopback(nf)) return nf;
+
   const real = headers.get("x-real-ip")?.trim();
   if (real && !isLoopback(real)) return real;
 
