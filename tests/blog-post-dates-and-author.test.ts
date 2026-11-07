@@ -33,7 +33,10 @@ describe("blog byline", () => {
 
   it("the post page reads the author from the post, not a hard-coded name", () => {
     const page = readFileSync("app/blog/[slug]/page.tsx", "utf8")
-    expect(page).toContain("author={post.author}")
+    // The page resolves the post's own author through resolveAuthor(post.author)
+    // for richer E-E-A-T data, then passes the resolved value down. What matters
+    // is that the author still comes from the post, never a hard-coded string.
+    expect(page).toMatch(/resolveAuthor\(\s*post\.author\s*\)/)
     expect(page).not.toMatch(/\bauthor="/)
   })
 })
